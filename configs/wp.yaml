@@ -1,26 +1,27 @@
-# M1 win-probability model. Read by scripts/fit_wp.py.
+# M1 win-probability model, version 2. Read by scripts/fit_wp.py.
+# Every choice below was made on development seasons (2010 to 2023) only; the evidence
+# is in results/m1_wp_v2_dev_study.json and results/m1_wp_dev.json, and it is frozen in
+# results/m1_wp_v2_preregistration.json before the test seasons are scored.
 seed: 20261117
 n_threads: 2
 
-# Seasons are split whole. Trees are grown on `train`, the calibration map is fitted
-# on `calib`, and `test` is touched once, for the reported numbers.
+# Seasons are split whole. The headline model is fitted on every development season.
+# Version 2 has no calibration map, so there are no calibration seasons (calib: null).
+# `test` is scored once, by `scripts/fit_wp.py --evaluate`.
 split:
-  train: [2010, 2021]
-  calib: [2022, 2023]
+  train: [2010, 2023]
+  calib: null
   test: [2024, 2025]
 
-# "platt", "isotonic" or "none". Chosen from a game-grouped comparison inside the
-# calibration seasons (results/m1_wp_metrics.json, key calibration_choice).
-calibration: platt
+# "platt", "isotonic" or "none". See decisions.calibration below.
+calibration: none
 
-# LightGBM hyperparameters. Chosen with `python scripts/fit_wp.py --tune`, which
-# fits on 2010-2018 and scores 2019-2021 (results/m1_wp_tuning.json). The
-# calibration and test seasons play no part in the choice.
+# LightGBM hyperparameters. The trees start from the normal-approximation baseline.
 lgbm:
   n_estimators: 300
   learning_rate: 0.06
   num_leaves: 15
-  min_child_samples: 10000
+  min_child_samples: 2000
   colsample_bytree: 0.8
   subsample: 0.8
   subsample_freq: 1
@@ -28,20 +29,190 @@ lgbm:
   max_bin: 127
   monotone_constraints_method: intermediate
 
-# Grid for --tune. Every combination of the first two, then tree counts at the best.
-tuning:
-  fit_seasons: [2010, 2018]
-  validation_seasons: [2019, 2021]
-  min_child_samples: [400, 2000, 5000, 10000, 20000]
-  num_leaves: [15, 31]
-  n_estimators: [150, 300, 600]
+# Version 1, exactly as shipped, refitted by --evaluate to be scored next to version 2.
+version_1:
+  train: [2010, 2021]
+  calib: [2022, 2023]
+  calibration: platt
+  n_calib_seasons_in_cv: 2   # in development CV: the last two training seasons calibrate
+  lgbm:
+    n_estimators: 300
+    learning_rate: 0.06
+    num_leaves: 15
+    min_child_samples: 10000
+    colsample_bytree: 0.8
+    subsample: 0.8
+    subsample_freq: 1
+    reg_lambda: 10.0
+    max_bin: 127
+    monotone_constraints_method: intermediate
 
-# Leave-seasons-out cross-fitting for out-of-fold predictions on every season.
+# Grid for --tune: development seasons, season-blocked cross-validation.
+tuning:
+  fold_size: 2
+  min_child_samples: [1000, 2000, 5000]
+  num_leaves: [15, 31]
+  trees_and_learning_rate: [[150, 0.12], [600, 0.03]]
+
+# Out-of-fold predictions for every season (data/processed/wp_predictions.parquet).
+# Development seasons: folds of `fold_size` consecutive seasons, each predicted by a
+# model fitted on the other development seasons. Test seasons: one more fold, predicted
+# by a model fitted on all development seasons. No fold is fitted on a test season.
 crossfit:
-  fold_size: 4          # consecutive seasons per fold
-  n_calib_seasons: 2    # most recent seasons outside the fold, used for calibration
+  fold_size: 2
+  n_calib_seasons: 0
 
 metrics:
   ece_bins: 10
   reliability_bins: 20
   bootstrap_reps: 2000
+
+# How every value was chosen (leakage audit, finding M4). "study" means
+# results/m1_wp_v2_dev_study.json; "tuning" means results/m1_wp_tuning.json.
+provenance:
+  structure: >-
+    Trees start from the normal-approximation baseline (init_score). Study: candidate
+    `base` against `v1_no_platt` (log loss 0.44913 against 0.44973) and
+    `scores_no_base_leaf2000` against `scores_leaf2000` (0.44944 against 0.44863).
+  baseline_sigma_and_tau: >-
+    Fitted by maximum likelihood on the training rows of every fit (two numbers).
+    Fixing tau instead was worse: 30 seconds without the rules (`base_sharp`, 0.44968),
+    and 60, 120 or 240 seconds with them (`rules_tau*`: 0.44869 to 0.44929, larger
+    end-game gaps, and the 13-second check further from passing).
+  baseline_kneel_rule: >-
+    On. Where the leader with the ball can kneel out (kneel_slack >= 0), the baseline is
+    certain. On development seasons those rows were won 3,313 times in 3,314 (study,
+    final_checks and docs/notes/m1_wp.md). Candidate `rules_kneel_leaf2000` against
+    `scores_leaf2000`: log loss equal (0.44863), end-game gap 0.0048 against 0.0051,
+    kneel-out check passed (minimum 1.000 against 0.924).
+  baseline_possession_value: >-
+    Off. A fitted value for having the ball (about 1.6 points) did not help once the
+    trees were in place (`rules_both_leaf2000` 0.44880, `rules_poss_leaf2000` 0.44874).
+  features: >-
+    is_home dropped, kneel_slack, possessions and possessions_per_minute added. See
+    decisions below.
+  min_child_samples: >-
+    2000. Not the overall log-loss winner of the tuning grid: 5000 scored 0.44852
+    against 0.44863 (a difference of 0.0001), but its last-2:00 log loss is clearly
+    worse (0.2362 against 0.2338), and the end game is what version 2 is for. 1000 is
+    slightly better in the last 2:00 (0.2331) with a larger memorization gap (study:
+    0.0061 against 0.0057). Leaf sweep in the study: 5000, 2000, 1000, 500, 200.
+  num_leaves: >-
+    15. Tuning grid: 15 beats 31 at every leaf size (0.44863 against 0.44883 at 2000).
+  n_estimators_and_learning_rate: >-
+    300 trees at 0.06, kept from version 1. Tuning grid at 2000 leaves: 150 trees at
+    0.12 scored 0.44872, 600 at 0.03 scored 0.44857, against 0.44863. The 600-tree gain
+    (0.00006) is noise-sized and doubles the fit time that the M3 bootstrap pays 101
+    times, so 300 is kept by a stated reason, not as the winner.
+  colsample_bytree_subsample_reg_lambda: >-
+    0.8, 0.8 (every round) and 10. Not tuned: common settings kept from version 1 so
+    the number of looks at the data stays small. Stated, not chosen by a score.
+  max_bin: 127. Not tuned; halves the fit time against LightGBM's 255.
+  monotone_constraints_method: >-
+    intermediate. Not tuned; LightGBM's middle setting between the fast basic method
+    and the slow advanced one.
+  monotone_constraints: >-
+    Set by reasoning, not by a score: more points, a better spread and more timeouts
+    for the team with the ball can never hurt it; more defensive timeouts never help.
+  SPREAD_DECAY: >-
+    4.0, kept from version 1, where it was set by hand with no recorded comparison. It
+    only shapes one of several spread features, and the trees can undo it. Not tuned.
+  TIME_FLOOR_SECONDS: >-
+    30, kept. Study: a 5-second floor made no difference with the baseline in place
+    (`base_floor5` 0.44933 against `base_no_home` 0.44930; `kneel_floor5_leaf2000`
+    0.44881 against `kneel_leaf2000` 0.44877).
+  kneel_constants: >-
+    40-second play clock, 2 seconds per kneel, 120-second cap: rules and measurements in
+    docs/research/endgame_clock.md, not fitted to outcomes.
+  KNEEL_SLACK_FLOOR: >-
+    -600 seconds. Stated: more than ten minutes from a kneel-out is all the same for
+    this feature, and capping it keeps the trees' bins on the end game.
+  possessions_per_minute_offset: >-
+    30 seconds added to the clock, the same as TIME_FLOOR_SECONDS, so the feature stays
+    finite at 0:00. Not tuned.
+  BASELINE_LOGIT_CAP: 9 (about 1 in 8,000). Stated, keeps log-odds finite; not tuned.
+  calibration: >-
+    none. See decisions.calibration.
+  seed: Fixed project seed.
+
+# The decisions, each with the study candidates it rests on. --preregister copies the
+# candidates' development numbers next to each decision.
+decisions:
+  - decision: Diagnosis reproduced on development seasons before any change.
+    choice: >-
+      Version 1, cross-fitted on 2010 to 2023, shows the same end-game errors as on the
+      test seasons (lead 1 to 3 with 0:40 or less on first down: 100% won, 89.3%
+      predicted; down 9 or more: 0% won, 2.5% predicted).
+    compared: [v1, v1_no_platt]
+  - decision: Structural baseline as the trees' starting point.
+    choice: Normal approximation with sigma and tau fitted, passed as init_score.
+    compared: [v1_no_platt, base, base_sharp, scores_leaf2000, scores_no_base_leaf2000]
+  - decision: Drop is_home.
+    choice: >-
+      Dropped. Home advantage is in the spread. Keeping it is worth 0.00014 of log loss
+      (game-bootstrap interval in the study's paired_differences), and dropping it makes
+      the two sides of a game symmetric by construction.
+    compared: [base, base_no_home, kneel, kneel_with_home, scores_leaf2000,
+               scores_home_leaf2000]
+  - decision: End-game features.
+    choice: >-
+      kneel_slack, possessions and possessions_per_minute. Timeout shares were tried and
+      not kept (no gain, fit three times slower).
+    compared: [base_no_home, kneel, kneel_leaf2000, scores_leaf2000, timeouts_leaf2000]
+  - decision: Leaf size.
+    choice: 2000 plays per leaf, one stage of trees.
+    compared: [kneel, kneel_leaf5000, kneel_leaf2000, kneel_leaf1000, kneel_leaf500,
+               kneel_leaf200, scores_leaf5000, scores_leaf2000, scores_leaf1000]
+  - decision: No separate end-game model.
+    choice: >-
+      Rejected. A second stage of small-leaf trees on the last 5 to 15 minutes improved
+      last-two-minute log loss by about 0.001 but did not improve the end-game cells,
+      and it is a second model to explain.
+    compared: [two_stage_300s_leaf500, two_stage_600s_leaf500, scores_leaf2000,
+               scores_two_stage_600s]
+  - decision: Time floor.
+    choice: 30 seconds kept.
+    compared: [base_no_home, base_floor5, kneel_leaf2000, kneel_floor5_leaf2000]
+  - decision: Rules of the game in the baseline.
+    choice: >-
+      Kneel rule on, possession value off, tau fitted. Made after the all-season sanity
+      checks of `scores_leaf2000` showed the baseline too soft at 0:00 (a kneel-out
+      state at 0.924). Two end-game checks still fail with this choice (13-second state
+      0.876 against a bar of 0.90; down 9 or more with under 30 seconds, worst state
+      0.063 against 0.02). The thresholds are not changed; the failures are reported.
+    compared: [scores_leaf2000, rules_kneel_leaf2000, rules_both_leaf2000,
+               rules_both_leaf1000, rules_poss_leaf2000, rules_tau60_leaf2000,
+               rules_tau120_leaf2000, rules_tau120_leaf1000, rules_tau240_leaf2000]
+  - decision: Calibration.
+    choice: >-
+      No map. A pooled Platt map over the cross-fitted development seasons (each season
+      mapped by a map fitted on the other seasons) has slope about 0.93 and improves
+      overall log loss by 0.0003 (0.44863 to 0.44833) and ECE from 0.008 to 0.003, but
+      makes the end game worse (last 2:00 log loss 0.2338 to 0.2344, end-game gap
+      0.0048 to 0.0057). The end game is what version 2 is for, the gain elsewhere is
+      small, and no map keeps the model to one fit. The two-season map of version 1 is
+      worse than no map in the same comparison (`v1` 0.45104 against `v1_no_platt`
+      0.44973). Recorded weakness: mild overconfidence in the middle of the range.
+    compared: [v1, v1_no_platt, scores_leaf2000, rules_kneel_leaf2000]
+
+# What --evaluate computes, written down before it is run.
+evaluation_plan:
+  data: >-
+    2024 and 2025, loaded once through splits.load_test_plays with a logged purpose.
+    Rows: label present and every model's prediction present (ours v2, ours v1,
+    nflfastR wp and vegas_wp), the same row rule as version 1.
+  models: >-
+    Version 2 = data/models/wp.joblib as preregistered (stamp checked). Version 1 =
+    refitted exactly as shipped and required to reproduce results/m1_wp_metrics_v1.json.
+  primary: >-
+    Log loss, Brier and ECE (10 equal-width bins) on all rows; version 2 minus version 1
+    with a 95% game-bootstrap interval (2000 draws).
+  endgame: >-
+    The 21-cell table (time left 0:00-0:40, 0:41-2:00, 2:01-5:00 by margin for the team
+    with the ball), all scrimmage downs and first downs only: predicted, observed, gap
+    with a game-bootstrap interval, and the row-weighted mean absolute gap. Also log
+    loss on the last 5:00 and the last 2:00.
+  secondary: By quarter, scrimmage downs, plays with no down, fourth downs.
+  rule: >-
+    Reported as they come out, both versions, whichever is better. No change to the
+    model after this step. A worse result for version 2 is reported as worse.
