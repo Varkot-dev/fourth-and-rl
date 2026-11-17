@@ -7,3 +7,4 @@ data/
 *.egg-info/
 dist/
 .DS_Store
+results/test_access_log.jsonl

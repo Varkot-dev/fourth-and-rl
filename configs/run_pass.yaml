@@ -1,0 +1,73 @@
+# Burning question 2: why do offenses run when passing gains more?
+# Read by fourth_and_rl.run_pass.load_config. Every threshold used by
+# scripts/questions/q2_run_vs_pass.py is written here.
+
+seed: 20261117
+n_boot: 1000              # game-level bootstrap resamples (whole games drawn with replacement)
+level: 0.95               # interval level (percentile bootstrap)
+
+# Extra nflverse columns that are not in our state table, cached per season (gitignored).
+extra_dir: data/q2_extra
+participation_first_season: 2016   # defenders_in_box exists from this season on
+
+# A quarterback scramble is recorded by nflverse as a run (play_type "run", qb_scramble 1).
+# It was called as a pass, so it is counted as a pass here. "run" reproduces the box-score
+# view and "drop" leaves scrambles out; both are reported as sensitivity checks.
+scrambles_as: pass
+
+# Neutral game script: the offense is not being pushed toward running or passing by the
+# score or the clock. `wp` is nflfastR's win probability, used only as a filter.
+neutral:
+  max_abs_score_diff: 8
+  wp_low: 0.20
+  wp_high: 0.80
+  min_half_seconds: 120    # the snap comes with more than this left in the half
+  max_qtr: 4               # no overtime
+
+early_downs: [1, 2]
+
+# Situation cells: down x distance bin x field-position bin. Lower edges.
+dist_edges: [1, 2, 3, 5, 8, 11]
+dist_labels: ["1", "2", "3-4", "5-7", "8-10", "11+"]
+field_edges: [1, 5, 11, 21, 41, 61, 81]     # yardline_100 = yards from the opponent's end zone
+field_labels: ["1-4", "5-10", "11-20", "21-40", "41-60", "61-80", "81-99"]
+cells:
+  min_n_per_call: 100      # a cell is compared only with this many runs AND this many passes
+
+recent_first_season: 2021  # "today's game" for the verdict and the points-per-game estimate
+
+defense:
+  recent_window: 10        # called plays behind the current one, same offense and game
+  box_edges: [0, 6, 7, 8]  # defenders in the box: 5 or fewer, 6, 7, 8 or more
+  box_labels: ["5 or fewer", "6", "7", "8 or more"]
+  xpass_edges: [0.0, 0.3, 0.4, 0.5, 0.6, 0.7, 0.85]   # nflfastR's expected pass probability
+  xpass_labels: ["<30%", "30-40%", "40-50%", "50-60%", "60-70%", "70-85%", "85%+"]
+
+lead_late:                 # protecting a lead
+  qtr: 4
+  max_game_seconds: 300
+  min_lead: 1
+  max_lead: 8
+  downs: [1, 2, 3]
+  max_elapsed_seconds: 60  # larger snap-to-snap gaps are treated as timestamp errors
+  timeout_seconds: 40      # clock a defensive timeout saves (the runoff), for the rough index
+
+short_yardage:
+  downs: [3, 4]
+  max_ydstogo: 2
+  goal_line_max_yardline: 2
+
+shift:
+  share_points: 0.05       # move this share of early-down neutral calls from run to pass
+
+hook:                      # run and pass outcome distributions for the decision model
+  era_first_season: 2018   # same era as configs/components.yaml
+  min_cell_n: 300
+  min_turnover_n: 50
+
+debate:                    # points raised in the public argument (see docs/notes/q2_run_vs_pass.md)
+  team_gap_large: 0.2      # "pass EPA above run EPA by this much or more"
+  clock_qtr: 4             # late-lead clock play: this quarter, leading by at least min_lead
+  clock_min_lead: 1
+  check_last_seconds: 120  # reproduce the run share in docs/research/endgame_clock.md
+  check_lead: [1, 8]
