@@ -329,7 +329,7 @@ For the coach-cost idea in `docs/research/inbox/coach_cost_idea.md`. Same quotin
 The owner's premise (pre-snap and procedure penalties are on the coach) is a common view on X, usually stated for penalties in general, not split by type:
 
 - @byesline, 2025-10-12, https://x.com/byesline/status/1977398351873372438: "The theme continues w/ the Denver Broncos: They’ve one of the most undisciplined team in the NFL. Came into today giving up 411 yds of penalty yds in 5 games, 2nd most in the league. 52 total flags thrown on Denver, 4th most. You’re either coaching it or allowing it."
-- @TomOatesWSJ, 2025-09-21, https://x.com/TomOatesWSJ/status/1969... (link id not captured in full; 95 replies, 1.8K likes): "So typical of a Matt LaFleur-coached team. #Packers on a really nice run going into a game they should win and lay a colossal egg. What an unfocused, undisciplined performance. Fourteen penalties says it all."
+- @TomOatesWSJ, 2025-09-21, link not captured (95 replies, 1.8K likes): "So typical of a Matt LaFleur-coached team. #Packers on a really nice run going into a game they should win and lay a colossal egg. What an unfocused, undisciplined performance. Fourteen penalties says it all."
 - @ShaneHaffNFL, 2025-11-28, https://x.com/ShaneHaffNFL/status/1994505059653357644: "Seriously, start benching people for false starting and other stupid penalties. An NFL team shouldn’t be this undisciplined."
 - @Shellsyeah81, 2025-10-19, https://x.com/Shellsyeah81/status/1980043606284218491: "I hate when we prove them all right. We absolutely 100 percent have a coaching issue when we have over 100 yards in penalties. Undisciplined football team all season so far! #RaiseHail tho"
 - @Rob_Shenanigans, 2025-12-15, https://x.com/Rob_Shenanigans/status/2000642647992500513: "Here's how the Browns offense started off the game: 1. Failed challenge on kickoff (Stefanski), pinned inside 1 yard line 2. Penalty: False start (Fannin), half the distance to goal 3. Run: 1 yard 4. Penalty: 12 men in huddle How can you call this good coaching?"
@@ -381,3 +381,49 @@ The owner's premise (pre-snap and procedure penalties are on the coach) is a com
 | Two-point choice | "Shotty going for two"; down 8 and down 14 | Yes, needs the two-point action |
 | Penalties and discipline | LaFleur "Fourteen penalties"; Browns "12 men in huddle" | Countable; assigning them to the coach is the assumption to test |
 | Play design and personnel | "cannot scheme up a single play to their #1 receiver"; Hail Mary with an injured quarterback | No |
+
+## 10. Fourth pass: existing bots, referee crews, and a reply thread (added 2026-11-17)
+
+### 10.1 The Surrender Index: an existing public "cowardly punt" score
+
+An automated account already scores every punt for timidity and posts the situation in a fixed format. It is prior work for the coach ledger and a ready source of labelled examples.
+
+- @surrender_idx90, 2026-11-08, https://x.com/surrender_idx90/status/2119530291635364249 (3.1K likes): "WSH decided to punt to LAR from the LAR 40* on 4th & 6* with 8:21 remaining in the 4th while losing 13 to 20. With a Surrender Index of 123.03, this punt ranks at the 100th percentile of cowardly punts of the 2026 season, and the 99.9th percentile of all punts since 1999."
+- @surrender_idx90, 2026-09-20, https://x.com/surrender_idx90/status/2101873083460268456: "IND decided to punt to KC from the IND 49 on 4th & 4 with 0:33 remaining in the 4th while tied 27 to 27. With a Surrender Index of 18.44, this punt ranks at the 98th percentile of cowardly punts of the 2026 season, and the 96th percentile of all punts since 1999."
+- @surrender_idx90, 2025-10-16, https://x.com/surrender_idx90/status/1979020626670293197 (2K likes): "PIT decided to punt to CIN from the PIT 45 on 4th & 4 with 5:25 remaining in the 4th while losing 24 to 30. With a Surrender Index of 16.27, this punt ranks at the 98th percentile of cowardly punts of the 2025 season, and the 95th percentile of all punts since 1999."
+- @surrender_idx90, 2025-12-14, https://x.com/surrender_idx90/status/2000269005052096605: "BUF decided to punt to NE from the NE 44 on 4th & 5 with 9:17 remaining in the 1st while losing 0 to 7. With a Surrender Index of 18.59, this punt ranks at the 98th percentile of cowardly punts of the 2025 season, and the 96th percentile of all punts since 1999."
+- @surrender_idx90, 2025-11-27, https://x.com/surrender_idx90/status/1994190028856336823: "KC decided to punt to DAL from the DAL 44 on 4th & 4 with 7:12 remaining in the 3rd while losing 14 to 17. With a Surrender Index of 20.49, this punt ranks at the 98th percentile of cowardly punts of the 2025 season, and the 96th percentile of all punts since 1999."
+- @surrender_idx90, 2025-09-14 (link not captured): "MIN decided to punt to ATL from the MIN 28 on 4th & 1 with 9:47 remaining in the 4th while losing 6 to 15. With a Surrender Index of 8.35, this punt ranks at the 93rd percentile of cowardly punts of the 2025 season, and the 90th percentile of all punts since 1999."
+- Each post is headed "Automated by @shackoverflow". How the index is computed is not stated in the posts; it reads as a formula on field position, distance, score and time, not a win-probability model. Worth comparing: does a high Surrender Index match a large win-probability cost from the project's engine?
+- Fans use the phrase on their own too: @BarstoolBigCat, 2026-09-12, https://x.com/BarstoolBigCat/status/2098951020063683030 (639K views): "Dead. Cowardly punt. Step on their throats, Ryan"; @hcf_m2h, 2025-11-23 (link not captured): "Here comes Andy Reid’s weekly cowardly punt"
+
+### 10.2 Referee crews
+
+- @nflrefstats1 is an account dedicated to officiating numbers. 2026-11-14, https://x.com/nflrefstats1/status/2121765762893599084: "#SFvsDAL officiating crew cheat sheet update John Hussey assigned to the game to replace Bill Vinovich This is the @dallascowboys second game w' Hussey in 2026, the previous their 34-31 "home" loss to #Ravens in Brazil That game had six AUTOMATIC 1ST DOWNS via penalty," [truncated]
+- @DaBearsTakeOver, 2026-09-28, https://x.com/DaBearsTakeOver/status/2104675877040640055: "Shawn Hochuli’s crew has Bears-Eagles tonight. • Hochuli ranked 3rd in penalties in 2025 • Eagles are 6-0 in his games during the Hurts/Sirianni era • Philly has the NFL’s least penalized defense • Chicago ranks top 10 in pre-snap penalties"
+- @SharpFootball, 2025-10-26, https://x.com/SharpFootball/status/1982595746454237645: "also NFL: let’s have Shawn Hochuli ref the game to further destroy enjoyment w his many flags & long explanations" [last paragraph of the post]
+- @SeifertESPN, 2026-11-14, https://x.com/SeifertESPN/status/2121687828912378362 (518K views): "How significant is the NFL's officiating shuffle? Backup referee Don Willard will work TWO games on Sunday: Miami at Indianapolis (1 p.m. ET) Pittsburgh at Cincinnati (8:20 p.m. ET) Vikings-Packers referee has changed from John Hussey to Clete Blakeman."
+- The full text of the most-engaged post (@SharpFootball, section 8.4), opened this pass: "#1 most flags in over a decade thru 4 weeks, refs are impacting the most CRITICAL moments of games most: #1 most red zone penalties per game by offenses in history #1 most penalties on 3rd/4th downs in the second half of games in history and 17 touchdowns nullified by penalty! (vs only 5 in 2025 & 4 in 2024)"
+- Read: "6-0 in his games" is the kind of small-sample claim the project can test (six games). Two cautions for any crew analysis: referees are being reassigned mid-season in 2026, so crew is not fixed, and pre-snap penalties are already tracked per team by fans, which overlaps the coach ledger.
+
+### 10.3 Inside the biggest argument: replies to the Payton "no hindsight" question
+
+Top replies under @Tyler_Polumbus (about 3,000 replies; section 1, decision 2), all dated 2026-01-26 or 01-27. They show what fans actually condition on, none of which a public fourth-down model sees:
+
+- Backup quarterback: @IDPGodfather, https://x.com/IDPGodfather/status/2015922701324439844: "Backup QB. Chance to go up two scores. Take the points. It's not that difficult. It wasn't fourth and a foot, neither. It was a full yard, if not a little more."
+- How the defense was playing and the weather: @SlaminSammons, https://x.com/SlaminSammons/status/2015836303993229433 (360 likes): "I liked it. I thought going up 14 would be a dagger with how the D was playing and with the storm coming in. Atrocious play call though."
+- Expected low score: @AstorAaron (link not captured): "I wanted the points in the moment. I don't like the near-automatic tendency to go for it on 4th and short anyway. But this was clearly going to be a low-scoring game and points would matter a lot."
+- The decision versus the play call: @jecwick (link not captured): "I liked going for it, but hated the call. Should've just ran a sneak." And @Andrew_Moser (link not captured): "You can’t kick a FG on 4th and 1. A 10-0 lead would be great… and I was tempted in the moment… but you can’t kick there. What I do take issue with is the play call. Just sneak it."
+- Quarterback-specific: @VegabondETH, https://x.com/VegabondETH/status/2015846084292292643: "In the moment I did not like it. If it was Bo Nix there I'm fine with it bc Bo brings mobility in a way that Stiddy doesn't have. With a backup QB in a big game I think you take the 3. That being said. I like Sean showing his confidence in his QB. And if no snow we win."
+- Read: the replies give the score as 7-0 at the time ("A 10-0 lead", "going up 14"). The recurring split is decision versus play call, which matters for a coach ledger: a model can grade the choice to go, not the play that was run.
+
+### 10.4 Searched this pass and found nothing useful
+
+- Overtime under the 2025 rules, second set of keywords (kickoff, won the toss, both teams): no decision debate.
+- Posts that separate coach-fault penalties from player-fault penalties by type: none.
+
+### 10.5 Coverage summary for the whole file
+
+Searched (Top tab, with date and like filters): Lions and Campbell fourth downs; fourth-down bots and nfl4th; late-lead punts; "should have punted / gone for it"; win probability; the six biggest decisions by date; run versus pass by keyword and by analyst account; two-point tries; kneel, concede and intentional safety; clock and timeouts; referees and crews; kicking range; sneaks; Bowles, Quinn, Sirianni, Tomlin, LaFleur, McDermott, Schottenheimer by name; penalties as coaching; "malpractice", "fireable", "cowardly punt"; coach rankings.
+
+Still not done: the Latest tab for any topic; quote posts; video content; reply threads other than four posts; the article behind the "EPA go brrrr" debate; any check of game facts against play-by-play.
