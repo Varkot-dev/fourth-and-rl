@@ -310,3 +310,60 @@ def test_real_endgame_optimal_policy(real) -> None:
     starts = ev.sample_starts(sim, 20000, seed=7)
     out = ev.evaluate_endgame(sim, ev.optimal_policy, starts, seed=8)
     assert abs(out["win_rate"] - out["optimal_win_rate_of_starts"]) < 4 * out["win_rate_se"]
+
+
+# --------------------------------------------------------------------------------------
+# 6. Small guarantees: kernel mode, illegal actions are counted, caches are keyed
+# --------------------------------------------------------------------------------------
+
+
+def test_drive_env_uses_the_kernel_mode_of_its_model(sim: mg.Simulator) -> None:
+    kern = toy.toy_kernels(0)
+    for mode in ("neutral", "protect"):
+        model = envs.build_drive_model(kern, td_value=7.0, mode=mode)
+        assert model.mode == mode
+        assert envs.DriveEnv.from_simulator(sim, model)._play is sim.play[mode]
+
+
+def test_illegal_actions_are_replaced_and_counted(
+    drive: envs.DriveModel, sim: mg.Simulator
+) -> None:
+    no_fg = np.nonzero(~drive.allowed[:, envs.FIELD_GOAL])[0]
+    assert len(no_fg), "the toy drive needs a state without a field goal"
+    env = envs.DriveEnv(drive, sim.play["neutral"], sim.punt)
+    env.reset(seed=0, options={"state": int(no_fg[0])})
+    _, _, _, _, info = env.step(envs.FIELD_GOAL)
+    assert info["illegal_action"] and info["action_taken"] == "punt"
+    assert env.illegal_actions == 1
+    batch = envs.DriveBatch(drive, 4, seed=0)
+    batch.s[:] = no_fg[0]
+    batch.step(np.array([envs.FIELD_GOAL, envs.GO, envs.FIELD_GOAL, envs.PUNT]))
+    assert batch.illegal_actions == 2
+    eg = envs.EndgameBatch(sim, 6, seed=1)
+    eg.reset()
+    allowed = eg.mask()
+    bad = np.array([np.nonzero(~row)[0][0] if (~row).any() else 0 for row in allowed])
+    eg.step(bad)
+    assert eg.illegal_actions == int((~allowed).any(axis=1).sum())
+    assert eg.last["illegal"].sum() == eg.illegal_actions
+
+
+def test_as_probs_reports_fallbacks(drive: envs.DriveModel) -> None:
+    probs = np.zeros((drive.n, 3))
+    probs[:, envs.GO] = 1.0
+    no_fg = ~drive.allowed[:, envs.FIELD_GOAL]
+    probs[no_fg] = [0.0, 1.0, 0.0]  # all mass on a forbidden field goal
+    out, n_fallback = ev.as_probs(probs, drive.allowed, return_fallbacks=True)
+    assert n_fallback == int(no_fg.sum())
+    assert np.array_equal(out, ev.as_probs(probs, drive.allowed))  # behavior unchanged
+
+
+def test_snapshot_cache_is_keyed_by_folder_and_kickoff_share() -> None:
+    from fourth_and_rl.rl import runner
+
+    a = {"snapshot_dir": "data/a", "drive": {"kickoff_share": 0.5}}
+    b = {"snapshot_dir": "data/b", "drive": {"kickoff_share": 0.5}}
+    c = {"snapshot_dir": "data/a", "drive": {"kickoff_share": 0.25}}
+    keys = {runner._snapshot_key(x) for x in (a, b, c)}
+    assert len(keys) == 3
+    assert runner._snapshot_key(a) == runner._snapshot_key(dict(a))

@@ -28,6 +28,11 @@ endgame:
   eval_seed: 20261201
   thresholds: [0.01, 0.002]       # win probability (1 and 0.2 points)
   n_checkpoints: 14
+  chart:                          # the fourth-down chart slice saved with each agent
+    seconds: 240                  # 4:00 left, as question 1 (converted with the snapshot's
+    score: 4                      #   tick_seconds); up 4
+    offense_timeouts: 3
+    defense_timeouts: 3
 
 tabular:
   seeds: [101, 102, 103, 104, 105]

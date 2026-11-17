@@ -201,23 +201,31 @@ def run_sb3_endgame(
 
 
 def endgame_chart(cfg: dict, policy: ev.Policy | None) -> dict:
-    """Fourth-down decisions in a fixed slice of the end game: up 4, 4:00 left (as question
-    1), opponent with three timeouts, own three; every distance and yard line. Codes are
-    0 go (any play mode), 1 field goal, 2 punt."""
+    """Fourth-down decisions in a fixed slice of the end game (configs/rl.yaml,
+    endgame.chart: up 4, 4:00 left as question 1, three timeouts each); every distance and
+    yard line. Codes are 0 go (any play mode), 1 field goal, 2 punt."""
     snap = runner.snapshot(cfg)
     sim, g = snap.sim, snap.sim.grid
+    ch = cfg["endgame"]["chart"]
+    tick = sim.model.clock.tick_seconds
+    if ch["seconds"] % tick:
+        raise ValueError(f"endgame.chart.seconds must be a multiple of {tick}")
+    ticks = ch["seconds"] // tick
     dist = np.arange(g.n_dist)
     yl = np.arange(1, g.n_yl + 1)
     d, y = np.meshgrid(dist, yl, indexing="ij")
     f = g.fidx(4, d.ravel(), y.ravel())
     n = len(f)
     batch = EndgameBatch(sim, n, seed=0)
-    batch.reset(states={"t": np.full(n, 48), "s": np.full(n, 4), "f": f,
-                        "a": np.full(n, 3), "b": np.full(n, 3)})
+    batch.reset(states={"t": np.full(n, ticks), "s": np.full(n, ch["score"]), "f": f,
+                        "a": np.full(n, ch["offense_timeouts"]),
+                        "b": np.full(n, ch["defense_timeouts"])})  # fmt: skip
     idx = np.arange(n)
     act = sim.optimal_actions(batch.st, idx) if policy is None else policy(batch, idx)
     code = np.where(act == mg.A_FG, 1, np.where(act == mg.A_PUNT, 2, 0))
-    return {"seconds": 240, "score": 4, "timeouts": [3, 3], "codes": code.reshape(d.shape).tolist()}
+    return {"seconds": int(ch["seconds"]), "score": int(ch["score"]),
+            "timeouts": [int(ch["offense_timeouts"]), int(ch["defense_timeouts"])],
+            "codes": code.reshape(d.shape).tolist()}  # fmt: skip
 
 
 def run_baselines(cfg: dict) -> dict:
@@ -407,7 +415,7 @@ def drive_diagnostics(cfg: dict) -> dict:
         net = torch.nn.Sequential(
             torch.nn.Linear(feats.shape[1], h), torch.nn.Tanh(), torch.nn.Linear(h, h),
             torch.nn.Tanh(), torch.nn.Linear(h, 3))
-        net.load_state_dict(torch.load(path)["policy"])
+        net.load_state_dict(torch.load(path, weights_only=True)["policy"])
         with torch.no_grad():
             logits = net(torch.as_tensor(feats)).masked_fill(
                 ~torch.as_tensor(model.allowed), -1e9)

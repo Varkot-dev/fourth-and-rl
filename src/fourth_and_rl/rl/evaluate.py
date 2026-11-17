@@ -39,9 +39,15 @@ from fourth_and_rl.rl.envs import FIELD_GOAL, GO, PUNT, DriveModel, EndgameBatch
 # --------------------------------------------------------------------------------------
 
 
-def as_probs(policy: np.ndarray, allowed: np.ndarray) -> np.ndarray:
+def as_probs(
+    policy: np.ndarray, allowed: np.ndarray, return_fallbacks: bool = False
+) -> np.ndarray | tuple[np.ndarray, int]:
     """A policy as probabilities (n, 3). Accepts action indices (n,) or probabilities;
-    probability on actions that are not allowed is removed and the rest renormalized."""
+    probability on actions that are not allowed is removed and the rest renormalized.
+
+    A state where the policy puts no mass on any allowed action falls back to uniform over
+    the allowed actions. With `return_fallbacks=True` the result is (probabilities, number
+    of states that fell back), so a caller can see that it happened."""
     policy = np.asarray(policy)
     if policy.ndim == 1:
         probs = np.zeros(allowed.shape)
@@ -51,7 +57,10 @@ def as_probs(policy: np.ndarray, allowed: np.ndarray) -> np.ndarray:
     probs = np.where(allowed, probs, 0.0)
     total = probs.sum(axis=1, keepdims=True)
     fallback = allowed / allowed.sum(axis=1, keepdims=True)
-    return np.where(total > 0, probs / np.where(total > 0, total, 1.0), fallback)
+    out = np.where(total > 0, probs / np.where(total > 0, total, 1.0), fallback)
+    if return_fallbacks:
+        return out, int(np.sum(total[:, 0] <= 0))
+    return out
 
 
 def greedy(q: np.ndarray, allowed: np.ndarray) -> np.ndarray:

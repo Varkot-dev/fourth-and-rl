@@ -112,6 +112,7 @@ class DriveModel:
     free_kick_value: float
     v_star: np.ndarray = field(default_factory=lambda: np.zeros(0))  # (n,)
     q_star: np.ndarray = field(default_factory=lambda: np.zeros(0))  # (n, 3), -inf if not allowed
+    mode: str = "neutral"  # the play kernel (`FieldKernels.k_all` key) the model was built with
 
     @property
     def grid(self) -> Grid:
@@ -245,6 +246,7 @@ def build_drive_model(
         td_value=float(td_value),
         kickoff_value=k_val,
         free_kick_value=fk_val,
+        mode=mode,
     )
     model.v_star = model.v_field[dec]
     q = np.einsum("asc,c->sa", dist, model.outcome_values(model.v_star))
@@ -302,13 +304,15 @@ class CompiledDrive:
 class DriveBatch:
     """Many drives at once, sampled from `DriveModel.dist` (for the deep agents).
 
-    `step` maps an action that is not allowed (a field goal from too far) to a punt.
+    `step` maps an action that is not allowed (a field goal from too far) to a punt;
+    `illegal_actions` counts how many actions were replaced that way since construction.
     """
 
     n_actions = 3
 
     def __init__(self, model: DriveModel, n: int, seed: int | None = None) -> None:
         self.model, self.n = model, n
+        self.illegal_actions = 0
         self.rng = np.random.default_rng(seed)
         self._samplers = [RowSampler(model.dist[a]) for a in range(3)]
         self._start = RowSampler(model.start[None, :])
@@ -330,7 +334,9 @@ class DriveBatch:
     def step(self, actions: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
         """One decision in every drive. Returns (reward, done); finished drives are NOT
         restarted (call `reset(idx)`)."""
-        a = self.valid_action(self.s, np.asarray(actions, dtype=np.int64))
+        asked = np.asarray(actions, dtype=np.int64)
+        a = self.valid_action(self.s, asked)
+        self.illegal_actions += int(np.sum(a != asked))
         u = self._u(self.n)
         col = np.zeros(self.n, dtype=np.int64)
         for code in range(3):
@@ -355,7 +361,8 @@ class DriveEnv(gym.Env):
     Observation: the index of the fourth-down state (`obs_mode="index"`, for tabular
     agents), `DriveModel.features` ("features") or a one-hot vector ("onehot").
     Actions: 0 go, 1 field goal, 2 punt. A field goal from where the model does not allow
-    one is played as a punt (`info["action_mask"]` says what is allowed).
+    one is played as a punt (`info["action_mask"]` says what is allowed); such a step has
+    `info["illegal_action"] = True` and adds one to `illegal_actions`.
     Reward: 0 until the possession ends, then the terminal reward of the module docstring.
     `reset` draws a drive start, plays downs 1 to 3 and returns the first fourth down;
     drives that end before any fourth down hold no decision and are redrawn.
@@ -387,11 +394,13 @@ class DriveEnv(gym.Env):
         self._f = int(model.states[0])
         self._done = True
         self.plays = 0
+        self.illegal_actions = 0
 
     @classmethod
     def from_simulator(cls, sim: mg.Simulator, model: DriveModel, **kw: Any) -> DriveEnv:
-        """The environment whose plays and punts are drawn by `sim`'s samplers."""
-        return cls(model, sim.play["neutral"], sim.punt, **kw)
+        """The environment whose plays and punts are drawn by `sim`'s samplers, using the
+        play kernel the drive model was built with (`model.mode`)."""
+        return cls(model, sim.play[model.mode], sim.punt, **kw)
 
     # ---- helpers ----
     def _obs(self) -> Any:
@@ -453,8 +462,10 @@ class DriveEnv(gym.Env):
             raise RuntimeError("episode is over; call reset()")
         m, g, f = self.model, self.model.grid, self._f
         a = int(action)
-        if not m.allowed[self._pos[f], a]:
+        illegal = not m.allowed[self._pos[f], a]
+        if illegal:
             a = PUNT
+            self.illegal_actions += 1
         if a == GO:
             col = self._run_play(f)
         elif a == FIELD_GOAL:
@@ -468,7 +479,7 @@ class DriveEnv(gym.Env):
             nxt, reward = None, float(m.term_reward[-1])
         else:
             nxt, reward = self._advance_to_decision(col)
-        info = {"action_taken": DRIVE_ACTIONS[a]}
+        info = {"action_taken": DRIVE_ACTIONS[a], "illegal_action": illegal}
         if nxt is None:
             self._done = True
             return self._obs(), reward, True, False, {**self._info(), **info}
@@ -508,7 +519,9 @@ class EndgameBatch:
     plays the agent's action, then lets the opponent play until the agent has the ball
     again or the game ends. An action that is not allowed in a state (protect when
     trailing, chase when leading, a punt before fourth down, a field goal from where the
-    model has none) is played as the neutral play; `mask()` says what is allowed.
+    model has none) is played as the neutral play; `mask()` says what is allowed,
+    `illegal_actions` counts the replaced actions since construction and
+    `last["illegal"]` marks them on the latest step.
 
     shaping: "none" (sparse reward), "value" (potential-based shaping with the solved
     value as the potential: uses the answer, a diagnostic only) or "score" (potential
@@ -545,6 +558,7 @@ class EndgameBatch:
         self.result = np.full(n, np.nan)
         self.last: dict[str, np.ndarray] = {}
         self.opponent_plays = 0
+        self.illegal_actions = 0
 
     # ---- start states ----
     def sample_states(self, k: int) -> dict[str, np.ndarray]:
@@ -686,9 +700,11 @@ class EndgameBatch:
         if len(idx) == 0:
             return reward, done
         act = np.asarray(actions, dtype=np.int64)[idx]
-        act = np.where(self.mask(idx)[np.arange(len(idx)), act], act, mg.A_NEUTRAL)
+        legal = self.mask(idx)[np.arange(len(idx)), act]
+        act = np.where(legal, act, mg.A_NEUTRAL)
+        self.illegal_actions += int((~legal).sum())
         self.last = {key: st[key][idx].copy() for key in ("t", "s", "f", "a", "b")}
-        self.last["idx"], self.last["action"] = idx, act
+        self.last["idx"], self.last["action"], self.last["illegal"] = idx, act, ~legal
         phi0 = self.potential(idx)
         sim.advance(st, idx, act, self.rng, "model")
         post = "coach" if self.opponent == "coach" else "model"
@@ -718,7 +734,8 @@ class EndgameEnv(gym.Env):
     Observation: the 16 features of `EndgameBatch.observe` (`obs_mode="features"`) or the
     index of the state in the solved array ("index", for tabular use).
     Actions: 0 play, 1 play_protect, 2 play_chase, 3 field_goal, 4 punt, 5 kneel, as in the
-    solved model. An action that is not allowed is played as 0; `info["action_mask"]`.
+    solved model. An action that is not allowed is played as 0; `info["action_mask"]`
+    says what is allowed and `info["illegal_action"]` whether this step's was replaced.
     Reward: 1 win, 0.5 tie, 0 loss, at the end only (unless `shaping` is set).
     `reset(options={"state": GameState})` starts from a given state.
     """
@@ -799,6 +816,7 @@ class EndgameEnv(gym.Env):
         reward, done = self.batch.step(np.array([int(action)]))
         info = self._info()
         info["action_taken"] = ENDGAME_ACTIONS[int(self.batch.last["action"][0])]
+        info["illegal_action"] = bool(self.batch.last["illegal"][0])
         if done[0]:
             info["result"] = float(self.batch.result[0])
         return self._obs(), float(reward[0]), bool(done[0]), False, info

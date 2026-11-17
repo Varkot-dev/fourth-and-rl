@@ -64,15 +64,22 @@ class Snapshot:
         }
 
 
-_SNAP: Snapshot | None = None
+# Snapshots of this process, keyed by what they are built from: the snapshot folder and
+# the drive's kickoff share (the only parts of the config a Snapshot reads).
+_SNAPS: dict[tuple[str, float], Snapshot] = {}
+
+
+def _snapshot_key(cfg: dict[str, Any]) -> tuple[str, float]:
+    return str(resolve(cfg["snapshot_dir"]).resolve()), float(cfg["drive"]["kickoff_share"])
 
 
 def snapshot(cfg: dict[str, Any]) -> Snapshot:
-    """The snapshot of this process (loaded on first use)."""
-    global _SNAP
-    if _SNAP is None:
-        _SNAP = Snapshot(cfg)
-    return _SNAP
+    """The snapshot for `cfg` in this process (loaded on first use for that snapshot folder
+    and kickoff share, then reused)."""
+    key = _snapshot_key(cfg)
+    if key not in _SNAPS:
+        _SNAPS[key] = Snapshot(cfg)
+    return _SNAPS[key]
 
 
 def run_path(cfg: dict[str, Any], group: str, key: str) -> Path:
