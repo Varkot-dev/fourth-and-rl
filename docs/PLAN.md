@@ -83,39 +83,30 @@ For each real fourth-down decision, compute the win probability given up relativ
 - **Rule changes across eras:** restrict the seasons used or model the era.
 - **Simulator validity:** simulated scores and drive outcomes should match the real distributions. Test this before trusting any RL result.
 
-### 3.8 Fan questions
-The method sections above are the engine. This section is what the engine is for: the arguments fans actually have on Sunday, answered with numbers. Each question gets a plain-English answer (a few sentences, no jargon), one figure, and an honest note on what the data cannot settle. They are collected in `docs/fan-questions.md` and linked from the README.
+### 3.8 Research questions
+The method sections above build the tools. This section is what the tools are for: a small set of specific, answerable questions in the style of the Wyner group's work, each answered so that the result survives a skeptical statistician or interviewer. A result that cannot be defended does not go in the README.
 
-Rule for every answer: judge the decision, not the outcome. A good call that fails is still a good call, and each write-up should say which one it was.
+**Standard of evidence for every question.** Each answer must report:
+1. **The estimand**, stated in one sentence before any code is written (what number, for which population of plays or games).
+2. **The estimate with an interval**, from the game-level bootstrap or a stated Bayesian model, plus the sample size in games, not just plays.
+3. **An out-of-sample check**: models fit on earlier seasons, evaluated on later ones.
+4. **A falsification or power check**: a test the result could have failed, or a simulation showing the method can detect an effect of the size claimed.
+5. **The strongest remaining objection**, written down, with what was done about it and what was not.
 
-**Tier 1: core, answered by the main milestones**
+The analysis for each question is written down in `docs/notes/` before the final run (features, test, threshold), so the result cannot be tuned after seeing it. Each finished question becomes a short technical note in the same folder: question, method, result, limitations, one figure.
 
-| # | Question | What we compute | Milestone |
-|---|---|---|---|
-| F1 | "Should they have gone for it?" | For any fourth down: win probability for go, kick and punt, with intervals and a verdict of go, kick, punt or too close to call. Available in the app for any situation. | M2, M3 |
-| F2 | "Is my coach a coward?" | Per team and season: how often they went for it when the model confidently said go, and the total win probability given up. Ranked across the league. | M7 |
-| F3 | "Are coaches actually getting braver?" | League go rate in confident-go situations, by season since 1999, with the 2018 to present analytics era marked. | M7 |
-| F4 | "Was that the worst collapse ever?" | The biggest blown leads ranked two ways: by raw peak win probability, and by how surprising that peak is given the pregame odds. Show where famous collapses land on each list. | M3b |
-| F5 | "Is the win probability on TV lying to me?" | Plain-language version of the blown-lead calibration test: how often a 90% team should lose, and how often it really does. | M3b |
-| F6 | "The call failed, so the analytics were wrong, right?" | For confident go recommendations, split by whether the attempt converted. Show that failed attempts were still the right call on average, and how much a single attempt is luck. | M3 |
+| # | Question | Method | Main objection and how it is handled | Milestone |
+|---|---|---|---|---|
+| R1 | **Break-even conversion rates.** For each fourth-down situation, what conversion probability makes going for it exactly as good as kicking or punting, and is the estimated conversion rate confidently above or below it? | Solve for the break-even rate from the decision engine, then compare with the bootstrap interval on the estimated rate. | The decision depends on several fitted models. Isolating the one most uncertain input (conversion rate) makes the claim easy to check and hard to argue with. | M2, M3 |
+| R2 | **Are coaches too conservative, once uncertainty is honest?** How much win probability per season is lost on fourth downs where the recommendation is confident? | Coach evaluation from 3.6, counting only decisions where at least, say, 90% of bootstrap refits agree. Revisits Romer (2006) and Brill, Yurko and Wyner (arXiv 2311.03490) with our own models. | Selection on what the coach knows and the model does not (injuries, matchups). Sensitivity analysis: how large a hidden conversion-rate advantage would a team need for its choices to be correct? If the answer is implausibly large, the conclusion stands. | M3, M7 |
+| R3 | **Is aggressiveness a stable coach trait?** Do coaches have consistent, measurable risk preferences, or is "aggressive coach" mostly noise? | Choice model: probability of going for it as a function of the model's win-probability gain from going, with a coach-level effect and hierarchical shrinkage. Test stability with split-half reliability across seasons. Related to Sandholtz and coauthors (arXiv 2309.00756). | Coach and roster are confounded (a coach with a great offense goes for it more). Include offensive strength features and report how much of the coach effect survives. | M7 |
+| R4 | **Can the blown-lead test detect a miscalibrated model with the data we have?** | Apply the 3.5 reference distribution to the nflfastR win-probability column and to our model. Then, by simulation, deliberately make a model overconfident by known amounts and find the smallest miscalibration the test detects with 80% power over the available seasons. | "The test passed" means little if the test has no power. The power curve answers that directly. Discreteness of real paths is handled by the simulation in 3.5. | M3b |
+| R5 | **How much data does a win-probability model need before its fourth-down advice is reliable?** | Extend the Brill, Yurko and Wyner simulation (arXiv 2406.16171): in simulated leagues with known truth, measure how often the recommended action is wrong as a function of seasons of training data. | Results depend on the simulator. Check that the simulator reproduces real score and drive-outcome distributions first (3.7), and report results for more than one simulator setting. | M3b |
+| R6 | **Is the game Markov in the state we use?** Does a recent swing play (turnover, failed fourth down) predict the next drive's outcome beyond what the state already explains? This is the formal version of "momentum". | Add a short, pre-specified list of lagged event features to a next-drive outcome model and test them jointly, with a permutation test and a multiple-testing correction. | If momentum exists, the MDP in 3.1 is missing state, which matters for M4 and M5. If the test finds nothing, report its power, so "no effect" is not overclaimed. | M3b |
+| R7 | **When is going for two correct, and how sure can we be?** | Two-point attempts are relatively few, so estimate the conversion rate with a beta-binomial model pooled across teams, use only seasons after the 2015 extra-point rule change, and run the decision engine after touchdowns. Includes the down-8 question (go for two after the first touchdown). | Small samples. Show the score-and-time regions where the recommendation flips across posterior draws and label them too close to call. | M2, M4 |
+| R8 | **Does icing the kicker change field-goal success?** | Compare make rates after an opponent timeout right before the kick with similar kicks without one, adjusting for distance, kicker, weather, surface and game situation (matching or regression adjustment). | Teams choose when to ice, which is the main threat. State it plainly, report a sensitivity analysis, and report the smallest effect the data could detect. Without that, "no effect" is not a finding. | M1 |
 
-**Tier 2: extensions, each a small add-on to an existing milestone**
-
-| # | Question | What we compute | Milestone |
-|---|---|---|---|
-| F7 | "Go for two or kick the extra point?" | Same decision engine applied after a touchdown: two-point rate vs extra-point rate (post-2015 rule, kick from the 15), and the score-and-time chart of when to go for two. | M2 |
-| F8 | "Down 8 late, go for two after the first touchdown?" | The well-known argument for going for two early when down 8 (or 14). Compute it with our own conversion rates and show the margin and its uncertainty. | M4 |
-| F9 | "Kick the field goal down 4 with two minutes left, or go for it?" | Late-game decisions where clock and timeouts matter, which only the full-game DP can handle properly. A few classic spots worked through. | M4 |
-| F10 | "Does icing the kicker work?" | Field-goal make rate after an opponent timeout right before the kick vs no timeout, controlling for distance, weather and kicker. Selection caveat: teams ice on harder kicks. | M1 |
-| F11 | "Is momentum real?" | After a big swing play (turnover, fourth-down stop), does the next drive go better than the game state alone predicts? If the state is truly Markov, it should not. Links directly to the martingale idea in 3.5. | M3b |
-| F12 | "Kick or receive in overtime?" | Overtime decisions under the current rules. The rules changed in 2022 (playoffs) and again for the regular season; verify the current rules and seasons during M0, and only use games played under the same rules. Small sample, so the answer may be "not enough data", which is a fine answer. | M4 |
-
-**Tier 3: case studies** (one famous real decision each, with the numbers at that moment; pick three to five once the engine works, favoring fourth downs that fans still argue about, and include at least one where the coach was right and the critics were wrong).
-
-What fans should come away with, in one line each:
-- Most fourth-down calls are not close, and coaches still get many of the clear ones wrong.
-- Some calls really are close, and the honest answer is "too close to call".
-- A 90% favorite losing is not a scandal; it should happen about one time in ten.
+**Resume and interview framing.** The strongest single result, most likely R2 or R4, becomes the headline: one sentence with the number and its interval, for example "Showed that X% of fourth-down recommendations from a standard win-probability model are not robust to game-level resampling" (filled in only once a script produces the number). The rest are supporting notes. In an interview, each question should be explainable in two minutes: the question, why the naive answer is wrong, what was done, and the remaining weakness.
 
 ## 4. Milestones
 
@@ -131,7 +122,7 @@ What fans should come away with, in one line each:
 | M6 | Offline RL on logged decisions | Distribution-shift demonstration with and without the conservative method |
 | M7 | Coach evaluation, interactive app, write-up | README complete, repo ready to make public |
 
-Each milestone is also done only when the fan questions tagged to it in 3.8 are answered, each with a figure and a short plain-English write-up in `docs/fan-questions.md`.
+Each milestone is also done only when the research questions tagged to it in 3.8 are answered to the standard of evidence there, each with a figure and a technical note in `docs/notes/`.
 
 RL tie-in for M5 and M6: train and evaluate agents under model uncertainty. Give the agent a win-probability estimate drawn from the bootstrap ensemble instead of the truth, and compare a policy that maximizes the point estimate with one that acts only when the ensemble agrees.
 
@@ -149,7 +140,8 @@ This should be the most visual project of the set.
 - **Team aggressiveness ranking** and the league trend by season.
 - **Offline RL heatmap:** how often each state-action pair appears in the data, next to the naive Q-values, showing overestimation where data is thin.
 - **Case study:** one famous real decision with the numbers at that moment.
-- **Fan-question cards:** one shareable figure per fan question in 3.8, each with the question as its title and the answer in one sentence underneath.
+- **Research-note figures:** one figure per question in 3.8, each showing the estimate with its interval, not just a point.
+- **Power curve** for the blown-lead test (R4): detection probability against the amount of overconfidence.
 - **Two-point chart:** score differential by time remaining, colored by go for two vs kick.
 
 ## 6. Stack
@@ -171,12 +163,13 @@ nflreadpy, polars or pandas, scikit-learn, XGBoost or LightGBM, NumPy for dynami
 13. Why is the effective sample size for a win-probability model closer to games than plays?
 14. How does the blown-lead distribution act as a calibration test, and what would an overconfident model look like under it?
 
-**Explain it to a fan** (no jargon allowed in the answer):
-15. A friend says "they went for it and failed, so it was a dumb call." What do you say?
-16. Why is a team that was a 95% favorite and lost not necessarily a historic choke?
-17. Why should a team down 8 late go for two after the first touchdown?
-18. Your coach is ranked least aggressive. What would you need to see before calling that a mistake rather than a smart read of his own team?
-19. Does icing the kicker work, and why is the raw comparison misleading?
+**Defend it** (answer as if a skeptical reviewer asked):
+15. A reviewer says your coach-evaluation result is just selection bias. What exactly is the bias, and what does your sensitivity analysis show?
+16. Your blown-lead test found no miscalibration. Why is that not yet evidence the model is calibrated?
+17. Why report a break-even conversion rate instead of only the recommended action?
+18. How did you make sure you did not tune the momentum test until it found something?
+19. Your two-point recommendation is based on a few hundred attempts per season. Why pool across teams, and what does pooling cost you?
+20. What is the single weakest assumption in your headline result?
 
 ## Decision log
-- 2026-11-17: Added section 3.8, fan questions. Reason: the plan covered the method but not the questions a general football audience asks. Each fan question is tied to an existing milestone rather than added as a new milestone, so the build order does not change. Added an "explain it to a fan" block to section 7.
+- 2026-11-17: Added section 3.8, first as fan-style questions, then reworked the same day into research questions with a fixed standard of evidence (estimand, interval, out-of-sample check, falsification or power check, stated remaining objection). Reason: the owner wants results that are defensible to a statistician and strong enough for a resume, in the style of the Wyner group's work, rather than casual fan answers. Each question is tied to an existing milestone, so the build order does not change. Section 7 gained a "defend it" block of reviewer-style questions.
