@@ -118,3 +118,66 @@ differences to decide:
 
 Their with-and-without-the-flag rules are a ready specification for the pricing step
 and can be reimplemented from the description above; nothing needs copying.
+
+## 5. More creators, and the GitHub repositories tied to this kind of work (added later on 2026-11-17)
+
+The owner asked for more YouTube analysts like the flags video, their GitHub
+repositories, and how their work could be used. Found by YouTube search and
+`gh search repos`; READMEs were read for three repositories, no code was read or run.
+
+### The channel behind the flags video
+
+Michael MacKelvie (https://www.youtube.com/@MichaelMacKelvie, 511K subscribers). His
+research site, The Side Quest (https://thesidequest.com/), says it was "Created by
+Michael MacKelvie and data scientist Nick Gurol". Nick Gurol is the @run_the_sims
+account quoted in the X findings (former sportsbook fourth-down modeller; "Coaches go
+for it 29% of the time the model says to"). The site names "if passing is better, why
+run?" as one of its questions, which is this project's burning question 2 word for
+word, and his video on it has about 1.1M views. Titles and links are in
+`research-kit/x/3_videos.md`.
+
+No GitHub repository is linked from the videos or the site pages read. Their data
+source is the same nflverse play-by-play.
+
+The site publishes one reader project a week: a short pitch through a form on the home
+page, then they "meet with you, and pull the data together" and publish it under the
+reader's name. The fourth-down prospect-theory article came in that way, from a
+master's student. Its stated rules include "No AI or die... Just write". That is a
+possible outlet for this project's results later; it is the owner's call and the rule
+about AI-written text matters.
+
+### Repositories
+
+| Repository | Stars, license, last push | What it is | Use for this project |
+|---|---|---|---|
+| `andrew-shackelford/Surrender-Index` | 30, MIT, 2026-08-31 | The bot behind @surrender_idx90. The README calls the index "a completely arbitrary metric" from a Jon Bois video, and includes a notebook that computes it for every punt since 1999. It credits nflverse data and points to the nfl4th bot as having "more statistical rigor". | A labelled list of "cowardly" punts since 1999 to compare with win-probability cost. MIT allows reuse with attribution; the formula could be reimplemented in a few lines instead. |
+| `nflverse/nfl4th` | 25, custom license, 2026-11-16 | Already the project's reference. | In use. Pushed the day before this note, so the development version keeps moving. |
+| `danieldalygrafstein/nfl4th-heckman` | 2, no license, 2022-11-30 | "Correcting for preferential bias in NFL fourth-down decision making": a selection correction (teams that go are not a random sample). README is one line. | Read for the method only; no license means no copying. Relevant to the conversion-model selection problem in `landscape.md`. |
+| `sadeghabbasi4521-ops/4th-Down-Audit` | 1, MIT, 2026-08-13 | An interactive audit of coach decisions against nfl4th, with a coach-season leaderboard, live at https://4th-down-audit.netlify.app/. Featured finding: "Mike Tomlin passed on 12 high-confidence go opportunities" in 2025, using a minimum edge of 1.5 points and 73 eligible decisions. | The closest existing thing to the coach ledger's fourth-down half. Worth opening the live app before designing the project's own table. |
+| `ZachRit/nfl4th-js` | 0, MIT, 2026-10-23 | JavaScript port of nfl4th. | Possibly useful for the interactive app in M7; unverified. |
+
+Searches that returned nothing on GitHub: referee or officiating analyses built on
+nflverse, penalty win-probability pricing, "luck" analyses, run-versus-pass game
+theory, coach aggressiveness, clock or timeout management.
+
+### How the pieces could be used (suggestions)
+
+1. **Flag pricing**: reimplement the with-and-without rules from section 1. No public
+   code exists for it, so it is a build, not a reuse.
+2. **Coach ledger, fourth-down half**: compare against 4th-Down-Audit's coach-season
+   table and the prospect-theory ranking as outside checks, labelled as theirs.
+3. **Cowardly punts**: join the Surrender Index (since 1999) to the project's
+   win-probability cost per punt and plot one against the other.
+4. **Run versus pass**: MacKelvie's video is the popular framing to answer; its methods
+   are not published, so there is nothing to reuse beyond the question.
+5. **What nobody published**: intervals on any of these rankings, and a test of whether
+   they repeat. One small channel (Flare Shorts, under 1,000 views) has chapters titled
+   "Shrinking the Noise", "Does It Repeat?" and "The Chance Test", so the idea exists
+   in public but not on these questions and not with open code.
+
+### Not done
+
+The flags video's transcript: the transcript panel did not open in the browser, so the
+"Referee Bias" chapter (16:30 to 23:45), which the description credits to Snyder and
+Lopez (2015), has not been read. The methods page covers how flags are priced but not
+what the video says about individual referees or home-team bias.
