@@ -3,7 +3,7 @@ seed: 20261117   # nothing in M2 is random; recorded for consistency with the ot
 
 # Which fitted models make up "the headline engine" (decision.load_engine).
 models:
-  wp_path: data/models/wp.joblib            # M1 headline: trees 2010-2021, Platt 2022-2023
+  wp_path: data/models/wp.joblib            # M1 headline, version 2: trees on 2010-2023, no map
   # The play-outcome models are the development bundle written by scripts/fit_components.py
   # (development seasons only; must equal configs/splits.yaml train + calibration seasons).
   # Its only test-season content is the kickoff table of each rule era (2024 and 2025 rules),

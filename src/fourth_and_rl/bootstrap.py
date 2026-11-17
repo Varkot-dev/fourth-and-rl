@@ -189,20 +189,29 @@ def fit_replicate(
 ) -> tuple[wp_mod.WPModel, ComponentModels, dict[str, np.ndarray]]:
     """Draw one replicate and refit everything on it.
 
-    Win probability: trees on the drawn training games, calibration map on the drawn
-    calibration games (so the noise of a two-season calibration set is part of the
-    bootstrap). Components: all drawn games together (development seasons only; the fit
-    guards refuse anything else). The kickoff tables of `kickoff_seasons` are the fixed
-    rule-era tables, fitted on those seasons' own kickoffs and not resampled (see
-    `decision.set_kickoff`).
+    Win probability: with `calibration="none"` (version 2) the trees grow on all drawn
+    development games. With a calibration map (version 1) the trees grow on the drawn
+    training games and the map on the drawn calibration games, so the noise of a
+    two-season calibration set is part of the bootstrap. Components: all drawn games
+    together (development seasons only; the fit guards refuse anything else). The kickoff
+    tables of `kickoff_seasons` are the fixed rule-era tables, fitted on those seasons'
+    own kickoffs and not resampled (see `decision.set_kickoff`).
     """
     draw = plan.draw(replicate)
     drive_seed = int(draw["_drive_seed"][0]) if "_drive_seed" in draw else None
     train = plan.rows("train", draw["train"], drive_seed)
     calib = plan.rows("calib", draw["calib"], drive_seed)
-    model = wp_mod.WPModel(wp_config["lgbm"], calibration, n_threads).fit(
-        train, calib if calibration != "none" else None, seed=int(wp_config["seed"]) + replicate
-    )
+    seed = int(wp_config["seed"]) + replicate
+    if calibration == "none":
+        # Version 2: no calibration map, so the trees grow on every drawn development game,
+        # as the headline model grows on every development season.
+        model = wp_mod.WPModel(wp_config["lgbm"], "none", n_threads, wp_mod.V2).fit(
+            pl.concat([train, calib]), None, seed=seed
+        )
+    else:
+        model = wp_mod.WPModel(wp_config["lgbm"], calibration, n_threads, wp_mod.V1).fit(
+            train, calib, seed=seed
+        )
     comps = ComponentModels(components_config).fit(pl.concat([train, calib]), seed=plan.seed)
     set_kickoff(comps, plan.prepared, kickoff_seasons)
     return model, comps, draw

@@ -12,12 +12,13 @@ gain_interval: [0.05, 0.95]   # order statistics of the replicate gains (90% int
 
 # What is resampled. Games are drawn with replacement inside each group of seasons, the
 # same groups as the headline win-probability fit. 2024 and 2025 are never drawn.
-train_seasons: [2010, 2021]   # trees of the win-probability model
-calib_seasons: [2022, 2023]   # its Platt calibration map (refitted in every replicate)
+train_seasons: [2010, 2021]   # drawn as one group
+calib_seasons: [2022, 2023]   # drawn as a second group; with calibration "none" (version 2)
+                              # the trees grow on both groups together
 within_game: none             # "none": whole games (default). "drives": also resample
                               # drives inside each drawn game, as the paper does
 game_fraction: 1.0            # draw this share of the games (1.0 = the standard bootstrap)
-calibration: platt            # calibration map refitted on the drawn calibration games
+calibration: none             # version 2 has no calibration map (configs/wp.yaml)
 kickoff_seasons: [2024, 2025] # kickoff-rule tables (one per rule era), not resampled
 
 models_dir: data/models/boot  # one folder per seed and within_game setting (not committed)
