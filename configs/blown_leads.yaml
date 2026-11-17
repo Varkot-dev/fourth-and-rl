@@ -1,0 +1,65 @@
+# M3b: blown leads as a calibration test. Read by scripts/blown_leads.py and
+# scripts/wp_sample_size_sim.py.
+
+seed: 20261117
+
+# Win-probability columns to test, all from the posteam's side. A column that is not
+# available is skipped. wp_ours is joined from predictions_path when that file exists.
+models:
+  - {key: nflfastr, column: wp, label: "nflfastR (no spread)"}
+  - {key: vegas, column: vegas_wp, label: "nflfastR with spread"}
+  - {key: ours, column: wp_ours, label: "Ours"}
+predictions_path: data/processed/wp_predictions.parquet
+
+min_plays: 50              # games with fewer usable values are dropped
+thresholds: [0.90, 0.95, 0.99]
+# first-crossing test levels (the three above plus lower ones as a mid-range check)
+crossing_thresholds: [0.60, 0.70, 0.80, 0.90, 0.95, 0.99]
+n_boot: 2000               # team (pigeonhole) bootstrap draws for the PIT test
+n_count_sim: 20000         # draws for the expected-count intervals
+
+discrete:
+  # Simulated game: Brownian lead observed at n_steps play times. n_steps null means
+  # "use the median number of usable plays per real game".
+  n_steps: null
+  # Candidate Gamma shapes for the time between plays (null = equal spacing). The one
+  # whose jump-size quantiles are closest to the real paths is used.
+  gap_shape_grid: [null, 3.0, 2.0, 1.5, 1.2, 1.0, 0.8, 0.6, 0.5, 0.4, 0.3]
+  calibration_paths: 20000
+  reference_paths: 200000
+  p0_grid: {start: 0.02, stop: 0.98, step: 0.02}
+  # Sensitivity: expected counts are also reported for these shapes.
+  sensitivity_gap_shapes: [null, 0.5]
+  # Step-size sweep for the discreteness figure (equal spacing, even game).
+  sweep_steps: [20, 40, 80, 163, 650, 2600, 10400]
+  sweep_normals_budget: 600000000   # paths per setting = budget / steps, capped below
+  sweep_max_paths: 300000
+
+rankings:
+  top: 25
+  peak_decimals: 3
+
+gallery:
+  model: vegas             # falls back to the first available model
+  n_surprising: 6
+  n_unsurprising: 3
+  unsurprising_min_peak: 0.95
+
+# scripts/wp_sample_size_sim.py
+sample_size_sim:
+  seed: 20261118
+  plays_per_game: 50
+  nominal_level: 0.90
+  n_test_states: 20000
+  threads: 2
+  # error versus number of games
+  games_grid: [100, 200, 400, 800, 1600, 3200]
+  probit_reps: 50
+  gbm_reps: 6
+  gbm: {n_estimators: 150, learning_rate: 0.05, num_leaves: 15, min_child_samples: 50}
+  # interval coverage
+  coverage_games: 400
+  probit_coverage_reps: 200
+  probit_boot: 100
+  gbm_coverage_reps: 8
+  gbm_boot: 40
