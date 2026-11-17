@@ -1,7 +1,10 @@
 """M1 extension: a neural win-probability model (PyTorch MLP) and a deep ensemble.
 
-Same rows, same season split and same 17 inputs as the gradient-boosted model in
-`wp.py`, so the two can be compared fairly. The training loop is written out by hand.
+Same rows, same season split and same 17 inputs as version 1 of the gradient-boosted
+model in `wp.py` (`wp.V1`), so the two can be compared fairly. The network is pinned to the
+version 1 inputs on purpose: its saved networks and results/m1_wp_nn.json are a version 1
+era comparison, and `wp.FEATURES` and `wp.make_features` now default to version 2. The
+training loop is written out by hand.
 
 Public API, mirroring `wp.WPModel`:
     NNWPModel   fit(train, calib=None, seed=...), predict(df), save(path), load(path)
@@ -28,6 +31,17 @@ from fourth_and_rl import splits, wp
 from fourth_and_rl.paths import CONFIGS
 
 DEFAULT_SEED = wp.DEFAULT_SEED
+
+# The input specification, pinned to version 1 (see the module docstring). Every feature
+# lookup in this module goes through these two names, never through wp.FEATURES.
+SPEC = wp.V1
+FEATURES: list[str] = list(SPEC.features)
+
+
+def make_features(df: pl.DataFrame) -> pl.DataFrame:
+    """The network's inputs: `wp.make_features` with the version 1 specification."""
+    return wp.make_features(df, SPEC)
+
 
 DEFAULT_PARAMS: dict[str, Any] = {
     "hidden": [64, 64],          # width of each hidden layer
@@ -60,7 +74,7 @@ def load_config(path: Path | None = None) -> dict:
 
 
 class Preprocessor:
-    """Turns the `wp.FEATURES` matrix into standardized network inputs.
+    """Turns the `FEATURES` matrix (version 1 inputs) into standardized network inputs.
 
     The mean and standard deviation are learned by `fit` and must come from training
     rows only. Two optional, fixed (not learned) transforms are applied first:
@@ -79,17 +93,17 @@ class Preprocessor:
     def _expand(self, x: np.ndarray) -> np.ndarray:
         x = np.asarray(x, dtype=np.float64).copy()
         if self.squash_margin:
-            j = wp.FEATURES.index("margin_per_sqrt_time")
+            j = FEATURES.index("margin_per_sqrt_time")
             x[:, j] = np.arcsinh(x[:, j] / SQUASH_SCALE)
         if self.one_hot_down:
-            j = wp.FEATURES.index("down")
+            j = FEATURES.index("down")
             down = np.clip(x[:, j], 0, N_DOWNS - 1).astype(int)
             x = np.concatenate([np.delete(x, j, axis=1), np.eye(N_DOWNS)[down]], axis=1)
         return x
 
     @property
     def n_out(self) -> int:
-        return len(wp.FEATURES) + (N_DOWNS - 1 if self.one_hot_down else 0)
+        return len(FEATURES) + (N_DOWNS - 1 if self.one_hot_down else 0)
 
     def fit(self, x: np.ndarray) -> Preprocessor:
         z = self._expand(x)
@@ -178,7 +192,7 @@ class NNWPModel:
         sub = df.filter(pl.Series(keep))
         _, game = np.unique(sub["game_id"].to_numpy(), return_inverse=True)
         return (
-            wp.make_features(sub).to_numpy(),
+            make_features(sub).to_numpy(),
             sub[wp.LABEL].to_numpy().astype(np.float32),
             game,
         )
@@ -307,7 +321,7 @@ class NNWPModel:
         ok = wp.scoreable(df)
         out = np.full(df.height, np.nan)
         if ok.any():
-            x = self.pre.transform(wp.make_features(df.filter(pl.Series(ok))).to_numpy())
+            x = self.pre.transform(make_features(df.filter(pl.Series(ok))).to_numpy())
             self.net.eval()
             with torch.no_grad():
                 out[ok] = self.net(torch.from_numpy(x)).squeeze(1).numpy()
@@ -329,7 +343,7 @@ class NNWPModel:
             raise RuntimeError("model is not fitted")
         return {
             "state": {k: v.numpy().copy() for k, v in self.net.state_dict().items()},
-            "features": wp.FEATURES,
+            "features": FEATURES,
             "params": self.params,
             "mean": self.pre.mean,
             "std": self.pre.std,
@@ -346,7 +360,7 @@ class NNWPModel:
 
     @classmethod
     def _from_blob(cls, blob: dict[str, Any]) -> NNWPModel:
-        if blob["features"] != wp.FEATURES:
+        if list(blob["features"]) != FEATURES:
             raise ValueError("saved model was fitted with a different feature list; refit it")
         model = cls(blob["params"], blob["n_threads"])
         p = model.params

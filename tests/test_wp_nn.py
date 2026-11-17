@@ -76,29 +76,29 @@ def toy_model(toy) -> wp_nn.NNWPModel:
 
 def test_preprocessor_standardizes_with_training_statistics(toy):
     train, calib, _ = toy
-    x_train = wp.make_features(train).to_numpy()
+    x_train = wp_nn.make_features(train).to_numpy()
     pre = wp_nn.Preprocessor().fit(x_train)
     z = pre.transform(x_train)
-    assert z.shape == (train.height, len(wp.FEATURES) + 4) and z.dtype == np.float32
+    assert z.shape == (train.height, len(wp_nn.FEATURES) + 4) and z.dtype == np.float32
     assert np.allclose(z.mean(axis=0), 0, atol=1e-4)
     # Columns that vary have unit spread; constant ones (overtime here) stay at zero.
     varies = z.std(axis=0) > 0
     assert np.allclose(z.std(axis=0)[varies], 1, atol=1e-3) and varies.sum() >= 15
     # New data is scaled with the training numbers, so its mean is not exactly zero.
     mean_before = pre.mean.copy()
-    z_calib = pre.transform(wp.make_features(calib).to_numpy())
+    z_calib = pre.transform(wp_nn.make_features(calib).to_numpy())
     assert np.array_equal(pre.mean, mean_before)
     assert not np.allclose(z_calib.mean(axis=0), 0, atol=1e-6)
 
 
 def test_preprocessor_one_hot_down_and_plain_variant(toy):
-    x = wp.make_features(toy[0]).to_numpy()
+    x = wp_nn.make_features(toy[0]).to_numpy()
     pre = wp_nn.Preprocessor().fit(x)
     one_hot = pre._expand(x)[:, -wp_nn.N_DOWNS :]
     assert np.array_equal(one_hot.sum(axis=1), np.ones(len(x)))
-    assert np.array_equal(one_hot.argmax(axis=1), x[:, wp.FEATURES.index("down")].astype(int))
+    assert np.array_equal(one_hot.argmax(axis=1), x[:, wp_nn.FEATURES.index("down")].astype(int))
     plain = wp_nn.Preprocessor(one_hot_down=False, squash_margin=False).fit(x)
-    assert plain.transform(x).shape == (len(x), len(wp.FEATURES))
+    assert plain.transform(x).shape == (len(x), len(wp_nn.FEATURES))
 
 
 def test_resample_games_draws_whole_games(toy):
@@ -264,8 +264,8 @@ def test_saved_models_agree_with_the_reported_numbers(plays):
     import json
 
     reported = json.loads(results.read_text())
-    if reported.get("features") != wp.FEATURES:
-        pytest.skip("saved networks use an older feature list; rerun scripts/fit_wp_nn.py")
+    if reported.get("features") != wp_nn.FEATURES:
+        pytest.skip("saved networks do not use the version 1 inputs; rerun scripts/fit_wp_nn.py")
     test = plays.filter(pl.col("season").is_in([2024, 2025]))
     test = test.filter(
         pl.Series(wp.scoreable(test))
@@ -285,3 +285,12 @@ def test_saved_models_agree_with_the_reported_numbers(plays):
     assert wp.log_loss(y, members.mean(axis=0)) == pytest.approx(
         reported["test"]["mlp_ensemble"]["log_loss"], abs=1e-6
     )
+
+
+def test_network_is_pinned_to_the_version_1_inputs() -> None:
+    """wp.FEATURES and wp.make_features default to version 2; the network must not follow."""
+    assert wp_nn.SPEC is wp.V1
+    assert wp_nn.FEATURES == wp.FEATURES_V1 != wp.FEATURES
+    states = wp.state_frame(down=1, ydstogo=10, yardline_100=75, game_seconds_remaining=900)
+    assert wp_nn.make_features(states).columns == wp.FEATURES_V1
+    assert wp_nn.Preprocessor().n_out == len(wp.FEATURES_V1) + 4

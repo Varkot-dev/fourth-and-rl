@@ -1,5 +1,14 @@
 """M1 extension: neural win-probability model, deep ensemble, and what its spread means.
 
+A version 1 era comparison. The network uses the version 1 inputs (`wp_nn.SPEC`, which
+is `wp.V1`) and is compared with the version 1 trees (2010 to 2021, Platt map on 2022 to
+2023), refitted here exactly as `scripts/fit_wp.py` refits them, on the rows of
+results/m1_wp_metrics_v1.json. Version 2 of the trees is not part of this comparison.
+
+Leakage discipline: everything is fitted on development seasons (`splits.load_dev_plays`);
+the test seasons are read through `splits.load_test_plays` with a logged purpose and
+scored once, behind stamp checks.
+
 Outputs:
   data/models/wp_nn.joblib               headline MLP (not committed)
   data/models/wp_nn_ensemble.joblib      deep ensemble, K seeds (not committed)
@@ -28,13 +37,18 @@ import polars as pl
 import torch
 from scipy.stats import spearmanr
 
-from fourth_and_rl import data, splits, style, wp, wp_nn
+from fourth_and_rl import splits, style, wp, wp_nn
 from fourth_and_rl.io import read_json, write_json
 from fourth_and_rl.paths import ASSETS, DATA, RESULTS
 
 MODELS_DIR = DATA / "models"
 TUNING_PATH = RESULTS / "m1_wp_nn_tuning.json"
 KEEP = [*wp.STATE_COLUMNS, wp.LABEL, "game_id", "play_id", "season", "wp", "vegas_wp"]
+V1_METRICS = RESULTS / "m1_wp_metrics_v1.json"  # the version 1 trees' own test numbers
+TEST_PURPOSE = (
+    "M1 neural win probability (version 1 inputs): the network, its ensembles and the "
+    "version 1 trees scored on 2024-2025 (scripts/fit_wp_nn.py)"
+)
 
 # Prediction columns on the test frame, and how each model is named in text.
 COLUMNS = {
@@ -52,8 +66,8 @@ LABELS = {
     "mlp_platt": "MLP + Platt",
     "mlp_ensemble": "MLP deep ensemble",
     "mlp_bagged": "MLP bagged ensemble",
-    "trees": "Trees + Platt (M1 model)",
-    "trees_uncalibrated": "Trees, no Platt",
+    "trees": "Trees v1 + Platt",
+    "trees_uncalibrated": "Trees v1, no Platt",
     "nflfastr": "nflfastR wp (no spread)",
     "vegas": "nflfastR vegas_wp",
 }
@@ -234,29 +248,50 @@ def fit_members(
     return ens, seconds
 
 
-def load_tree_bootstrap() -> tuple[list[wp.WPModel], dict]:
-    """Game-bootstrap refits of the tree model, if scripts/bootstrap_decisions.py has run.
+def fit_version_1_trees(dev: pl.DataFrame) -> wp.WPModel:
+    """Version 1 of the tree model exactly as shipped (trees 2010 to 2021, Platt map 2022 to
+    2023), as `scripts/fit_wp.py` refits it for its comparison. The fit is deterministic,
+    and its stamp lets the test-season scoring be checked."""
+    cfg = wp.load_config()
+    v1 = cfg["version_1"]
+    return wp.WPModel(v1["lgbm"], v1["calibration"], cfg["n_threads"], wp.V1).fit(
+        wp.season_filter(dev, seasons(v1["train"])), wp.season_filter(dev, seasons(v1["calib"])),
+        seed=cfg["seed"], what="M1 version 1 trees, refitted for the neural comparison",
+    )  # fmt: skip
 
-    That script writes data/models/boot/<run>/rep_<i>_wp.joblib. Each replicate grows
-    the trees on resampled training games and refits the Platt map on resampled
-    calibration games. The run folder with the most replicates is used.
+
+def load_tree_bootstrap() -> tuple[list[wp.WPModel], dict]:
+    """Version 1 game-bootstrap refits of the tree model, if they exist on disk.
+
+    scripts/bootstrap_decisions.py writes data/models/boot/<run>/rep_<i>_wp.joblib. In the
+    version 1 era each replicate grew the trees on resampled training games and refitted
+    the Platt map on resampled calibration games. Only version 1 replicates are used here
+    (the comparison is a version 1 era one); since the bootstrap moved to version 2 there
+    are none, and the tree-bootstrap rows of the spread study are left out and marked so.
+    The run folder with the most version 1 replicates is used.
     """
     folder = MODELS_DIR / "boot"
     runs = sorted(d for d in folder.iterdir() if d.is_dir()) if folder.exists() else []
     files_by_run = {d: sorted(d.glob("rep_*_wp.joblib")) for d in runs}
     run = max(files_by_run, key=lambda d: len(files_by_run[d]), default=None)
     files = files_by_run[run] if run is not None else []
-    models, errors = [], []
+    models, errors, other_version = [], [], 0
     for f in files:
         try:
-            models.append(wp.WPModel.load(f))
+            m = wp.WPModel.load(f)
         except Exception as exc:  # noqa: BLE001  (a file may still be being written)
             errors.append(f"{f.name}: {type(exc).__name__}")
+            continue
+        if getattr(m, "spec", wp.V1).name == wp.V1.name:
+            models.append(m)
+        else:
+            other_version += 1
     info = {
         "folder": f"data/models/boot/{run.name}" if run is not None else "data/models/boot",
         "produced_by": "scripts/bootstrap_decisions.py (configs/bootstrap.yaml)",
         "files_found": len(files),
         "models_loaded": len(models),
+        "replicates_of_another_version_skipped": other_version,
         "load_errors": errors[:5],
         "trees_per_model": sorted({m.booster.num_trees() for m in models if m.booster}),
         "calibration": sorted({m.calibrator.method for m in models}),
@@ -413,8 +448,8 @@ def figure_comparison(
     fig, axes = plt.subplots(2, 2, figsize=(13.5, 10.6),
                              gridspec_kw={"wspace": 0.24, "hspace": 0.52})  # fmt: skip
     series = (
-        ("trees_uncalibrated", TREE_COLOR, (0, (4, 2)), 1.5, "Trees, no Platt"),
-        ("trees", TREE_COLOR, "-", 2.0, "Trees + Platt (M1 model)"),
+        ("trees_uncalibrated", TREE_COLOR, (0, (4, 2)), 1.5, "Trees v1, no Platt"),
+        ("trees", TREE_COLOR, "-", 2.0, "Trees v1 + Platt (M1 version 1)"),
         ("mlp", MLP_COLOR, "-", 2.2, "MLP (one network)"),
     )
 
@@ -448,7 +483,7 @@ def figure_comparison(
     for ax, key, heading in panels:
         c = curves[key]
         ax.step(c["x"], 100 * curve_preds[key]["trees"], where="mid", color=TREE_COLOR,
-                linewidth=1.8, label="Trees + Platt (M1 model)")  # fmt: skip
+                linewidth=1.8, label="Trees v1 + Platt (M1 version 1)")  # fmt: skip
         ax.plot(c["x"], 100 * curve_preds[key]["mlp"], color=MLP_COLOR, linewidth=2.2,
                 label="MLP (one network)")  # fmt: skip
         ax.plot(c["x"], 100 * curve_preds[key]["mlp_ensemble"], color=MLP_COLOR, linewidth=1.5,
@@ -515,17 +550,19 @@ def main() -> None:
     seed, n_bins, k = cfg["seed"], cfg["metrics"]["ece_bins"], cfg["ensemble"]["k"]
     torch.set_num_threads(cfg["n_threads"])
     started = time.perf_counter()
-    plays = data.load_plays().select(KEEP)
+    dev = splits.load_dev_plays().select(KEEP)
 
     if args.tune:
-        write_json(tune(plays, cfg), TUNING_PATH)
+        write_json(tune(dev, cfg), TUNING_PATH)
     tuning = read_json(TUNING_PATH) if TUNING_PATH.exists() else None
     if tuning is not None and tuning["config_in_use"] != cfg["mlp"]:
         tuning["config_in_use"] = cfg["mlp"]
         write_json(tuning, TUNING_PATH)
 
     split = {name: seasons(v) for name, v in cfg["split"].items()}
-    train, calib, test = (wp.season_filter(plays, split[s]) for s in ("train", "calib", "test"))
+    if set(split["test"]) != set(splits.test_seasons()):
+        raise SystemExit("configs/wp_nn.yaml split.test must be the test seasons")
+    train, calib = (wp.season_filter(dev, split[s]) for s in ("train", "calib"))
 
     # Members. Seed member 0 is the headline network: same data, same seed.
     seeds_ens, seeds_seconds = fit_members("seeds", train, calib, cfg, args.reuse)
@@ -536,14 +573,15 @@ def main() -> None:
     ensemble = wp_nn.WPEnsemble(cfg["mlp"], k, False, cfg["n_threads"])
     ensemble.members, ensemble.seed = seeds_ens.members[:k], seed
     ensemble.save(MODELS_DIR / "wp_nn_ensemble.joblib")
-    trees = wp.WPModel.load(MODELS_DIR / "wp.joblib")
+    trees = fit_version_1_trees(dev)
     trees.n_threads = 1
+    test = splits.load_test_plays(TEST_PURPOSE).select(KEEP)
 
     # The Platt variant: the same network with a map fitted on the calibration seasons.
     calib_ok = usable(calib)
     platt = wp.Calibrator("platt").fit(model.raw_score(calib_ok), calib_ok[wp.LABEL].to_numpy())
 
-    # Test seasons: every model on the rows used in results/m1_wp_metrics.json.
+    # Test seasons: every model on the rows used in results/m1_wp_metrics_v1.json.
     # Each model must not have been fitted on any season it is about to be scored on.
     for name, fitted in (("network", model), ("trees", trees)):
         splits.assert_can_score(fitted.stamp, test, f"M1 {name} on the test seasons")
@@ -572,14 +610,15 @@ def main() -> None:
     keep_mask = test.select(keep.alias("k"))["k"].to_numpy()
     ev = test.filter(pl.Series(keep_mask))
     y, games = ev[wp.LABEL].to_numpy(), ev["game_id"].to_numpy()
-    m1 = read_json(RESULTS / "m1_wp_metrics.json")["test"]
+    m1 = read_json(V1_METRICS)["test"]
     table = {name: wp.all_metrics(y, ev[col].to_numpy(), n_bins) for name, col in COLUMNS.items()}
     same_rows = {
+        "compared_with": f"{V1_METRICS.relative_to(RESULTS.parent)} (version 1 trees)",
         "rows": ev.height,
         "games": int(ev["game_id"].n_unique()),
-        "rows_in_m1_wp_metrics": m1["rows"],
+        "rows_in_m1_wp_metrics_v1": m1["rows"],
         "trees_log_loss_here": table["trees"]["log_loss"],
-        "trees_log_loss_in_m1_wp_metrics": m1["ours"]["log_loss"],
+        "trees_log_loss_in_m1_wp_metrics_v1": m1["ours"]["log_loss"],
         "identical": bool(
             ev.height == m1["rows"]
             and abs(table["trees"]["log_loss"] - m1["ours"]["log_loss"]) < 1e-9
@@ -587,7 +626,7 @@ def main() -> None:
         ),
     }
     if not same_rows["identical"]:
-        raise SystemExit(f"test rows differ from results/m1_wp_metrics.json: {same_rows}")
+        raise SystemExit(f"test rows differ from {V1_METRICS.name}: {same_rows}")
 
     boot = cfg["metrics"]["bootstrap_reps"]
     pairs = [
@@ -751,7 +790,12 @@ def main() -> None:
         "split": cfg["split"],
         "torch_version": torch.__version__,
         "threads": cfg["n_threads"],
-        "features": wp.FEATURES,
+        "era": "version 1: the network uses the version 1 inputs and is compared with the "
+        "version 1 trees (results/m1_wp_metrics_v1.json); the headline model is now version "
+        "2 (results/m1_wp_metrics.json), which is not part of this comparison",
+        "features": wp_nn.FEATURES,
+        "trees_compared": {"spec": trees.spec.name, "stamp": trees.stamp,
+                           "calibration": trees.calibrator.describe()},
         "mlp": {
             "params": model.params,
             "network_inputs": model.pre.n_out if model.pre else None,
@@ -789,7 +833,8 @@ def main() -> None:
         "spread": spread,
         "tuning": tuning,
         "notes": [
-            "Every model is scored on the same rows as results/m1_wp_metrics.json.",
+            "Every model is scored on the same rows as results/m1_wp_metrics_v1.json. "
+            "trees and trees_uncalibrated are version 1 of the tree model.",
             "a_minus_b entries are game-level bootstrap differences with 95% intervals; "
             "negative means a is better.",
             "mlp is one network (the base seed), early stopped on the calibration seasons, "
