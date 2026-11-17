@@ -47,6 +47,7 @@ From M1 on, each milestone's teaching notes have their own file under `docs/note
 | M5 reinforcement learning | `docs/notes/m5_rl.md` |
 | M6 offline reinforcement learning | `docs/notes/m6_offline.md` |
 | Question 2, run versus pass | `docs/notes/q2_run_vs_pass.md` |
+| M8 "does the model know our defense is terrible?" (and question 3) | `docs/notes/m8_team_strength.md` |
 | M9 "was it really fourth and 1?" | `docs/notes/m9_distance_error.md` |
 
 The design decisions and their history are in the Decision log at the bottom of `docs/PLAN.md`.
