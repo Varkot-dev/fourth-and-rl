@@ -11,6 +11,11 @@ Outputs:
   assets/m3_decision_chart_confidence.png       the four chart panels with confidence
   assets/hero_decision_chart.png                the reference chart on a football field
 
+Leakage discipline: replicates draw only development games (train and calibration
+seasons). The test seasons are read once through `splits.load_test_plays` with a logged
+purpose, for two things: the fixed kickoff-rule tables (kickoff rows only, not resampled)
+and the out-of-sample scoring of the real 2024 to 2025 fourth downs.
+
 Run:  python scripts/bootstrap_decisions.py              (about 45 minutes the first time;
                                                           resumable, a rerun takes seconds)
       python scripts/bootstrap_decisions.py --n-boot 5   (quick trial, separate outputs)
@@ -20,16 +25,21 @@ from __future__ import annotations
 
 import argparse
 import time
+from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
 import polars as pl
 from matplotlib.patches import Rectangle
 
-from fourth_and_rl import bootstrap, data, decision, style, wp
+from fourth_and_rl import bootstrap, decision, splits, style, wp
 from fourth_and_rl.io import read_json, write_json
 from fourth_and_rl.paths import ASSETS, RESULTS, ROOT
 
+TEST_PURPOSE = (
+    "M3 bootstrap: kickoff-rule tables of each replicate (kickoff rows only) and out-of-"
+    "sample scoring of the 2024-2025 real fourth downs (scripts/bootstrap_decisions.py)"
+)
 ID_COLUMNS = ["game_id", "play_id", "season", "week", "season_type", "posteam", "defteam",
               "play_type", "desc"]  # fmt: skip
 
@@ -95,7 +105,7 @@ def coach_agreement(decisions: pl.DataFrame) -> dict:
     return out
 
 
-def replicate_diagnostics(directory, n_boot: int) -> dict:
+def replicate_diagnostics(directory: Path, n_boot: int) -> dict:
     """How much the refitted pieces move across replicates (a few reference numbers)."""
     slope, conv, fg50, punt = [], [], [], []
     for b in range(n_boot):
@@ -118,7 +128,7 @@ def replicate_diagnostics(directory, n_boot: int) -> dict:
 # ---------------------------------------------------------------------------- figures
 
 
-def figure_confidence(panels: list[dict], grids: list[dict], cfg: dict, path) -> None:
+def figure_confidence(panels: list[dict], grids: list[dict], cfg: dict, path: Path) -> None:
     style.apply()
     fig, axes = plt.subplots(2, 2, figsize=(13, 8.6), sharex=True, sharey=True)
     for ax, panel, g in zip(axes.ravel(), panels, grids, strict=True):
@@ -147,7 +157,7 @@ def figure_confidence(panels: list[dict], grids: list[dict], cfg: dict, path) ->
     style.save(fig, path)
 
 
-def figure_hero(panel: dict, g: dict, cfg: dict, path) -> None:
+def figure_hero(panel: dict, g: dict, cfg: dict, path: Path) -> None:
     """The reference chart drawn on a football field."""
     style.apply()
     fig, ax = plt.subplots(figsize=(13, 6.3))
@@ -222,7 +232,13 @@ def main() -> None:
     directory = bootstrap.boot_dir(cfg)
 
     started = time.perf_counter()
-    plays = data.load_plays()
+    if not set(range(cfg["evaluate_seasons"][0], cfg["evaluate_seasons"][1] + 1)) <= set(
+        splits.test_seasons()
+    ):
+        raise SystemExit("evaluate_seasons must be test seasons (configs/splits.yaml)")
+    test = splits.load_test_plays(TEST_PURPOSE)
+    # Development games (drawn) plus the test games (kickoff rule tables only; never drawn).
+    plays = pl.concat([splits.load_dev_plays(), test], how="diagonal_relaxed")
     prepared = bootstrap.prepare_plays(plays)
     engine = decision.load_engine(plays, dcfg)
     plan = bootstrap.BootstrapPlan(
@@ -231,7 +247,7 @@ def main() -> None:
     )  # fmt: skip
 
     panels, chart = chart_frames(dcfg)
-    real = real_fourth_downs(plays, cfg["evaluate_seasons"])
+    real = real_fourth_downs(test, cfg["evaluate_seasons"])
     states = pl.concat([
         chart.select(wp.STATE_COLUMNS).cast(pl.Float64),
         real.select(wp.STATE_COLUMNS).cast(pl.Float64),

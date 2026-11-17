@@ -6,6 +6,11 @@ otherwise blended with ours. The one place they are combined with our pieces is 
 "swap" diagnostic, which asks how much of the disagreement is explained by nfl4th's
 conversion and field-goal probabilities; it is a diagnostic, not a result.
 
+Leakage discipline: the engine's models come from development seasons; the 2024 to 2025
+plays are read once through `splits.load_test_plays` with a logged purpose and scored
+out of sample (stamp checks). End-game calibration of the win-probability model is quoted
+from the preregistered M1 evaluation, not recomputed on test labels here.
+
 Outputs:
   results/m2_nfl4th_comparison.json
   assets/m2_nfl4th_comparison.png
@@ -15,14 +20,22 @@ Run:  python scripts/compare_nfl4th.py     (under a minute)
 
 from __future__ import annotations
 
+from pathlib import Path
+
 import matplotlib.pyplot as plt
 import numpy as np
 import polars as pl
 from scipy import stats
 
-from fourth_and_rl import data, decision, style, wp
-from fourth_and_rl.io import write_json
+from fourth_and_rl import decision, splits, style, wp
+from fourth_and_rl.io import read_json, write_json
 from fourth_and_rl.paths import ASSETS, RESULTS, ROOT
+
+M1_METRICS = RESULTS / "m1_wp_metrics.json"
+TEST_PURPOSE = (
+    "M2 nfl4th comparison: our engine scored out of sample on the 2024-2025 fourth downs "
+    "that nfl4th rated (scripts/compare_nfl4th.py)"
+)
 
 
 def f(x: pl.Series) -> np.ndarray:
@@ -179,36 +192,30 @@ def scenario_comparison(engine: decision.DecisionEngine, cfg: dict) -> dict:
     }  # fmt: skip
 
 
-def late_game_wp_check(engine: decision.DecisionEngine, plays: pl.DataFrame) -> dict:
-    """Is our win-probability model right late in close games? First downs in the fourth
-    quarter of the test seasons, by lead and time left: actual win rate of the team with
-    the ball against the model's mean prediction (and nflfastR's vegas_wp for scale)."""
-    base = plays.filter(
-        (pl.col("down") == 1) & (pl.col("qtr") == 4) & pl.col("season").is_in([2024, 2025])
-        & pl.col("posteam_won").is_not_null()
-    )  # fmt: skip
-    out = {}
-    leads = {"lead_1_to_3": (1, 3), "lead_4_to_8": (4, 8), "trail_1_to_3": (-3, -1),
-             "trail_4_to_8": (-8, -4)}  # fmt: skip
-    clocks = {"0_to_40_seconds": (0, 40), "41_to_120": (41, 120), "121_to_300": (121, 300)}
-    for lead_name, (lo, hi) in leads.items():
-        for clock_name, (t0, t1) in clocks.items():
-            sub = base.filter(
-                pl.col("score_differential").is_between(lo, hi)
-                & pl.col("game_seconds_remaining").is_between(t0, t1)
-            )
-            if sub.height == 0:
-                continue
-            out[f"{lead_name}__{clock_name}"] = {
-                "n": sub.height,
-                "actual_win_rate": float(sub["posteam_won"].mean()),
-                "our_mean_wp": float(np.nanmean(engine.wp_model.predict(sub))),
-                "nflfastr_vegas_wp_mean": float(sub["vegas_wp"].mean()),
-            }
-    return out
+def late_game_wp_from_m1(engine: decision.DecisionEngine) -> dict:
+    """How right our win-probability model is late in close games, quoted from the
+    preregistered M1 evaluation (results/m1_wp_metrics.json, `test_endgame`) instead of
+    scoring the test-season labels again here. Refuses if that file describes a different
+    model from the one the engine uses (fit stamps compared without their fit times)."""
+    metrics = read_json(M1_METRICS)
+    strip = lambda d: {k: v for k, v in (d or {}).items() if k != "fitted_at"}  # noqa: E731
+    if strip(metrics.get("model_stamp")) != strip(engine.wp_model.stamp):
+        raise SystemExit(
+            f"{M1_METRICS.relative_to(ROOT)} was not computed for the engine's win-probability "
+            "model; rerun scripts/fit_wp.py (development step, then --evaluate) first"
+        )
+    end = metrics["test_endgame"]
+    return {
+        "source": f"{M1_METRICS.relative_to(ROOT)} (test_endgame), the preregistered "
+        "evaluation of the win-probability model; quoted, not recomputed",
+        "definition": end["definition"],
+        "model_version": metrics.get("version"),
+        "ours": {k: end["ours"][k] for k in ("summary_first_downs", "cells_first_downs")},
+        "diagnosis_cells_first_downs": end["diagnosis_cells_first_downs"],
+    }
 
 
-def figure(t: dict, bins: dict, swap: dict, overall: dict, corr: float, path) -> None:
+def figure(t: dict, bins: dict, swap: dict, overall: dict, corr: float, path: Path) -> None:
     style.apply()
     fig, axes = plt.subplots(1, 3, figsize=(15.5, 5.4),
                              gridspec_kw={"width_ratios": [1.05, 1, 1.05]})  # fmt: skip
@@ -272,9 +279,12 @@ def figure(t: dict, bins: dict, swap: dict, overall: dict, corr: float, path) ->
 
 def main() -> None:
     cfg = decision.load_config()
-    plays = data.load_plays()
-    engine = decision.load_engine(plays, cfg)
-    joined = load_joined(plays, cfg)
+    test = splits.load_test_plays(TEST_PURPOSE)
+    # Development plays plus the test games, so a refit of the component bundle finds the
+    # test seasons' kickoff rows for the rule tables (load_engine fits nothing else on them).
+    engine = decision.load_engine(pl.concat([splits.load_dev_plays(), test],
+                                            how="diagonal_relaxed"), cfg)  # fmt: skip
+    joined = load_joined(test, cfg)
     engine.assert_can_score(joined, "nfl4th comparison on real fourth downs")
     values = engine.action_values(joined)
     evaluated = engine.evaluate(joined, out_of_sample=True, what="nfl4th comparison").with_columns(
@@ -372,7 +382,7 @@ def main() -> None:
                     "going and kicking than nfl4th does (a flatter win-probability model).",
         },
         "swap_diagnostic": swap_diagnostic(usable, t),
-        "late_game_win_probability_check_test_seasons": late_game_wp_check(engine, plays),
+        "late_game_win_probability_from_m1_metrics": late_game_wp_from_m1(engine),
         "disagreements": {
             "n": int(disagree.sum()),
             "by_pair": pairs,

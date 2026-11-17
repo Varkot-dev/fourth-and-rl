@@ -3,8 +3,13 @@
 For each game situation in configs/decision.yaml, the best action for every yard line
 (1 to 99) and distance (1 to 15).
 
+Leakage discipline: only development seasons are read here (`splits.load_dev_plays`):
+the chart states are hypothetical and the speed check uses 2022 to 2023 fourth downs. If
+the development component bundle has to be refitted, `decision.load_engine` reads the
+test seasons' kickoff rows for the rule tables through `splits.load_test_plays`.
+
 Outputs:
-  data/models/components_2010_2023.joblib  outcome models without 2024-2025 (not committed)
+  data/models/components_dev.joblib        outcome models, development seasons (not committed)
   data/processed/decision_chart.parquet    every cell of every panel, all columns
   results/m2_decision_chart.json           summary, the charts as text grids, engine checks
   assets/m2_decision_chart.png             the four panels
@@ -15,12 +20,13 @@ Run:  python scripts/decision_chart.py     (under a minute)
 from __future__ import annotations
 
 import time
+from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
 import polars as pl
 
-from fourth_and_rl import data, decision, style
+from fourth_and_rl import decision, splits, style
 from fourth_and_rl.io import write_json
 from fourth_and_rl.paths import ASSETS, DATA, RESULTS
 
@@ -48,7 +54,8 @@ def go_frontier(frame: pl.DataFrame) -> dict[str, int]:
 
 
 def engine_checks(engine: decision.DecisionEngine, plays: pl.DataFrame, cfg: dict) -> dict:
-    """Speed, the cost of thinning the distributions, and the home/away asymmetry."""
+    """Speed, the cost of thinning the distributions, and the home/away asymmetry.
+    `plays` are development plays; nothing is scored against an outcome."""
     fourth = plays.filter((pl.col("down") == 4) & pl.col("season").is_in([2022, 2023]))
     sample = fourth.sample(n=min(10_000, fourth.height), seed=cfg["seed"])
     start = time.perf_counter()
@@ -101,7 +108,7 @@ def engine_checks(engine: decision.DecisionEngine, plays: pl.DataFrame, cfg: dic
     }  # fmt: skip
 
 
-def figure(panels: list[dict], path) -> None:
+def figure(panels: list[dict], path: Path) -> None:
     style.apply()
     fig, axes = plt.subplots(2, 2, figsize=(13, 8.4), sharex=True, sharey=True)
     for ax, p in zip(axes.ravel(), panels, strict=True):
@@ -130,8 +137,10 @@ def figure(panels: list[dict], path) -> None:
 
 def main() -> None:
     cfg = decision.load_config()
-    plays = data.load_plays()
+    plays = splits.load_dev_plays()
     engine = decision.load_engine(plays, cfg)
+    fg = engine.components.field_goal
+    fg_limit = int(fg.max_kick_distance + fg.tail_yards)
     chart = cfg["chart"]
     yl = range(chart["yardlines"][0], chart["yardlines"][1] + 1)
     dist = range(chart["distances"][0], chart["distances"][1] + 1)
@@ -191,8 +200,9 @@ def main() -> None:
         "notes": [
             "One-step lookahead: each action's value is the expected win probability of the "
             "next state. Nothing after the next snap is planned.",
-            "fg_wp is null where P(make) is 0 (kicks longer than 68 yards) and punt_wp is "
-            "null inside the opponent's 31.",
+            f"fg_wp is null where P(make) is 0 (kicks longer than {fg_limit} yards: the "
+            f"longest made development kick, {int(fg.max_kick_distance)}, plus a "
+            f"{int(fg.tail_yards)}-yard fade) and punt_wp is null inside the opponent's 31.",
             "Point estimates. Many cells are decided by less than one point of win "
             "probability; see results/m3_bootstrap.json for which calls are robust.",
         ],

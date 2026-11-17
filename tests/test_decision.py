@@ -169,7 +169,7 @@ def test_change_of_possession_flips_every_team_specific_input() -> None:
     assert 80.0 in theirs["yardline_100"].to_list()
 
 
-def test_mirrored_states_give_mirrored_values() -> None:
+def test_constant_win_probability_values_keeping_and_losing_the_ball() -> None:
     """With a constant win probability c for whoever has the ball, keeping the ball is
     worth c and giving it away 1 - c, whatever the score."""
 
@@ -185,6 +185,38 @@ def test_mirrored_states_give_mirrored_values() -> None:
     assert row["punt_wp"] == pytest.approx(0.4)
     assert row["fg_wp"] == pytest.approx(0.4)  # make or miss, they have the ball next
     assert row["go_wp"] == pytest.approx(0.7 * 0.6 + 0.3 * 0.4)
+
+
+def test_mirrored_scores_give_mirrored_values() -> None:
+    """Leading by d and trailing by d are mirror images when the win probability is
+    antisymmetric in the score, f(-d) = 1 - f(d), and no action can score: every action's
+    value at -d must be 1 minus its value at d. This checks that the engine flips the score
+    and the side correctly on a change of possession."""
+
+    class Antisymmetric:
+        def predict(self, df: pl.DataFrame) -> np.ndarray:
+            d = df["score_differential"].to_numpy().astype(float)
+            return 1.0 / (1.0 + np.exp(-d / 4.0))  # f(-d) = 1 - f(d)
+
+    # No field goal in range and a long field, so nothing on the play can score.
+    engine = DecisionEngine(Antisymmetric(), ToyComponents(fg_range=0),
+                            {"clock": {"use_fitted": False, **SECONDS}})  # fmt: skip
+    diffs = [1, 3, 7, 10]
+    lead = engine.evaluate(state_frame(down=4, ydstogo=[2] * 4, yardline_100=[60] * 4,
+                                       game_seconds_remaining=3000, score_differential=diffs))
+    trail = engine.evaluate(state_frame(down=4, ydstogo=[2] * 4, yardline_100=[60] * 4,
+                                        game_seconds_remaining=3000,
+                                        score_differential=[-d for d in diffs]))  # fmt: skip
+    for col in ("go_wp", "punt_wp", "wp_if_convert", "wp_if_fail"):
+        assert np.allclose(lead[col].to_numpy() + trail[col].to_numpy(), 1.0), col
+    assert lead["fg_wp"].is_null().all() and trail["fg_wp"].is_null().all()
+    # The sums alone would also hold if the score were not negated on a turnover, so check
+    # the turnover branch directly: the opponent trails by d, so we win with 1 - f(-d) = f(d).
+    f = 1.0 / (1.0 + np.exp(-np.array(diffs) / 4.0))
+    assert np.allclose(lead["wp_if_fail"].to_numpy(), f)
+    assert np.allclose(lead["punt_wp"].to_numpy(), f)
+    # And a leader is not indifferent: more lead, more win probability.
+    assert np.all(np.diff(lead["go_wp"].to_numpy()) > 0)
 
 
 # ------------------------------------------------------------------------- the clock

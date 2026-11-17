@@ -367,15 +367,21 @@ def nfl4th_side_by_side(maps: dict, q: dict) -> dict:
 
 
 def one_step_comparison(maps: dict, q: dict, exact: dict, dec_coach: dict) -> dict:
-    """The M2 one-step engine on the same grid, if it can be loaded."""
+    """The M2 one-step engine on the same grid, if its saved models exist.
+
+    Only missing model files are tolerated (the engine belongs to another milestone); any
+    other error raises. The saved one-step answer is merged only if it was produced by the
+    same win-probability model as the engine (its `wp_model_stamp`); otherwise this
+    refuses, so two models' numbers are never set side by side as one."""
+    from fourth_and_rl import decision, wp
+
     out: dict[str, Any] = {"saved_one_step_answer_found": ONE_STEP.exists()}
     try:
-        from fourth_and_rl import decision, wp
-
         engine = decision.load_engine(config=decision.load_config())
-    except Exception as err:  # the engine belongs to another milestone and may be absent
-        out["status"] = f"one-step engine not available ({type(err).__name__}: {err})"
+    except FileNotFoundError as err:
+        out["status"] = f"one-step engine not available (missing file: {err})"
         return out
+    out["wp_model_stamp"] = engine.wp_model.stamp
     yls = np.arange(q["yardlines"][0], q["yardlines"][1] + 1)
     ds = np.arange(q["distances"][0], q["distances"][1] + 1)
     sec, lead, to, dd, yy = np.meshgrid(
@@ -482,6 +488,12 @@ def one_step_comparison(maps: dict, q: dict, exact: dict, dec_coach: dict) -> di
     )
     if ONE_STEP.exists():
         saved = read_json(ONE_STEP)
+        if mg.comparable(saved.get("wp_model_stamp")) != mg.comparable(engine.wp_model.stamp):
+            raise SystemExit(
+                f"{ONE_STEP.name} was produced by a different win-probability model (or "
+                "before the model stamp was recorded) than the current headline model; rerun "
+                "scripts/questions/q1_late_lead_one_step.py first"
+            )
         cells = saved.get("headline", {}).get("selected_cells", [])
         rows = []
         for c in cells:

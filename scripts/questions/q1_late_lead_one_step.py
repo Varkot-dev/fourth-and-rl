@@ -11,6 +11,11 @@ opponent's timeouts or who gets the last possession; the full-game dynamic progr
 
 Needs the bootstrap replicates (run scripts/bootstrap_decisions.py first).
 
+Leakage discipline: the states are hypothetical (no season), and the coach counts are a
+descriptive reference distribution over the development seasons only
+(`splits.load_dev_plays`). No test-season play is read or scored here; a refit of the
+component bundle by `decision.load_engine` reads only the test seasons' kickoff rows.
+
 Outputs:
   results/questions/q1_late_lead_one_step.json
   assets/questions/q1_late_lead_one_step.png
@@ -22,12 +27,13 @@ Run:  python scripts/questions/q1_late_lead_one_step.py     (a few minutes)
 from __future__ import annotations
 
 import argparse
+from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
 import polars as pl
 
-from fourth_and_rl import bootstrap, data, decision, style, wp
+from fourth_and_rl import bootstrap, decision, fingerprint, splits, style, wp
 from fourth_and_rl.io import write_json
 from fourth_and_rl.paths import ASSETS, RESULTS, ROOT
 
@@ -54,7 +60,8 @@ def grid_states(q: dict) -> pl.DataFrame:
 
 
 def coach_counts(plays: pl.DataFrame, c: dict) -> dict:
-    """What coaches did on comparable real fourth downs (all seasons in the table)."""
+    """What coaches did on comparable real fourth downs (the seasons of `plays`: the
+    development seasons)."""
     base = plays.filter(
         (pl.col("down") == 4) & (pl.col("qtr") == 4)
         & pl.col("score_differential").is_between(*c["lead"])
@@ -89,7 +96,9 @@ def coach_counts(plays: pl.DataFrame, c: dict) -> dict:
     }  # fmt: skip
 
 
-def figure(panels: dict, q: dict, cfg: dict, coaches: dict, nfl4th: pl.DataFrame, path) -> None:
+def figure(
+    panels: dict, q: dict, cfg: dict, coaches: dict, nfl4th: pl.DataFrame, path: Path
+) -> None:
     style.apply()
     leads, secs = q["leads"], sorted(q["seconds"], reverse=True)
     fig = plt.figure(figsize=(13.5, 14.2))
@@ -183,9 +192,9 @@ def main() -> None:
     q, t = cfg["q1"], cfg["thresholds"]
     n_boot = int(cfg["n_boot"])
     directory = bootstrap.boot_dir(cfg)
-    bootstrap.assert_replicates_current(directory, n_boot, cfg, wp.load_config())
-
-    plays = data.load_plays()
+    plays = splits.load_dev_plays()
+    bootstrap.assert_replicates_current(directory, n_boot, cfg, wp.load_config(),
+                                        data_fingerprint=fingerprint.data_fingerprint(plays))
     engine = decision.load_engine(plays, dcfg)
     states = grid_states(q)
     out = engine.evaluate(states)
@@ -310,6 +319,7 @@ def main() -> None:
         "grid": {k: q[k] for k in ("leads", "seconds", "yardlines", "distances",
                                    "defteam_timeouts")},
         "seconds_per_play_used": engine.seconds,
+        "wp_model_stamp": engine.wp_model.stamp,
         "headline": {"situation": h, "panel": panel_out[key], "selected_cells": headline_rows},
         "panels": panel_out,
         "nfl4th_side_by_side": side_summary,
@@ -324,9 +334,9 @@ def main() -> None:
             "opp_timeouts_3 panels.",
             "Who gets the last possession, and the opponent scoring quickly and handing the "
             "ball back: nothing is planned beyond the next snap.",
-            "The win-probability model itself is too cautious about small leads in the last "
-            "two minutes (results/m2_nfl4th_comparison.json, "
-            "late_game_win_probability_check_test_seasons), which affects the 2:00 panels.",
+            "The win-probability model has its own end-game errors, cell by cell in "
+            "results/m1_wp_metrics.json (test_endgame, quoted in "
+            "results/m2_nfl4th_comparison.json); they affect the 2:00 panels most.",
             "The bootstrap measures sampling noise only. A bias shared by every refit, such "
             "as the ones above, leaves boot% high and the answer still wrong.",
         ],

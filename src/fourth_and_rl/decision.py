@@ -42,6 +42,8 @@ ACTIONS: tuple[str, str, str] = ("go", "field_goal", "punt")
 # Accumulator slots: every outcome's weighted value is added to one of these.
 _CONVERT, _FAIL, _FG_MAKE, _FG_MISS, _PUNT = range(5)
 _N_SLOTS = 5
+# Game seconds left when the second half starts (half of wp.REGULATION_SECONDS).
+HALFTIME_SECONDS = int(wp_mod.REGULATION_SECONDS // 2)
 
 # Event kinds: what the situation is right after the play.
 _US, _OPP, _KICK_TO_OPP, _KICK_TO_US = range(4)
@@ -359,72 +361,119 @@ class DecisionEngine:
         self._set_kickoff(None)
         return out
 
+    # `_values_chunk` values one chunk of states in four steps, each a helper:
+    #
+    #   _chunk_rows        which rows can be valued, and their state as integer arrays
+    #   _play_leaves       level 1: the events of each action (from the cached templates);
+    #                      events that end the game are valued at once, events that leave a
+    #                      team with the ball become leaves, and scores and the end of the
+    #                      first half become kickoffs
+    #   _kickoff_leaves    level 2: kickoffs become first-and-10 leaves for the receiver
+    #   _value_leaves      every distinct next state is scored once by the win-probability
+    #                      model and added to its action's slot
+    #
+    # and `_action_table` turns the slot sums into the reported columns.
+
+    _VALUE_NAMES = ("go_wp", "fg_wp", "punt_wp", "p_convert", "p_fg", "wp_if_convert",
+                    "wp_if_fail", "wp_if_fg_make", "wp_if_fg_miss")  # fmt: skip
+
     def _values_chunk(self, states: pl.DataFrame) -> dict[str, np.ndarray]:
+        n = states.height
+        result = {k: np.full(n, np.nan) for k in self._VALUE_NAMES}
+        rows, st = self._chunk_rows(states)
+        if rows.size == 0:
+            return result
+        acc = np.zeros((rows.size, _N_SLOTS))  # win probability summed by action slot
+        leaves, kicks = self._play_leaves(acc, st)
+        leaves.extend(self._kickoff_leaves(acc, st, *kicks))
+        self._value_leaves(acc, st, leaves)
+        for k, v in self._action_table(acc, st).items():
+            result[k][rows] = v
+        return result
+
+    def _chunk_rows(self, states: pl.DataFrame) -> tuple[np.ndarray, dict[str, np.ndarray]]:
+        """Rows that can be valued (complete state, regulation, a real yard line and
+        distance) and their state as arrays, distance capped at the goal line and 40."""
         n = states.height
         col = lambda name: states[name].cast(pl.Float64).fill_null(np.nan).to_numpy()  # noqa: E731
         ok = wp_mod.scoreable(states) & (col("qtr") <= 4) if n else np.zeros(0, dtype=bool)
         yl_f, togo_f = col("yardline_100"), col("ydstogo")
         ok &= (yl_f >= 1) & (yl_f <= 99) & (togo_f >= 1) & (col("half_seconds_remaining") >= 0)
-        nan = np.full(n, np.nan)
-        names = ("go_wp", "fg_wp", "punt_wp", "p_convert", "p_fg", "wp_if_convert",
-                 "wp_if_fail", "wp_if_fg_make", "wp_if_fg_miss")  # fmt: skip
-        result = {k: nan.copy() for k in names}
         rows = np.nonzero(ok)[0]
         if rows.size == 0:
-            return result
-
+            return rows, {}
         yl = yl_f[rows].astype(np.int64)
-        togo = np.minimum(np.minimum(togo_f[rows], yl), 40).astype(np.int64)
-        gsr = np.rint(col("game_seconds_remaining")[rows]).astype(np.int64)
-        half_left = np.rint(col("half_seconds_remaining")[rows]).astype(np.int64)
-        first_half = col("qtr")[rows] <= 2
-        diff = np.rint(col("score_differential")[rows]).astype(np.int64)
-        pos_to = np.clip(col("posteam_timeouts_remaining")[rows], 0, 3).astype(np.int64)
-        def_to = np.clip(col("defteam_timeouts_remaining")[rows], 0, 3).astype(np.int64)
-        spread = col("posteam_spread")[rows]
-        r2h = (col("receive_2h_ko")[rows] > 0).astype(np.int64)
-        home = (col("is_home")[rows] > 0).astype(np.int64)
-        m = rows.size
+        st = {
+            "yl": yl,
+            "togo": np.minimum(np.minimum(togo_f[rows], yl), 40).astype(np.int64),
+            "gsr": np.rint(col("game_seconds_remaining")[rows]).astype(np.int64),
+            "half_left": np.rint(col("half_seconds_remaining")[rows]).astype(np.int64),
+            "first_half": col("qtr")[rows] <= 2,
+            "diff": np.rint(col("score_differential")[rows]).astype(np.int64),
+            "pos_to": np.clip(col("posteam_timeouts_remaining")[rows], 0, 3).astype(np.int64),
+            "def_to": np.clip(col("defteam_timeouts_remaining")[rows], 0, 3).astype(np.int64),
+            "spread": col("posteam_spread")[rows],
+            "r2h": (col("receive_2h_ko")[rows] > 0).astype(np.int64),
+            "home": (col("is_home")[rows] > 0).astype(np.int64),
+        }
+        return rows, st
 
-        # ---- level 1: events of each action, from cached per-situation templates
-        e_row, e_slot, e_kind, e_y, e_w, e_pts, e_sec = self._events(yl, togo)
-        p_convert = np.array([self._go_cache[(a, b)][6][0] for a, b in zip(yl, togo, strict=True)])
-        p_fg = np.array([self._kick_cache[a][6][0] for a in yl])
+    def _play_leaves(
+        self, acc: np.ndarray, st: dict[str, np.ndarray]
+    ) -> tuple[list[tuple[np.ndarray, ...]], tuple[np.ndarray, ...]]:
+        """Level 1: the events of each action.
 
-        acc = np.zeros((m, _N_SLOTS))
-        leaves: list[tuple[np.ndarray, ...]] = []  # row, slot, weight, owner, y, time, diff, reset
-
+        An event that runs out the second half ends the game and is valued at once
+        (`_terminal`). An event that leaves a team with the ball is a leaf: (row, slot,
+        weight, owner, yard line, time, score, timeouts reset). Scores, and events that
+        run out the first half, lead to a kickoff; those are returned for level 2 as
+        (row, slot, weight, receiver, time, time left in the half, score, reset)."""
+        gsr, half_left, first_half, diff, r2h = (
+            st[k] for k in ("gsr", "half_left", "first_half", "diff", "r2h")
+        )
+        e_row, e_slot, e_kind, e_y, e_w, e_pts, e_sec = self._events(st["yl"], st["togo"])
         new_diff = diff[e_row] + e_pts
         over = e_sec >= half_left[e_row]
         self._terminal(acc, e_row, e_slot, e_w, new_diff, over & ~first_half[e_row])
         to_half = over & first_half[e_row]
         live = ~over
         field = live & (e_kind <= _OPP)
-        leaves.append((e_row[field], e_slot[field], e_w[field], e_kind[field], e_y[field],
-                       (gsr[e_row] - e_sec)[field], new_diff[field],
-                       np.zeros(int(field.sum()), dtype=np.int64)))  # fmt: skip
-
-        # ---- level 2: kickoffs (after a score, or to open the second half)
+        leaves = [(e_row[field], e_slot[field], e_w[field], e_kind[field], e_y[field],
+                   (gsr[e_row] - e_sec)[field], new_diff[field],
+                   np.zeros(int(field.sum()), dtype=np.int64))]  # fmt: skip
         kick = live & (e_kind >= _KICK_TO_OPP)
-        k_recv = np.concatenate([
-            np.where(e_kind[kick] == _KICK_TO_OPP, _OPP, _US),
-            np.where(r2h[e_row[to_half]] == 1, _US, _OPP),
-        ])  # fmt: skip
-        k_row = np.concatenate([e_row[kick], e_row[to_half]])
-        k_slot = np.concatenate([e_slot[kick], e_slot[to_half]])
-        k_w = np.concatenate([e_w[kick], e_w[to_half]])
-        k_diff = np.concatenate([new_diff[kick], new_diff[to_half]])
-        k_time = np.concatenate([(gsr[e_row] - e_sec)[kick], np.full(int(to_half.sum()), 1800)])
-        k_left = np.concatenate([(half_left[e_row] - e_sec)[kick],
-                                 np.full(int(to_half.sum()), 1800)])  # fmt: skip
-        k_reset = np.concatenate([np.zeros(int(kick.sum()), dtype=np.int64),
-                                  np.ones(int(to_half.sum()), dtype=np.int64)])  # fmt: skip
-        s_ko = self.seconds["kickoff"]
-        for _ in range(2):  # a kickoff that runs out the first half leads to one more kickoff
+        n_half = int(to_half.sum())
+        kicks = (
+            np.concatenate([e_row[kick], e_row[to_half]]),
+            np.concatenate([e_slot[kick], e_slot[to_half]]),
+            np.concatenate([e_w[kick], e_w[to_half]]),
+            np.concatenate([np.where(e_kind[kick] == _KICK_TO_OPP, _OPP, _US),
+                            np.where(r2h[e_row[to_half]] == 1, _US, _OPP)]),
+            np.concatenate([(gsr[e_row] - e_sec)[kick], np.full(n_half, HALFTIME_SECONDS)]),
+            np.concatenate([(half_left[e_row] - e_sec)[kick],
+                            np.full(n_half, HALFTIME_SECONDS)]),
+            np.concatenate([new_diff[kick], new_diff[to_half]]),
+            np.concatenate([np.zeros(int(kick.sum()), dtype=np.int64),
+                            np.ones(n_half, dtype=np.int64)]),
+        )  # fmt: skip
+        return leaves, kicks
+
+    def _kickoff_leaves(
+        self, acc: np.ndarray, st: dict[str, np.ndarray], k_row: np.ndarray, k_slot: np.ndarray,
+        k_w: np.ndarray, k_recv: np.ndarray, k_time: np.ndarray, k_left: np.ndarray,
+        k_diff: np.ndarray, k_reset: np.ndarray,
+    ) -> list[tuple[np.ndarray, ...]]:  # fmt: skip
+        """Level 2: kickoffs (after a score, or to open the second half) become leaves.
+
+        A kickoff that runs out the second half ends the game; one that runs out the first
+        half leads to one more kickoff, the second-half opener, so the loop runs twice."""
+        r2h, s_ko = st["r2h"], self.seconds["kickoff"]
+        leaves: list[tuple[np.ndarray, ...]] = []
+        for _ in range(2):
             if k_row.size == 0:
                 break
             over = s_ko >= k_left
-            k_first = (k_time > 1800) & (k_reset == 0)
+            k_first = (k_time > HALFTIME_SECONDS) & (k_reset == 0)
             self._terminal(acc, k_row, k_slot, k_w, k_diff, over & ~k_first)
             again = over & k_first
             go_on = ~over
@@ -434,24 +483,36 @@ class DecisionEngine:
             ))  # fmt: skip
             k_recv = np.where(r2h[k_row[again]] == 1, _US, _OPP)
             k_row, k_slot, k_w, k_diff = k_row[again], k_slot[again], k_w[again], k_diff[again]
-            k_time = np.full(k_row.size, 1800)
-            k_left = np.full(k_row.size, 1800)
+            k_time = np.full(k_row.size, HALFTIME_SECONDS)
+            k_left = np.full(k_row.size, HALFTIME_SECONDS)
             k_reset = np.ones(k_row.size, dtype=np.int64)
+        return leaves
 
-        # ---- score every distinct next state once
+    def _value_leaves(
+        self, acc: np.ndarray, st: dict[str, np.ndarray], leaves: list[tuple[np.ndarray, ...]]
+    ) -> None:
+        """Score every leaf (each distinct next state once, in `_leaf_values`) and add its
+        weighted value to its action slot."""
         l_row, l_slot, l_w, l_owner, l_y, l_time, l_diff, l_reset = (
             np.concatenate(x) for x in zip(*leaves, strict=True)
         )
         if l_row.size:
             value = self._leaf_values(
-                l_row, l_owner, l_y, l_time, l_diff, l_reset, pos_to, def_to, spread, r2h, home
-            )
+                l_row, l_owner, l_y, l_time, l_diff, l_reset, st["pos_to"], st["def_to"],
+                st["spread"], st["r2h"], st["home"],
+            )  # fmt: skip
             np.add.at(acc, (l_row, l_slot), l_w * value)
 
+    def _action_table(self, acc: np.ndarray, st: dict[str, np.ndarray]) -> dict[str, np.ndarray]:
+        """The reported columns from the slot sums. Conditional values are NaN where their
+        branch cannot happen; punt_wp is NaN inside `punt_min_yardline_100`."""
+        yl, togo = st["yl"], st["togo"]
+        p_convert = np.array([self._go_cache[(a, b)][6][0] for a, b in zip(yl, togo, strict=True)])
+        p_fg = np.array([self._kick_cache[a][6][0] for a in yl])
         go = acc[:, _CONVERT] + acc[:, _FAIL]
         fg = acc[:, _FG_MAKE] + acc[:, _FG_MISS]
         with np.errstate(invalid="ignore", divide="ignore"):
-            pieces = {
+            return {
                 "go_wp": go,
                 "fg_wp": np.where(p_fg > 0, fg, np.nan),
                 "punt_wp": np.where(yl >= int(self.config["punt_min_yardline_100"]),
@@ -463,9 +524,6 @@ class DecisionEngine:
                 "wp_if_fg_make": np.where(p_fg > 0, acc[:, _FG_MAKE] / p_fg, np.nan),
                 "wp_if_fg_miss": np.where(p_fg < 1, acc[:, _FG_MISS] / (1 - p_fg), np.nan),
             }  # fmt: skip
-        for k, v in pieces.items():
-            result[k][rows] = v
-        return result
 
     def _events(self, yl: np.ndarray, togo: np.ndarray) -> tuple[np.ndarray, ...]:
         """Expand each row into the events of its three actions."""
@@ -557,7 +615,7 @@ class DecisionEngine:
         o_pos = np.where(reset == 1, 3, np.where(theirs, def_to[row], pos_to[row]))
         o_def = np.where(reset == 1, 3, np.where(theirs, pos_to[row], def_to[row]))
         o_home = np.where(theirs, 1 - home[row], home[row])
-        o_r2h = np.where(time > 1800, np.where(theirs, 1 - r2h[row], r2h[row]), 0)
+        o_r2h = np.where(time > HALFTIME_SECONDS, np.where(theirs, 1 - r2h[row], r2h[row]), 0)
         spread_values, spread_inv = np.unique(np.concatenate([spread, -spread]),
                                               return_inverse=True)  # fmt: skip
         o_spread = np.where(theirs, spread_inv[spread.size + row], spread_inv[row])
@@ -725,11 +783,13 @@ def load_engine(
     Win probability: the saved M1 headline model (`models.wp_path`). Components: the
     development bundle (`components.DEV_MODEL_PATH`, fitted on the development seasons,
     with the kickoff tables of every rule era). The cached bundle is reused only if its
-    stamp matches the current components config and the configured fit seasons
-    (`components.dev_bundle_is_current`); otherwise, or with `refit`, it is refitted from
-    the development file (plus the test seasons' kickoff rows for the rule tables) and
-    saved. `plays`, if given, must be the full state table and saves reading it again;
-    only its development seasons and the kickoff rows of the test seasons are fitted.
+    stamp matches the current components config, the configured fit seasons and the
+    fingerprint of the current development plays (`components.dev_bundle_is_current`);
+    otherwise, or with `refit`, it is refitted from the development file (plus the test
+    seasons' kickoff rows for the rule tables) and saved. `plays`, if given, must hold the
+    development seasons (and, for a refit, the test seasons' games for the kickoff rule
+    tables; without them the test file is read through `splits.load_test_plays`). Only
+    its development seasons and the kickoff rows of the test seasons are fitted.
 
     The engine is checked to be able to score the test seasons out of sample.
     """
@@ -746,14 +806,16 @@ def load_engine(
             f"seasons {splits.dev_seasons()}: the engine uses the development bundle"
         )
     comps = ComponentModels.load(cache) if cache.exists() and not refit else None
-    if comps is None or not cm.dev_bundle_is_current(comps):
-        if plays is None:
-            dev, test = None, None
-        else:
-            dev = plays.filter(pl.col("season").is_in(list(splits.dev_seasons())))
-            # Whole test-season games (the next-state lookup needs them); only their
-            # kickoff rows are fitted, as the rule tables.
-            test = plays.filter(pl.col("season").is_in(list(splits.test_seasons())))
+    if plays is None:
+        dev, test = splits.load_dev_plays(), None
+    else:
+        dev = plays.filter(pl.col("season").is_in(list(splits.dev_seasons())))
+        # Whole test-season games (the next-state lookup needs them); only their
+        # kickoff rows are fitted, as the rule tables.
+        test = plays.filter(pl.col("season").is_in(list(splits.test_seasons())))
+        if test.height == 0:
+            test = None
+    if comps is None or not cm.dev_bundle_is_current(comps, dev_plays=dev):
         comps = cm.fit_dev_bundle(dev_plays=dev, test_plays=test)
         comps.save(cache)
     engine = DecisionEngine(wp_model, comps, cfg.get("engine"))
