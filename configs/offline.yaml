@@ -1,0 +1,149 @@
+# M6: offline RL on logged fourth-down decisions. Read by scripts/offline_known_truth.py
+# (Part A, known truth) and scripts/offline_real_data.py (Part B, real logs). Every size,
+# seed and hyperparameter of the milestone is here, and so are the hypotheses, which the
+# scripts copy into the results files before they run anything.
+
+# The solved model: the current data/mdp (fitted on 2010 to 2023 by the leakage-hardening
+# pass). Its meta.json and file times go into both results files. Runs are stamped with
+# meta.json and this whole file, so a re-solve or any config change reruns everything.
+snapshot_dir: data/mdp
+runs_dir: data/models/offline/runs
+models_dir: data/models/offline
+workers: 2                       # processes (the machine is shared); 1 thread each
+
+drive:
+  kickoff_share: 0.5             # drive starts, as in M5 (configs/rl.yaml)
+
+# ---------------------------------------------------------------------------------------
+# Part A: a world where the truth is known (the single-drive MDP of M4 stage 1 / M5)
+# ---------------------------------------------------------------------------------------
+known_truth:
+  # Behavior policies, from more to less conservative. The coach-like policy is the
+  # neutral-situation slice of the solved model's coach table (2018 to 2023 frequencies);
+  # go_logit_shift is added to the log-odds of going for it (-2 multiplies the odds of
+  # going by 0.14); epsilon mixes in uniformly random allowed actions.
+  behaviors:
+    very_conservative: {epsilon: 0.0, go_logit_shift: -2.0}
+    coach: {epsilon: 0.0, go_logit_shift: 0.0}
+    coach_eps_0.05: {epsilon: 0.05, go_logit_shift: 0.0}
+    coach_eps_0.2: {epsilon: 0.2, go_logit_shift: 0.0}
+    uniform: {epsilon: 1.0, go_logit_shift: 0.0}
+  # Fourth-down decisions per dataset. 39766 is the number of real neutral-situation
+  # fourth downs of the development seasons 2010 to 2023 that Part B turns into
+  # transitions (counted by scripts/offline_real_data.py, which records it). Smaller
+  # datasets are the first n decisions of the largest one (nested, complete drives).
+  sizes: [1000, 10000, 39766, 100000, 1000000]
+  real_size: 39766
+  eval_seeds: [601, 602, 603, 604, 605]
+  # Hyperparameters that are swept (CQL alpha, LCB beta) are chosen on these seeds only,
+  # by mean true regret over every behavior and size, and then applied to the eval seeds.
+  # That uses the truth, which a practitioner would not have, so the choice flatters the
+  # tuned methods; the full sweep and a data-only choice (fitted Q evaluation) are also
+  # reported.
+  tuning_seeds: [651, 652, 653]
+  headline: {behavior: coach, size: 39766, seed: 601}
+
+learners:
+  bc: {smoothing: 1.0}             # pseudo-counts spread over the allowed actions
+  fqi_tabular: {q_init: 0.0}       # the usual default (a fresh network also outputs ~0)
+  fqi_lcb:
+    beta: 1.0                      # fixed before any run
+    beta_sweep: [0.5, 1.0, 2.0]
+  cql_tabular:
+    # points; main value chosen on tuning seeds. Extended down to 0.001 after a smoke test
+    # (tuning seed 651 only, 3 sizes) picked 0.01, the lowest value of the first grid.
+    alpha_sweep: [0.001, 0.003, 0.01, 0.03, 0.1, 0.3, 1.0]
+    outer_iter: 100
+    inner_steps: 25
+  plugin:
+    prior_strength: 5.0            # pseudo-counts of the pooled prior
+    bandwidth: 3.0                 # yards (Gaussian kernel over neighboring yard lines)
+    max_shift: 10
+    translate: [true, true, false] # go, field goal shifted with the yard line; punt not
+  fqi_gbt:
+    n_iter: 20
+    params: {max_iter: 50, learning_rate: 0.1, max_leaf_nodes: 15, min_samples_leaf: 5}
+  abstain:
+    # The humility paper's rule as a decision rule: take the plug-in's action where at
+    # least `threshold` of bootstrap refits (drives resampled) agree with it, otherwise
+    # the coaches' most common logged action in that state.
+    threshold: 0.83
+    n_boot: 20
+    behaviors: [very_conservative, coach, coach_eps_0.05]
+    sizes: [39766]
+  d3rlpy:
+    behaviors: [coach, coach_eps_0.2]
+    sizes: [39766]
+    n_seeds: 3                     # the first eval seeds
+    hidden_units: [64, 64]
+    learning_rate: 0.0003
+    batch_size: 256
+    target_update_interval: 1000
+    n_steps: 10000
+    reward_scale: 0.1              # keeps the Huber TD loss in its quadratic part
+    cql_alphas: [1.0, 0.1]         # 1.0 is the library default (in scaled units)
+
+hypotheses_known_truth:
+  H1_fqi_overestimates_rare_go: >-
+    Naive tabular fitted Q iteration overestimates Q(go) where go is rarely or never
+    logged: with coach-like data at the real size, its mean Q_hat(go) - Q*(go) is
+    positive in the 0 and 1-9 count buckets and close to zero at 100+. Gradient-boosted
+    FQI also overestimates there, by extrapolation. Tabular CQL's error in those buckets
+    is negative.
+  H2_optimizers_curse: >-
+    FQI and the plug-in overclaim the value of the actions they choose (claimed minus true
+    value of the chosen action is positive), more for choices that differ from the
+    coaches' usual action than for the usual ones, and the slope of the true gain on the
+    claimed gain over the coaches' usual action is below 1.
+  H3_cql_beats_naive_fqi_on_coach_data: >-
+    With coach-like data at the real size, CQL (main alpha) has lower true regret than
+    naive tabular FQI.
+  H4_cql_inherits_conservatism: >-
+    CQL is not automatically better. Under the very conservative behavior policy its true
+    regret is higher than the plug-in's at the real size and above, because it stays
+    close to the logged actions. Under uniform behavior every Q-based method's regret
+    falls toward zero as data grows.
+  H5_deferring_to_coaches: >-
+    Candidate headline 1 of the research note, in this known-truth world: at the real data
+    size with coach-like behavior, deferring to coaches when unsure (behavior cloning's
+    most common action, or the abstain rule at 83% bootstrap agreement) has higher true
+    regret than the plug-in, so deferring loses more than it saves.
+  H6_bc_recovers_behavior: >-
+    Behavior cloning's stochastic policy has nearly the behavior policy's regret once
+    data is plentiful (within 0.01 points per drive at 1M decisions).
+  H7_d3rlpy: >-
+    The d3rlpy network versions reproduce the tabular pattern: offline DoubleDQN
+    overestimates rarely logged go actions and DiscreteCQL pushes them below Q*.
+
+# ---------------------------------------------------------------------------------------
+# Part B: real logged decisions (development seasons 2010 to 2023 for fitting)
+# ---------------------------------------------------------------------------------------
+real_data:
+  neutral_only: true
+  seed: 701                        # gradient-boosted FQI, d3rlpy
+  d3rlpy_seeds: [701]
+  # Held-out check on 2024 to 2025 fourth downs (loaded once through
+  # splits.load_test_plays; the built transitions are cached under models_dir).
+  ope:
+    behavior: coach_table          # neutral slice of the solved model's coach table
+    n_boot: 2000                   # game-level bootstrap
+    seed: 702
+    level: 0.9
+  methods: [bc_mode, fqi_tabular, fqi_gbt, fqi_lcb, cql_tabular, plugin, dqn_d3rlpy,
+            cql_d3rlpy, model_optimum]
+
+hypotheses_real_data:
+  R1_fqi_claims_where_data_is_thin: >-
+    On real data, tabular FQI's claimed Q(go) exceeds the solved model's Q*(go) most in
+    the states where go is almost never logged (long distance in the own half), and its
+    policy goes for it in some of those states; CQL's claimed Q(go) is below the model's
+    there.
+  R2_cql_close_to_coaches: >-
+    CQL's recommended policy agrees with the coaches' most common action in more logged
+    decisions than FQI's and the plug-in's, and the plug-in agrees with the solved model's
+    optimum more than FQI does.
+  R3_ope_is_too_noisy: >-
+    On 2024 to 2025, importance-sampling estimates for policies that depart from coaches
+    are very noisy: for most methods the 90% interval of (estimated value minus the logged
+    return) includes zero, and the effective sample size is a small fraction of the
+    drives.
