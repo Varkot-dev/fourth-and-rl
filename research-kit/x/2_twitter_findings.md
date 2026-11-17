@@ -319,3 +319,65 @@ Ordered by how much argument exists on X and how little new machinery each needs
 6. **Field-goal range drift** (8.6). Not a question of its own; a check on the kick model.
 
 Not supported by what was found: overtime strategy, prevent defense, icing the kicker, onside kicks.
+
+## 9. Coach blame: third pass (added 2026-11-17)
+
+For the coach-cost idea in `docs/research/inbox/coach_cost_idea.md`. Same quoting rules as above.
+
+### 9.1 Penalties treated as a coaching problem
+
+The owner's premise (pre-snap and procedure penalties are on the coach) is a common view on X, usually stated for penalties in general, not split by type:
+
+- @byesline, 2025-10-12, https://x.com/byesline/status/1977398351873372438: "The theme continues w/ the Denver Broncos: They’ve one of the most undisciplined team in the NFL. Came into today giving up 411 yds of penalty yds in 5 games, 2nd most in the league. 52 total flags thrown on Denver, 4th most. You’re either coaching it or allowing it."
+- @TomOatesWSJ, 2025-09-21, https://x.com/TomOatesWSJ/status/1969... (link id not captured in full; 95 replies, 1.8K likes): "So typical of a Matt LaFleur-coached team. #Packers on a really nice run going into a game they should win and lay a colossal egg. What an unfocused, undisciplined performance. Fourteen penalties says it all."
+- @ShaneHaffNFL, 2025-11-28, https://x.com/ShaneHaffNFL/status/1994505059653357644: "Seriously, start benching people for false starting and other stupid penalties. An NFL team shouldn’t be this undisciplined."
+- @Shellsyeah81, 2025-10-19, https://x.com/Shellsyeah81/status/1980043606284218491: "I hate when we prove them all right. We absolutely 100 percent have a coaching issue when we have over 100 yards in penalties. Undisciplined football team all season so far! #RaiseHail tho"
+- @Rob_Shenanigans, 2025-12-15, https://x.com/Rob_Shenanigans/status/2000642647992500513: "Here's how the Browns offense started off the game: 1. Failed challenge on kickoff (Stefanski), pinned inside 1 yard line 2. Penalty: False start (Fannin), half the distance to goal 3. Run: 1 yard 4. Penalty: 12 men in huddle How can you call this good coaching?"
+- @PhillyTruthr, 2026-10-04, https://x.com/PhillyTruthr/status/2106842401977376786: "8+ penalties 0-for-11 on 3rd down Late in situational playcalling Just reeks of a poorly coached team"
+- @Bill_Michaels, 2026-09-20 (link not captured): "This @pacekrs team is undisciplined and fundamentally unsound. Penalties are a direct reflection of that."
+- The player-fault view also appears: @ChanceMock, 2025-09-06, https://x.com/ChanceMock/status/1964366296403079353: "Really undisciplined football. Sloppy all over. Linemen missing blocks, defensive leaders jumping offsides, dropped balls, special teams penalties keeping the defense on the field … 🙄"
+- Read: nobody found separates false starts and delay of game (coach) from offside and encroachment (player) the way the owner proposes, and nobody tests whether a team's penalty rate belongs to the coach. Both are open. The "12 men in huddle" example supports adding substitution penalties to the coach's column.
+
+### 9.2 Named coaches and the calls they were blamed for
+
+**Dan Quinn (Commanders vs Giants, 2026-10-11): ran the ball with 13 seconds left, no timeouts, in field-goal range; the game ended in a tie.**
+- @ProFootballTalk, 2026-10-11, https://x.com/ProFootballTalk/status/2109391902130766281 (218 replies, 7.5K likes): "I've been watching football for 50 years. I've never seen an end-of-game failure like the one the Commanders committed. I thought the Fox bug was incorrect, and that Washington had a timeout. It's an immediately fireable offense by Dan Quinn."
+- @barstoolsports, 2026-10-11, https://x.com/barstoolsports/status/2109396237908664417: "- 13 seconds left - No timeouts - In field goal range And the Commanders decided to run the ball?"
+- @barstoolsports, 2026-10-11, https://x.com/barstoolsports/status/2109470670551961704: "The Commanders talked about not having any timeouts in the huddle…and still messed it up???"
+- @barstoolsports, 2026-10-11, https://x.com/barstoolsports/status/2109473695500742725 (7.2K likes): "Big dog on the Giants “accidentally” stepping on the football to waste more clock as the Commanders struggled to get a spike off is a high IQ play"
+- @Tiller56, 2026-10-19, https://x.com/Tiller56/status/2112359413914779713: "Here’s the video of Head Coach Dan Quinn calling for the Field Goal after a failed 4th down… This is a fireable offense!!!"
+- This is a pure clock error: no go-or-kick model is needed, only the end-game clock rules already written up in `docs/research/endgame_clock.md`.
+
+**"Cowardly punt" (a set phrase on X):**
+- @ByJoshCarney, 2025-11-23, https://x.com/ByJoshCarney/status/1992699772655075517: "Mike Tomlin punting on 4th and 9 with 2:01 left in the game?????? There are cowardly punts, and then there is this one."
+- @Peter_Bukowski, 2025-10-12, https://x.com/Peter_Bukowski/status/1977487891107315791: "Cowardly punt. LaFleur come on dude."
+- @GregTompsett, 2025-10-13, https://x.com/GregTompsett/status/1977893308035657966: "McDermott cowardly punt Horrific decision"
+- @dawest76, 2026-09-13, https://x.com/dawest76/status/2099316741088153671 (2.4K likes): "Schottenheimer's decision to punt on 4th & inches set the tone for the entire game. It gave the Giants momentum and it's been a shitfest ever since. Penalties, dropped passes, turnovers. Just an undisciplined football team"
+- Game situations for these four are not stated in the posts; each needs looking up in play-by-play by date and team.
+
+**Nick Sirianni (timeouts):**
+- @inside_the_dome, 2026-01-11, https://x.com/inside_the_dome/status/2010513580743901517: "Nick Sirianni calling a timeout was idiotic for the Eagles, essentially ended the game since they needed all three timeouts. Him also benching starters against the Commanders was a huge mistake Wouldn’t say he should be fired, but that’s bad"
+- @KBeckNFL, 2026-01-11, https://x.com/KBeckNFL/status/2010537485672005939: "4th-and-8. Season on the line. HAVE TO HAVE IT. And this is what Nick Sirianni and Kevin Patullo draw-up off a timeout... There was nobody open. Jalen Hurts never had a chance. It’s incredible how Patullo survived the entire season. Malpractice."
+
+**Other "fireable" and "worst decision" posts:**
+- @wheatonbrando, 2025-09-08, https://x.com/wheatonbrando/status/1965133167012311510 (6.7K likes, 3.2M views): "This is honestly a fireable offense for an NFL head coach. Embarrassing. Hard to back a team led by that." (The post does not say which coach or play; the video was not viewed.)
+- @gavinmchughh, 2026-10-08, https://x.com/gavinmchughh/status/2108392898903642168: "not kicking the field goal could go down as one of the worst coaching decision in NFL history if the buccaneers lose this game" (Bowles; note the "if they lose" condition)
+- @SharpFootball, 2026-10-03, https://x.com/SharpFootball/status/2106266459517440304 (263 replies, 1.7M views): "one of the WORST coaching decisions you will ever see the Montana State coach LOST HIS TEAM THE GAME worst timeout EVER💀💀💀" (college)
+- @lt4kicks, 2025-09-21, https://x.com/lt4kicks/status/1969957314485522922 (13K likes): "A professional football team that cannot scheme up a single play to their #1 receiver until the 4th qtr is coaching malpractice and incompetence." (play design, which play-by-play cannot score)
+
+### 9.3 Existing coach rankings (so the build does not repeat them unknowingly)
+
+- @run_the_sims (section 3): coaches go 29% of the time the model says to; Shanahan "bottom 10 of 57, about -20 points since 2017"; going when the model says kick happens "about 0.6% of the time for punt and 6.2% for field goal".
+- @benbbaldwin, 2025-10-02, https://x.com/benbbaldwin/status/1973915266758123613: "Watching both of these coaches go for it on 4th down is kind of shocking. 2 of the most conservative year over year" (the game is not named in the post)
+- @FungibleEther (section 3): coach overrides of the nfl4th recommendation "give up 0.5 to 4.4 points of win probability".
+- Not found: any public ranking that puts fourth downs, timeouts, clock errors and penalties into one total per coach, in wins. The fourth-down part alone exists; the combined ledger appears not to.
+
+### 9.4 What kinds of "bad decision" people mean (for deciding what the ledger can score)
+
+| Kind | Example found | Scoreable from play-by-play? |
+|---|---|---|
+| Go, kick or punt | Bowles 4th-and-goal; Tomlin 4th-and-9 punt; Campbell own 24 | Yes, the existing fourth-down engine |
+| Clock and timeouts | Quinn run with 13 seconds and no timeouts; Bowles kneel with 38 seconds; Sirianni timeout | Yes, with the end-game clock model |
+| Two-point choice | "Shotty going for two"; down 8 and down 14 | Yes, needs the two-point action |
+| Penalties and discipline | LaFleur "Fourteen penalties"; Browns "12 men in huddle" | Countable; assigning them to the coach is the assumption to test |
+| Play design and personnel | "cannot scheme up a single play to their #1 receiver"; Hail Mary with an injured quarterback | No |
