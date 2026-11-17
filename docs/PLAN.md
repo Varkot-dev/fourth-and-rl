@@ -114,6 +114,26 @@ RL tie-in for M5 and M6: train and evaluate agents under model uncertainty. Give
 
 Stretch: play calling on all downs; inferring coach risk preferences following the Sandholtz paper; opponent-specific models; tracking-data visuals.
 
+## 4.1 Machine-learning methods map
+
+Each method is used where it answers a real question in the project, and each is compared against a simpler baseline so its value is measured, not assumed.
+
+| Method | Where | What it is compared against |
+|---|---|---|
+| Gradient boosting (LightGBM) with monotone constraints | M1 win probability | nflfastR `wp` and `vegas_wp` |
+| Probability calibration (isotonic or Platt) | M1 | the uncalibrated model |
+| Logistic regression with splines | M1 conversion, field goal, punt | raw empirical rates |
+| Neural win-probability model (PyTorch MLP) | M1 extension | the gradient-boosted model, on the same test seasons |
+| Deep ensemble (several PyTorch networks with different seeds) | M3 extension | the game-level bootstrap, as a second way to measure uncertainty |
+| Game-level bootstrap | M3 | naive play-level intervals |
+| Exact dynamic programming (backward induction) | M4 | the one-step engine |
+| Tabular Q-learning and REINFORCE, written by hand | M5 | the DP optimum |
+| DQN and PPO (PyTorch, Stable-Baselines3) | M5 | the DP optimum and the tabular agents |
+| Fitted Q iteration and conservative Q-learning (d3rlpy) | M6 | each other, on logged coach decisions |
+| Behavior cloning of coaches (a classifier predicting go, kick or punt) | M6 and M7 | the optimal policy, to locate where coaches differ most |
+
+Added on 2026-11-17 at the owner's request: the neural win-probability model, the deep ensemble and behavior cloning. Considered and left as stretch because they need data or scope the core does not have: sequence models over play history (the state is already Markov by construction, so the gain should be small and is worth one honest test at most), and anything on player-tracking data.
+
 ## 5. Visuals
 
 This should be the most visual project of the set.
