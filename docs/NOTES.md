@@ -49,6 +49,8 @@ From M1 on, each milestone's teaching notes have their own file under `docs/note
 | Question 2, run versus pass | `docs/notes/q2_run_vs_pass.md` |
 | M8 "does the model know our defense is terrible?" (and question 3) | `docs/notes/m8_team_strength.md` |
 | M9 "was it really fourth and 1?" | `docs/notes/m9_distance_error.md` |
+| M13 goal-line field goals and two-point tries | `docs/notes/m13_goal_line_and_two_point.md` |
+| M10 "how much does being predictable cost an offense?" | `docs/notes/m10_predictability.md` |
 
 The design decisions and their history are in the Decision log at the bottom of `docs/PLAN.md`.
 
