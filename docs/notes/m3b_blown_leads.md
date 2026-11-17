@@ -253,7 +253,7 @@ quantiles of the simulated jump sizes (50%, 90%, 99%, 99.9%) are as close as pos
 the real ones. The fit is decent but not perfect: the simulator has slightly too few
 jumps of 10 to 40 points (see `assets/m3b_discreteness.png`), and it predicts 8.9% of
 losers never rising above their start against 8.0% observed. The chosen shape differs by
-model (1.2, 1.5, 3.0) because the fit is flat in that range; expected counts for equal
+model (1.2, 1.5, 1.5) because the fit is flat in that range; expected counts for equal
 spacing and for a much rougher shape of 0.5 are saved as a sensitivity range.
 
 ## 6. Results
@@ -273,9 +273,9 @@ Losers who peaked at or above x, observed against three references:
 | nflfastR with spread | 0.90 | 320 | 479.0 | 372.1 | 356.7 |
 | | 0.95 | 136 | 227.6 | 160.9 | 148.8 |
 | | 0.99 | 12 | 43.7 | 25.0 | 19.6 |
-| Ours | 0.90 | 350 | 501.1 | 399.8 | 342.3 |
-| | 0.95 | 154 | 239.7 | 175.5 | 143.5 |
-| | 0.99 | 14 | 46.0 | 27.5 | 21.5 |
+| Ours | 0.90 | 359 | 489.2 | 381.5 | 347.9 |
+| | 0.95 | 160 | 234.7 | 167.8 | 141.2 |
+| | 0.99 | 17 | 45.3 | 26.4 | 18.9 |
 
 - **Formula:** sum over games of p0 (1 - x) / (x (1 - p0)).
 - **Simulated with jumps:** the same sum using the simulated discrete reference.
@@ -290,7 +290,8 @@ What this shows:
    has far too few: about two thirds of the expected count at 90% and a quarter to a
    third at 99%. The KS statistics against the formula are 0.085, 0.067 and 0.064 (all
    with p far below 0.001), and all of the departure is on the "too few high peaks" side;
-   the one-sided statistic that looks for overconfidence is 0.000 for all three.
+   the one-sided statistic that looks for overconfidence is 0.000 for both nflfastR
+   models and 0.0002 for ours.
 2. **Most of that gap is discreteness, not miscalibration.** The first-crossing
    reference, which is exact for jumpy paths, predicts 354 where the formula predicts
    483. The simulator independently lands in the same place (360). Taking the formula at
@@ -300,26 +301,31 @@ What this shows:
    - nflfastR without spread: at first crossings of 0.90 and 0.95 teams lost less often
      than implied (7.3% against 8.3%, and 3.1% against 3.9%; z = -2.4 and -2.7). That is
      mild underconfidence at the top.
-   - Ours: at 0.90 and 0.95 observed and implied agree (350 against 342, 154 against
-     144). But at first crossings of 0.60, 0.70 and 0.80 teams lost more often than our
-     model implied: 34.0% against 32.4%, 26.9% against 25.2%, and 19.0% against 17.1%
-     (z = 2.8, 3.1, 3.7). That is mild overconfidence in the middle of the range, about
-     two points, and it is the one place where this analysis finds a fault in our model.
+   - Ours: at 0.90 and 0.99 observed and implied agree (359 against 348, 17 against
+     19); at 0.95 there are a few more losses than implied (160 against 141, z = 1.6).
+     At first crossings of 0.60, 0.70 and 0.80 teams lost more often than our model
+     implied: 33.6% against 32.7%, 26.5% against 25.3%, and 18.3% against 16.9%
+     (z = 1.5, 2.1, 2.7). That is mild overconfidence in the middle of the range, about
+     one to one and a half points, and it is the one place where this analysis finds a
+     fault in our model. The cross-fitted development seasons show the same thing in M1
+     (a pooled Platt slope of 0.93, `docs/notes/m1_wp.md` section 6.5).
      The spread version of nflfastR shows the same pattern more weakly (z about 2.2).
-   - At 0.99 all three have fewer losses than implied (11 to 14 observed against 17 to
-     22), each within or at the edge of its 95% interval.
-   There are 18 crossing tests here, so a single z of 2 means little; z = 3.7 survives a
-   correction for that. The intervals assume independent games.
-4. **Against the simulated reference the PIT is much flatter** (KS 0.036, 0.051, 0.040
+   - At 0.99 the two nflfastR models have fewer losses than implied (11 and 12 observed
+     against 17 and 20), within or at the edge of their 95% intervals.
+   There are 18 crossing tests here, so a single z of 2 means little. Our largest,
+   z = 2.7 at 0.80, sits at the edge of a correction for 18 tests (a one-sided
+   Bonferroni bar of about 2.8), so the mid-range overconfidence is suggestive, not
+   established. The intervals assume independent games.
+4. **Against the simulated reference the PIT is much flatter** (KS 0.036, 0.051, 0.042
    instead of 0.085, 0.067, 0.064) but not flat: there are somewhat too many moderately
    high peaks and too few very high ones, and the one-sided bootstrap test rejects for
-   the two spread-aware models (p = 0.0005 and 0.006; 0.02 for nflfastR without spread).
+   the two spread-aware models (p = 0.0005 and 0.0025; 0.02 for nflfastR without spread).
    Part of that is the mid-range overconfidence in point 3, which the exact test
    confirms, and part is the simulator not being football. This test cannot separate the
    two, so the first-crossing test is the one to trust.
 5. For comparison, the paper's NFL feed (ESPN, their numbers) put 8.5%, 4.5% and 1.5% of
    games above the 90%, 95% and 99% points of the continuous game-level reference. Ours
-   are lower: 6.1%, 2.4% and 0.25% for nflfastR without spread, and 7.2%, 3.3% and 0.32%
+   are lower: 6.1%, 2.4% and 0.25% for nflfastR without spread, and 7.5%, 3.4% and 0.37%
    for our model. The nflfastR-style paths reach extreme values less often than ESPN's.
 
 **Answer to "does discreteness change the conclusion": yes, completely.** With the
@@ -338,8 +344,8 @@ Two top-25 lists per model are saved: `results/m3b_collapses_by_peak.csv` and
 
 For nflfastR without spread every team starts near 50%, so the lists nearly coincide (20
 of 25 shared, rank correlation over all games 0.93). With the spread in the model they
-differ a lot: 14 of 25 shared for nflfastR with spread, 15 of 25 for ours, rank
-correlation 0.59. Favorites that peaked high drop out of the surprise list, and
+differ a lot: 14 of 25 shared for nflfastR with spread and 14 of 25 for ours, rank
+correlation 0.59 and 0.60. Favorites that peaked high drop out of the surprise list, and
 underdogs with slightly lower peaks enter. Example from the spread model: Jacksonville,
 a 6% pregame underdog at Houston in 2012, reached 92% and lost in overtime. That peak is
 not in the raw top 25 but is a 1 in 180 event for a team starting at 6%. In the other
@@ -347,9 +353,12 @@ direction, New England started at 92% against Miami in 2019 week 17 and peaked a
 about one calibrated loser in three with that start gets that high.
 
 The most surprising game under both nflfastR models is Indianapolis at Minnesota, 2022
-week 15 (Indianapolis led 33-0 and lost 39-36). Under our model it is the New York Giants
-at Denver, 2025 week 7. Super Bowl LI (Atlanta led 28-3) is in every list, between 8th
-and 19th.
+week 15 (Indianapolis led 33-0 and lost 39-36). Under our model it is Minnesota at
+Buffalo, 2022 week 10: Buffalo led 27-23 with the ball at its own 1 and 49 seconds left,
+and fumbled the snap into a Minnesota touchdown. Our version 2 model treats that state as
+all but won because the leader could have run out the clock (the kneel rule in
+`docs/notes/m1_wp.md`, section 6.5), so it ranks first at 1 in 17,600 by the formula.
+Super Bowl LI (Atlanta led 28-3) is in every list, between 8th and 19th.
 
 Surprise is computed from the continuous formula because it is a closed form that can be
 explained in one line. Its absolute "1 in N" values are therefore too small by the
@@ -452,7 +461,7 @@ either way.
    games and say so.
 10. **Ranking ties.** Raw peaks are compared after rounding to three decimals, because
     differences beyond a tenth of a point are below what any model can support; ties go
-    to the later peak. Without rounding the order among the 11 to 14 games above 99%
+    to the later peak. Without rounding the order among the 11 to 17 games above 99%
     would be decided by noise.
 11. **Sample-size simulation.** A Gaussian random walk instead of the paper's random-walk
     football, because the truth is a closed form and a correctly specified model exists,
@@ -508,5 +517,6 @@ and 99% than the reference predicts. We did not see that in the tail for any of 
 three models. The catch is that real paths jump, which removes extreme peaks even for a
 perfect model, so the comparison has to be made against a discrete reference or with the
 first-crossing version (observed losses against the sum of 1 - p at first crossings).
-That version did find our model about two points overconfident at first crossings of
+That version did find our model about one to one and a half points overconfident at
+first crossings of
 60% to 80%.
