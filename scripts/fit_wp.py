@@ -69,6 +69,10 @@ STUDY_JSON = RESULTS / "m1_wp_v2_dev_study.json"
 PREREG_JSON = RESULTS / "m1_wp_v2_preregistration.json"
 METRICS_JSON = RESULTS / "m1_wp_metrics.json"
 V1_METRICS_JSON = RESULTS / "m1_wp_metrics_v1.json"
+# One line per --evaluate run, written just before the test seasons are read, so a second
+# run for the same preregistration is refused (see `previous_evaluations`).
+EVALUATIONS_LOG = RESULTS / "m1_wp_v2_evaluations.jsonl"
+RESCORE_FLAG = "--i-know-this-rescores-the-test-seasons"
 KEEP = [*wp.STATE_COLUMNS, wp.LABEL, "game_id", "play_id", "season", "play_type", "wp",
         "vegas_wp"]  # fmt: skip
 TEST_PURPOSE = (
@@ -713,8 +717,28 @@ def figure_endgame(dev_tables: dict, test_tables: dict, cfg: dict) -> None:
 # ------------------------------------------------------------------- test evaluation
 
 
-def evaluate(cfg: dict) -> None:
-    """The one evaluation on the test seasons, for version 2 with version 1 alongside."""
+def previous_evaluations(digest: str) -> list[str]:
+    """Evidence that the test seasons were already scored for the preregistration `digest`:
+    a line of EVALUATIONS_LOG with that hash, or a metrics file that records it (the
+    evaluation of version 2 predates the log, and its metrics file is the record)."""
+    found = []
+    if EVALUATIONS_LOG.exists():
+        for line in EVALUATIONS_LOG.read_text().splitlines():
+            entry = json.loads(line) if line.strip() else {}
+            if entry.get("definition_sha256") == digest:
+                found.append(f"{EVALUATIONS_LOG.name}: run at {entry.get('at')}")
+    if METRICS_JSON.exists():
+        saved = read_json(METRICS_JSON).get("preregistration", {})
+        if saved.get("definition_sha256") == digest:
+            found.append(f"{METRICS_JSON.name}: evaluated at {saved.get('evaluated_at')}")
+    return found
+
+
+def evaluate(cfg: dict, rescore: bool = False) -> None:
+    """The one evaluation on the test seasons, for version 2 with version 1 alongside.
+
+    Refuses to run a second time for the same preregistration unless `rescore` (the
+    command-line flag RESCORE_FLAG): every rerun is another look at the test seasons."""
     seed, n_bins, boot = cfg["seed"], cfg["metrics"]["ece_bins"], cfg["metrics"]["bootstrap_reps"]
     if not PREREG_JSON.exists():
         raise SystemExit("no preregistration: run --preregister before --evaluate")
@@ -727,9 +751,20 @@ def evaluate(cfg: dict) -> None:
     wanted = {k: v for k, v in prereg["headline_model_stamp"].items() if k != "fitted_at"}
     if known != wanted or model.params != {**wp.DEFAULT_PARAMS, **cfg["lgbm"]}:
         raise SystemExit("data/models/wp.joblib is not the preregistered model; refusing")
+    done = previous_evaluations(digest)
+    if done and not rescore:
+        raise SystemExit(
+            "the test seasons were already scored for this preregistration ("
+            + "; ".join(done) + f"). Pass {RESCORE_FLAG} to score them again on purpose."
+        )
 
     dev = splits.load_dev_plays().select(KEEP)
     version_1 = fit_version_1(dev, cfg)
+    EVALUATIONS_LOG.parent.mkdir(parents=True, exist_ok=True)
+    with open(EVALUATIONS_LOG, "a") as log:
+        entry = {"at": datetime.now(UTC).isoformat(timespec="seconds"),
+                 "definition_sha256": digest, "rescore": bool(done)}  # fmt: skip
+        log.write(json.dumps(entry) + "\n")
     test = splits.load_test_plays(TEST_PURPOSE).select(KEEP)
     splits.assert_can_score(model.stamp, test, "version 2 on the test seasons")
     splits.assert_can_score(version_1.stamp, test, "version 1 on the test seasons")
@@ -920,6 +955,9 @@ def main() -> None:
                       help="the one test-season evaluation (needs --preregister)")  # fmt: skip
     step.add_argument("--figures", action="store_true",
                       help="redraw figures from the saved JSON files")  # fmt: skip
+    parser.add_argument(RESCORE_FLAG, dest="rescore", action="store_true",
+                        help="with --evaluate: score the test seasons again for a "
+                             "preregistration that was already evaluated")  # fmt: skip
     args = parser.parse_args()
     cfg = wp.load_config()
     if args.tune:
@@ -927,7 +965,7 @@ def main() -> None:
     elif args.preregister:
         preregister(cfg)
     elif args.evaluate:
-        evaluate(cfg)
+        evaluate(cfg, rescore=args.rescore)
     elif args.figures:
         figures_only(cfg)
     else:
