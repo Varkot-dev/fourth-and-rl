@@ -80,7 +80,7 @@ backward induction solves it.
 - **Stage 1 (no clock)** has no last state. Possessions go on forever, so V appears on both
   sides of the Bellman equation. You solve it by **value iteration**: start with V = 0,
   apply the right-hand side to get a new V, repeat until it stops changing (ours stops
-  after 272 sweeps at a change below 1e-10).
+  after 270 sweeps at a change below 1e-10).
 - **Stage 2 (with a clock)** has an end. Every action takes at least one tick, so V at
   t ticks depends only on V at fewer ticks. Fill in t = 0 (game over), then t = 1 from
   t = 0, then t = 2, and so on. Each slice is computed once. This is **backward
@@ -99,8 +99,12 @@ solved V. They differ for three reasons:
 
 1. **Who plays the rest of the game.** A win-probability model fitted on real games
    contains real coaches, who punt more than the optimum. The DP assumes both teams play
-   optimally from here. For the headline case below this accounts for 2.5 of the 5.5
-   points of difference.
+   optimally from here. For the headline case below the DP says go by 6.5 points and the
+   one-step engine by 4.8. Replacing optimal play after the decision by coach-like play
+   inside our own model lowers the DP's edge to 4.0, so who plays the rest of the game is
+   worth 2.4 points, and the remaining model differences go the other way by 0.8
+   (`one_step_comparison.headline_gap_accounting`). With win-probability version 1 the
+   one-step engine said +1.0, and the same accounting gave 2.5 of a 5.5-point gap.
 2. **Resolution.** The DP knows the kneel-down threshold to the tick and what three
    timeouts can and cannot stop. A statistical model sees a few hundred similar games.
 3. **Model error on either side.** The DP is exact only for its own simplified football.
@@ -119,8 +123,8 @@ solved V. They differ for three reasons:
 | Rest of second half | no extra state |
 | First half | one flag: does the team with the ball receive the second-half kickoff |
 
-Total 407,854,656 states. The whole game solves in 43 seconds on 2 threads, peak memory
-2.9 GB for the script, 1.9 GB of saved arrays. Nothing had to be reduced. The research
+Total 407,854,656 states. The whole game solves in 53 seconds on 3 threads, peak memory
+2.8 GB for the script, 1.9 GB of saved arrays. Nothing had to be reduced. The research
 note suggested a 30-second grid before the last 5:00; I used 5 seconds everywhere because
 on a 30-second grid every play would cost at least 30 seconds (real plays average 27), so
 games would have about 20% too few plays.
@@ -167,16 +171,17 @@ The cause is measurable. On downs 1 to 3 in the last 5:00 of one-score games:
 
 | | First-down rate | Turnover rate |
 |---|---|---|
-| Generic model, same situations | 29.8% (leading) / 28.7% (trailing) | 2.0% / 1.9% |
-| Leading teams, real | 22.3% (n = 4,539) | 1.0% |
-| Trailing teams, real | 31.8% (n = 7,488) | 2.8% |
+| Generic model, same situations | 30.0% (leading) / 28.8% (trailing) | 2.1% / 2.0% |
+| Leading teams, real | 22.6% (n = 3,387) | 1.1% |
+| Trailing teams, real | 31.9% (n = 5,562) | 2.9% |
 
 Leading teams run into loaded fronts; trailing teams throw against soft coverage. The
 research note recommended "separate protect and chase transition tables" for this reason.
 A full table per context would be too thin, so each mode is the generic play bent by two
 fitted numbers: a **tilt** a (yards gained reweighted by exp(a * yards), found by
-bisection so the first-down rate matches) and a **turnover scale**. Fitted: protect
-a = -0.036, turnovers x 0.51; chase a = +0.013, turnovers x 1.44.
+bisection so the first-down rate matches) and a **turnover scale**. Fitted on the
+development seasons: protect a = -0.036, turnovers x 0.52; chase a = +0.013, turnovers
+x 1.49.
 
 Rules: protect is allowed unless trailing, chase unless leading, neutral (the generic
 play) always. A leader can therefore still throw on third and 8 by choosing neutral, at
@@ -208,7 +213,7 @@ than when ahead by a point. The test allows for it.
 ### Stage 1: expected points
 
 - Our "next score" value of a first and 10 against nflfastR's `ep` (2018 to 2023):
-  correlation 0.9993, RMSE 0.08 points (own 25: 1.17 against 1.18; midfield 2.70 against
+  correlation 0.9994, RMSE 0.08 points (own 25: 1.17 against 1.18; midfield 2.70 against
   2.75). Our transition model alone reproduces the standard expected-points curve.
 - Counting everything after the score too (the endless game), a first and 10 at the own 25
   is worth 0.92 points and receiving a kickoff 1.20.
@@ -269,8 +274,9 @@ Headline case: up 4, 4:00 left, fourth and 2 at the own 40, opponent has three t
     go   0.778     punt 0.714     go minus punt +6.5 points
 
 The map (up 4, opponent with three timeouts): at 4:00 going beats punting up to
-fourth and 7 or 8 depending on field position; at 3:00 up to 6 or 7; at 2:00 only fourth and 2 or shorter, and with no
-opponent timeouts at 2:00 only fourth and 1 (by 1 point). Beyond fourth and 5 the margin
+fourth and 7 or 8 depending on field position; at 3:00 up to 6 to 8; at 2:00 up to fourth
+and 5 from the own 20 but only fourth and 2 from the own 40 and midfield, and with no
+opponent timeouts at 2:00 only fourth and 1 (by 1 point at the own 40). Beyond fourth and 5 the margin
 is under 3 points and should be read as a toss-up. A smaller lead means go more (up 1 at
 4:00: go at every distance to 10), a bigger one less (up 7: to about 6).
 
@@ -282,10 +288,13 @@ kickoff at the touchback spot: +6.3; both teams playing like real coaches afterw
 runs from 38% to 97%, so the edge of the go region is not known. The break-even
 conversion probability is 38%; the model says 60%.
 
-Against other methods: the one-step engine gives +1.0 for the headline case and says go in
-24% of the map's cells against the DP's 67%. nfl4th (its numbers) says go in 24% of the
-160 shared cells against the DP's 74%. The one-step numbers use the win-probability model
-being rewritten and must be refreshed after that rewrite.
+Against other methods: the one-step engine (win-probability version 2) gives +4.8 for the
+headline case and says go in 43% of the map's cells against the DP's 67%; a quarter of
+the cells (25%) disagree, almost all of them (4,838 of 5,030) cells where the one-step
+engine punts and the DP goes. nfl4th (its numbers) says go in 24% of the 160 shared cells
+against the DP's 74%. Before the rerun, with version 1, the one-step engine gave +1.0 and
+said go in only 24% of the cells: fixing the win-probability model moved the one-step
+answer most of the way toward the DP.
 
 Unexpected: more opponent timeouts make going MORE attractive (go wins in 61% of cells with
 none, 72% with three). Timeouts help the trailing team's drive after a punt more than they
@@ -330,19 +339,22 @@ The "1 -" each time the ball changes hands is the zero-sum trick.
     punt = 0.714
 
 Punt, from 200,000 simulated games: the opponent starts at its own 18 with 3:50 and scores
-a touchdown on 35.4% of those drives (real, own 1 to 20 with 3:00 to 4:00: 36.0%, n = 86).
-If it does not, the leader wins 95.6%. If it does, the leader gets the ball back 97.7% of
-the time, with a median of 65 seconds, and wins 27.1%.
+a touchdown on 35.5% of those drives (real, own 1 to 20 with 3:00 to 4:00: 36.0%, n = 86).
+If it does not, the leader wins 95.4%. If it does, the leader gets the ball back 97.8% of
+the time, with a median of 65 seconds, and wins 26.6%.
 
-    punt = 0.646 * 0.956 + 0.354 * 0.271 = 0.714
+    punt = 0.645 * 0.954 + 0.355 * 0.266 = 0.615 + 0.094 = 0.710
+
+The simulated punt value is 0.711 and the exact one 0.714; the two-branch split is a
+close approximation, not an identity.
 
 Failing: the opponent starts at the leader's 40 and scores a touchdown 54.8% (real,
 drives starting in the leader's half: 60.9%, n = 69); the leader then has a median of 115
-seconds and wins 36.1%. Converting: the leader keeps the ball to the end only 12.7% of the
+seconds and wins 35.8%. Converting: the leader keeps the ball to the end only 12.6% of the
 time against three timeouts, but the opponent's next drive starts at its own 24 with a
 median of 130 seconds and scores a touchdown 18.3%.
 
-Break-even: p * 0.895 + (1 - p) * 0.604 = 0.715 gives p = 0.381.
+Break-even: p * 0.894 + (1 - p) * 0.603 = 0.714 gives p = 0.381.
 
 So the logic is: a punt does not buy safety (the opponent still scores a third of the
 time and then usually wins), a failure costs 11 points of win probability relative to the

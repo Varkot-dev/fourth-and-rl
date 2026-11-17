@@ -14,10 +14,12 @@ Figures: `assets/hero_decision_chart.png`, `assets/m3_decision_chart_confidence.
 
 ### The problem
 
-M2 says "go" on fourth and 4 from your own 20 in a tied first quarter, by 0.3 points of
-win probability. Nobody should act on 0.3 points. The question is: how much of a
-recommendation would survive if we had been handed a slightly different history of NFL
-games to learn from? If a different, equally plausible set of seasons would have
+M2 says "punt" on fourth and 4 from your own 20 in a tied first quarter, by 0.06 points of
+win probability (go 0.4270, punt 0.4276). Nobody should act on 0.06 points. (Before the
+final rerun, with win-probability version 1, the same cell said "go" by 0.3 points: the
+call flipped with the model, which is the point of this milestone.) The question is: how
+much of a recommendation would survive if we had been handed a slightly different
+history of NFL games to learn from? If a different, equally plausible set of seasons would have
 flipped the call, the call is noise.
 
 ### What the bootstrap is
@@ -40,9 +42,9 @@ Every play of a game shares one win or loss label. A game with 150 plays is not 
 independent observations of "who wins from here"; it is one outcome seen 150 times. If
 we resampled plays, each resample would still contain a piece of nearly every game, the
 refits would barely differ, and the uncertainty would look far smaller than it is. The
-real sample size for win probability is the number of games: 3,224 training games and
-569 calibration games here, not 623,000 plays. Resampling whole games keeps each game's
-plays together so the draw-to-draw variation is the honest one.
+real sample size for win probability is the number of games: 3,793 development games
+here, not 637,000 plays. Resampling whole games keeps each game's plays together so the
+draw-to-draw variation is the honest one.
 
 In code this needs one piece of care: a game drawn twice must count as two games, so
 each draw gets its own game id, and the "what is the next state" lookup
@@ -65,10 +67,12 @@ the 101 values, and report the 6th and the 96th. That is a 90% interval, and B i
 those are whole positions in the sorted list.
 
 Worked example (reference chart, `chart.reference.cells_table`). Fourth and 1 at
-midfield: gain +6.5 points, interval +3.1 to +8.5, boot% 100%: confident go. Fourth and
-4 at the own 20: gain +0.3 points, interval -1.5 to +3.1, boot% 71%: lean. Fourth and
-goal from the 2: field goal by 0.04 points, interval for going -2.3 to +3.8, boot% 35%:
-too close to call (more replicates preferred going than kicking).
+midfield: gain +5.5 points, interval +2.6 to +7.5, boot% 100%: confident go. Fourth and
+goal from the 2: gain +1.6 points, interval -0.03 to +3.6, boot% 94%: confident go, even
+though the interval for the gain just touches zero (the category counts how often the
+best action agrees, not whether the gain is clearly positive). Fourth and 4 at the own
+20: punt by 0.06 points, interval for going -0.7 to +2.6, boot% 22%: too close to call
+(only 22 of 101 replicates agree with the punt; the rest prefer going).
 
 ### What boot% means and does not mean
 
@@ -78,13 +82,15 @@ Three reasons.
 
 1. It measures variance, not bias. Every replicate uses the same model family, the same
    features, the same clock assumptions. If all of them are wrong in the same direction
-   they agree with each other and boot% is 100%. M2 found exactly such a bias: our WP
-   model is too cautious in the last two minutes. The bootstrap cannot see it.
+   they agree with each other and boot% is 100%. M2 found such biases: version 1 of our
+   WP model was too cautious with small late leads, and version 2 still over-rates a team
+   trailing by 4 to 8 in the last 40 seconds. The bootstrap cannot see them.
 2. It is not a posterior probability. No prior was written down.
 3. The plain game bootstrap is known to be too narrow. In the authors' simulation study
    (arXiv 2406.16171, Table 5, their numbers) a plain game-level bootstrap interval with
-   nominal 90% coverage covered 71% of the time. So our "confident" is, if anything,
-   over-confident.
+   nominal 90% coverage covered 71% of the time. Our own simulation in M3b found 77% for a
+   LightGBM model (`results/m3b_sample_size_sim.json`). So our "confident" is, if
+   anything, over-confident.
 
 ### The humility paper's point
 
@@ -96,21 +102,23 @@ fourth downs, uncertain on 27%.
 
 ## 2. Design decisions and why
 
-1. **What is resampled.** The games of 2010 to 2023 only, in the same two groups as the
-   headline WP fit: 3,224 training games (2010 to 2021) and 569 calibration games (2022
-   to 2023), each group drawn with replacement to its own size. 2024 and 2025 are never
-   drawn, so the 2024 to 2025 decisions are judged by models that never saw them.
-2. **Both models are refitted in every replicate.** WP trees on the drawn training games
-   with the same hyperparameters as the headline model (300 trees); every component model
-   on all drawn games. Refitting only the WP model would understate uncertainty in the
-   conversion and kicking probabilities.
-3. **Calibration is refitted too.** The Platt map is refitted on the drawn calibration
-   games. M1 showed that a two-season Platt slope is noisy. That noise is a real part of
-   our pipeline's uncertainty, so it belongs in the bootstrap and is not frozen. Across
-   the 101 replicates the slope averaged 0.861 with standard deviation 0.066 and ranged
-   from 0.72 to 1.04 (`replicate_diagnostics`). The alternatives were to freeze the
-   headline map (hides the noise) or drop calibration in refits (then the replicates
-   would differ systematically from the point estimate).
+1. **What is resampled.** The games of 2010 to 2023 only, drawn in two groups of seasons:
+   3,224 games of 2010 to 2021 and 569 of 2022 to 2023, each group with replacement to
+   its own size. The groups are those of the version 1 fit (training and calibration);
+   with version 2 the trees grow on both groups together. 2024 and 2025 are never drawn,
+   so the 2024 to 2025 decisions are judged by models that never saw them.
+2. **Both models are refitted in every replicate.** WP trees on all drawn development
+   games with the same hyperparameters as the headline model (300 trees); every component
+   model on all drawn games. Refitting only the WP model would understate uncertainty in
+   the conversion and kicking probabilities.
+3. **No calibration map (version 2).** The headline model has no calibration map, so
+   neither do the refits (`calibration: none` in `configs/bootstrap.yaml`). Version 1 had
+   a Platt map fitted on two seasons, and the bootstrap refitted it on the drawn
+   calibration games in every replicate, because M1 showed that a two-season Platt slope
+   is noisy and that noise was a real part of the pipeline's uncertainty (in the version 1
+   run the slope averaged 0.861 with standard deviation 0.066 and ranged from 0.72 to
+   1.04). The code path is kept for version 1; the version 2 run records "no calibration
+   map" in `replicate_diagnostics`.
 4. **The point estimate is the M2 engine.** boot% compares each replicate with the
    headline engine, which was fitted on the same seasons by the same procedure.
 5. **Games only, not games then drives.** The humility paper resamples games and then
@@ -119,7 +127,8 @@ fourth downs, uncertain on 27%.
    implemented (`within_game: drives`) and unit-tested but has not been run on the full
    data, so we cannot say how much it would change the categories. `game_fraction`
    (draw fewer games, the "fractional bootstrap") is also implemented and not run.
-6. **The kickoff table is fixed.** It comes from 2025 and is not resampled (see M2).
+6. **The kickoff-rule tables are fixed.** The tables of the 2024 and 2025 kickoff rules
+   are fitted on those seasons' own kickoffs and are not resampled (see M2).
 7. **A different LightGBM seed per replicate** (base seed plus the replicate number), so
    the random row and column subsampling of the trees is part of the variation too.
 8. **Evaluation states are fixed**: the four chart panels (5,520 cells) and all 8,569
@@ -129,8 +138,8 @@ fourth downs, uncertain on 27%.
    and each replicate's action values are cached, so a rerun takes seconds and later
    milestones can reuse the refits.
 
-Runtime: 12.0 seconds to refit and 9.1 seconds to evaluate 14,089 states per replicate,
-35 minutes in total on 2 threads.
+Runtime: 12.7 seconds to refit and 7.2 seconds to evaluate 14,089 states per replicate,
+34 minutes in total on 2 threads.
 
 How much the refitted pieces move (`replicate_diagnostics`): P(convert) on fourth and 2
 at midfield 0.602 with standard deviation 0.008; a 50-yard field goal 0.738, sd 0.010;
@@ -143,50 +152,57 @@ stable. Most of the variation in decisions comes from the WP model.
 
 | Situation | Confident | Lean | Too close to call |
 |---|---|---|---|
-| First quarter, tied (the hero chart) | 63.7% | 18.5% | 17.8% |
-| Trailing by 7, 8:00 left | 73.3% | 10.3% | 16.4% |
-| Leading by 4, 4:00 left | 73.6% | 13.6% | 12.8% |
-| Trailing by 3, 2:00 left | 78.2% | 11.9% | 9.9% |
+| First quarter, tied (the hero chart) | 70.1% | 14.9% | 14.9% |
+| Trailing by 7, 8:00 left | 81.4% | 9.9% | 8.8% |
+| Leading by 4, 4:00 left | 77.5% | 11.5% | 11.0% |
+| Trailing by 3, 2:00 left | 79.2% | 9.5% | 11.3% |
+
+(With version 1 the reference chart was 63.7% confident.)
 
 On the reference chart the confident regions are the ones a fan would guess: go on
 fourth and 1 to 3 almost everywhere, punt on long yardage in your own half, kick on long
 yardage in range. The grey band is the boundary between them: fourth and 5 to 7 in your
-own half, fourth and 4 to 7 inside the opponent's 20, and the long-yardage zone around
+own half, fourth and 5 to 7 inside the opponent's 20, and the long-yardage zone around
 the opponent's 40 where punt, long field goal and go are all close. The 90% interval of
-the gain from going is typically 4.5 points wide and excludes zero in 42% of cells.
+the gain from going is typically 3.4 points wide and excludes zero in 51% of cells.
 
 The late-game panels look MORE confident than the first-quarter one. Do not read that as
 "we know more late in games". It is the bias point from section 1: all 101 refits share
-the same flat late-game win probability.
+the same model family and the same end-game errors, so they agree with each other
+whether or not they are right.
 
 ### Real fourth downs, 2024 to 2025
 
 7,955 plays with a real decision (575 penalty or kneel rows and 43 overtime or
 incomplete rows are in the saved file but not counted here).
 
-- Confident **62.0%**, lean **17.7%**, too close to call **20.3%**.
-- By recommended action: go 59% confident and 21% uncertain; field goal 53% and 26%;
-  punt 70% and 17%.
-- The estimated gain from going is under 1 point on 41% of plays, under 2 points on 63%
-  and under 4 points on 85%. (The paper reports 44% under 1 and 87% under 4 for their
+- Confident **72.3%**, lean **13.5%**, too close to call **14.2%**. (With version 1:
+  62.0%, 17.7% and 20.3%.)
+- By recommended action: go 72% confident and 13% uncertain; field goal 75% and 14%;
+  punt 71% and 17%.
+- The estimated gain from going is under 1 point on 44% of plays, under 2 points on 64%
+  and under 4 points on 86%. (The paper reports 44% under 1 and 87% under 4 for their
   model on 2018 to 2022; their numbers.)
-- The 90% interval for the gain is 4.1 points wide at the median and excludes zero on
-  44% of plays.
+- The 90% interval for the gain is 2.8 points wide at the median and excludes zero on
+  58% of plays.
 - For orientation only (the coach evaluation is M7): on confident plays coaches went
-  47.8% of the time when the engine says go (n = 2,159) and kicked 90.4% of the time
-  when it says kick (n = 2,770). The paper reports 49% and 91% for its own model and
-  seasons. On too-close-to-call plays where the engine leans go, coaches went 14%.
+  49.2% of the time when the engine says go (n = 2,689) and kicked 95.3% of the time
+  when it says kick (n = 3,060). The paper reports 49% and 91% for its own model and
+  seasons. On too-close-to-call plays where the engine leans go, coaches went 12%.
 
-We are confident more often than the paper (62% against their 48%). We cannot say why
+We are confident more often than the paper (72% against their 48%). We cannot say why
 from here. Candidates: they also resample drives within games, their model and seasons
-differ, and our WP model is smoother (very large leaves), which makes refits agree.
+differ, and the plain game bootstrap is too narrow for tree models (77% coverage for a
+nominal 90% in M3b), which makes refits agree more than they should. Version 1 had
+explained the gap partly by its very large leaves; version 2 has 2,000-play leaves and is
+confident even more often, so that explanation does not hold.
 
 ### Stability of the categories
 
 We did not run a second seed. Instead the 101 replicates were split into even-numbered
 (51) and odd-numbered (50) and each half classified every state on its own. The two
-halves give the same category on **85.2%** of real plays (87% on the reference chart).
-Almost all changes are between neighbouring categories: only 22 of 7,955 plays move
+halves give the same category on **88.7%** of real plays (83% on the reference chart).
+Almost all changes are between neighbouring categories: only 13 of 7,955 plays move
 between confident and uncertain. Each half has half the replicates, so this understates
 the stability of the full B = 101 result. The paper reports about 0.9 agreement across
 repeated full bootstraps (their number, a different check).
@@ -204,44 +220,62 @@ Up 4, 4:00 left, fourth down in your own half, three timeouts each, even matchup
 (`results/questions/q1_late_lead_one_step.json`, figure
 `assets/questions/q1_late_lead_one_step.png`).
 
-**The one-step answer: punt, unless it is fourth and 1.** Going is the best action in
-18% of the 500 own-half cells (50 field positions by 10 distances). 79% of the cells are
-confident, 11% lean and 10% too close to call.
+**The one-step answer: go on fourth and 1 to 3 everywhere in your own half; fourth and 4
+is mostly too close to call; punt from fourth and 8 on.** Going is the best action in 47%
+of the 500 own-half cells (50 field positions by 10 distances). 65% of the cells are
+confident, 19% lean and 16% too close to call.
 
 | Yards to go | What the engine says across the own half |
 |---|---|
-| 1 | Go everywhere. Confident on 35 of 50 yard lines; too close to call on 10, around the own 15 to 30 |
-| 2 | Go on 22 of 50 yard lines (8 confident): from about the own 40 out, and a suspect patch inside the own 5 where the punt model is weak. Too close to call on 23 |
-| 3 | Punt on most (39 of 50); go confident on only 2 |
-| 5 or more | Punt, confident nearly everywhere |
+| 1 | Go everywhere, confident on all 50 yard lines |
+| 2 | Go everywhere: confident on 47 of 50 yard lines, lean on 3 |
+| 3 | Go everywhere: confident on 16, lean on 26, too close to call on 8 |
+| 4 | Go on 38 of 50 yard lines, but too close to call on 34 (confident go on 10) |
+| 5 and 6 | Go on 21 and 17 of 50 yard lines; most cells lean or too close to call |
+| 7 | Go on 10 of 50 yard lines; punt confident on 34 |
+| 8 or more | Punt, confident nearly everywhere (45 of 50 at fourth and 8, all 50 at 9 and 10) |
 
-Selected cells (gain from going in WP points, 90% interval, boot%):
+The earlier version of this answer (win-probability version 1) was "punt, unless it is
+fourth and 1": go in 18% of the cells. It changed with the win-probability model. The
+most likely reason is the one version 2 was built to fix: version 1 was too cautious
+about small late leads (M2 notes, point 4), so it under-valued the state a conversion
+produces (a lead with the ball and the clock running), and going looked worse than it is.
+The rerun did not isolate this cause; it is an inference.
+
+Selected cells (gain from going in WP points, 90% interval, boot%; cells without a label
+are confident):
 
 | Spot | 4th and 1 | 4th and 2 | 4th and 3 | 4th and 5 |
 |---|---|---|---|---|
-| Own 20 | go +0.9 (-2.5, +4.7) 66% uncertain | punt -2.2 (-5.3, +1.7) 77% lean | punt -4.0 (-6.5, +0.2) 94% | punt -6.5 (-9.3, -2.2) 100% |
-| Own 30 | go +2.2 (-1.3, +4.6) 84% confident | punt -0.4 (-3.7, +2.1) 70% lean | punt -1.8 (-5.2, +0.8) 88% | punt -3.8 (-7.1, -1.2) 100% |
-| Own 40 | go +3.2 (-0.1, +5.3) 93% confident | go +1.0 (-2.3, +3.1) 55% uncertain | punt -0.5 (-3.7, +1.4) 72% lean | punt -2.2 (-5.6, -0.3) 96% |
-| Midfield | go +5.5 (+2.5, +7.8) 100% | go +3.5 (+0.4, +5.3) 96% | go +2.2 (-0.9, +3.9) 89% | go +0.7 (-2.2, +2.2) 52% uncertain |
+| Own 20 | go +5.6 (+2.1, +8.6) 100% | go +2.5 (-0.6, +5.0) 87% | go +0.7 (-2.1, +3.3) 67% lean | punt -1.7 (-4.8, +1.2) 81% lean |
+| Own 30 | go +5.6 (+2.6, +8.3) 100% | go +3.1 (+0.1, +5.8) 96% | go +1.6 (-1.3, +4.1) 81% lean | punt -0.5 (-3.1, +1.9) 67% lean |
+| Own 40 | go +7.2 (+3.2, +9.0) 100% | go +4.8 (+0.8, +6.4) 99% | go +3.3 (-0.3, +5.2) 91% | go +1.3 (-2.1, +3.3) 66% uncertain |
+| Midfield | go +8.8 (+5.0, +11.2) 100% | go +6.1 (+2.7, +8.5) 100% | go +4.6 (+1.5, +7.2) 100% | go +2.7 (-0.3, +5.2) 88% |
 
-Other leads and clocks. With 6:00 left the engine goes far more often (40% of cells up
-4, 66% up 7) and is less sure. With 2:00 left it looks like 4:00 (21% of cells up 4).
-Up 3 behaves like up 4; up 1 goes more (30 to 42% of cells).
+Other leads and clocks. With 6:00 left the engine looks like 4:00 (47% of cells up 4,
+35% up 7). With 2:00 left it goes much less (18% of cells up 4). Up 3 behaves like up 4
+(53% at 4:00); up 1 goes more (69% at 4:00, 68% at 6:00, 34% at 2:00). Across the whole
+question 1 grid of the exact solution (M4), the one-step engine says go in 43% of the
+cells and the exact solution in 67% (`results/questions/q1_late_lead_dp.json`,
+`one_step_comparison`).
 
 **nfl4th, same situations.** The reference grid has nfl4th go values only at the own 20
 and own 30 (it returned NA at the own 40 and midfield). There, nfl4th says go on 16% of
-the 240 scenarios and we say go on 39%; the two tools make the same call on 53%, and on
-64% of the 161 where ours is "confident". With three opponent timeouts nfl4th says punt
+the 240 scenarios and we say go on 59%; the two tools make the same call on 43%, and on
+48% of the 172 where ours is "confident". With three opponent timeouts nfl4th says punt
 on every one of them, including fourth and 1. Its go recommendations are all in the
 rows where the opponent has no timeouts. Our "confident" label does not protect against
-this disagreement, which is the variance-not-bias point again.
+this disagreement, which is the variance-not-bias point again. (With version 1 we said go
+on 39% and the two tools agreed on 53%: version 2 moved our engine away from nfl4th.)
 
-**Coaches.** 896 real fourth downs from 2010 to 2025, leading by 1 to 8 with 1:30 to
-7:00 left in the fourth quarter, in their own half. They went on 20 of 100 at fourth and
-1 (12 converted), 4 of 68 at fourth and 2, 1 of 68 at fourth and 3, and 3 of 660 beyond
-that. Since 2021: 10 of 23 at fourth and 1, 3 of 24 at fourth and 2. Coaches punt almost
-always; the engine agrees with them except at fourth and 1, and at fourth and 2 near
-midfield.
+**Coaches.** 774 real fourth downs from the development seasons 2010 to 2023, leading by
+1 to 8 with 1:30 to 7:00 left in the fourth quarter, in their own half. They went on 16 of
+91 at fourth and 1 (10 converted), 2 of 55 at fourth and 2, 1 of 62 at fourth and 3, and 3
+of 566 beyond that. From 2021 to 2023: 6 of 14 at fourth and 1, 1 of 11 at fourth and 2.
+Coaches punt almost always; the engine now disagrees with them on fourth and 1 to 3
+everywhere in the own half. (The earlier version of this paragraph counted 2010 to 2025
+and said the engine agreed with coaches except at fourth and 1 and at fourth and 2 near
+midfield.)
 
 ### What a one-step lookup cannot capture here
 
@@ -254,19 +288,23 @@ Say this clearly whenever the one-step answer is quoted.
    ordinary play calling, not what this team can now do on purpose.
 2. **The opponent's timeouts.** They enter only through two WP features that the trees
    barely use. Changing the opponent from three timeouts to none moves the share of "go"
-   cells from 18.4% to 17.6%. In a real end-game that number decides whether a first
+   cells from 47.4% to 46.8%. In a real end-game that number decides whether a first
    down ends the game. nfl4th, in contrast, flips from punt to go when the timeouts go.
 3. **Who gets the last possession.** Failing gives a short field, but a quick score also
    gives the ball back with time to answer; punting may mean never touching the ball
    again. A one-step value has no notion of sequence.
-4. **A WP model that is too cautious late.** Inside two minutes our model under-values
-   small leads (M2 notes, point 4), which contaminates the 2:00 panels.
+4. **A WP model with its own end-game errors.** Version 1 under-valued small late leads;
+   version 2 fixed that, but it still over-rates a team trailing by 4 to 8 in the last 40
+   seconds (16.6% predicted against 8.1% observed) and under-rates one trailing by 1 to 3
+   (29.7% against 40.2%) (M2 notes, point 4). After a punt or a failed attempt the
+   opponent is the trailing team, so this contaminates the 2:00 panels most.
 5. **Bootstrap confidence is about noise.** All 101 refits share points 1 to 4.
 
-The full-game dynamic program (M4, built separately) is the tool that answers the
-question properly: it models the clock in seconds, kneel-downs and the opponent's
-timeouts. The one-step answer here is the standard analytics answer, with honest error
-bars on the part of the error that is sampling noise.
+The full-game dynamic program (M4) is the tool that answers the question properly: it
+models the clock in seconds, kneel-downs and the opponent's timeouts. Its headline (up 4,
+4:00, fourth and 2 at the own 40) is go 0.778 against punt 0.714, and the one-step answer
+above has moved most of the way toward it. The one-step answer here is the standard
+analytics answer, with honest error bars on the part of the error that is sampling noise.
 
 ## 5. Limits, stated plainly
 
@@ -276,24 +314,30 @@ bars on the part of the error that is sampling noise.
 - The drives-within-games and fractional options are untested on real data.
 - 2024 to 2025 were not used to tune anything, but the thresholds (83%, 67%) and B are
   the paper's, not validated by us.
-- Everything inherits M2's limits: one step, league-average teams, no overtime, a WP
-  model that is flat in places and too cautious late in close games.
+- Everything inherits M2's limits: one step, league-average teams, no overtime, a fixed
+  charge of seconds per play, and a WP model that still errs for trailing teams in the
+  last 40 seconds.
 
 ## 6. Questions you should be able to answer
 
 1. What is a bootstrap replicate, step by step, in this project?
 2. Why whole games? What would go wrong, and in which direction, if you resampled plays?
-3. What is the effective sample size for the WP model, and for its calibration map?
+3. What is the effective sample size for the WP model, and what was it for version 1's
+   calibration map?
 4. A cell has boot% = 71%. Which category is it, and what exactly is 71% the share of?
 5. boot% is 100% for "punt when trailing by 1 with 22 seconds left" if every refit says
    so. Why does that not make it right?
-6. Why refit the Platt map in each replicate and not reuse the headline one?
+6. Version 1 refitted the Platt map in each replicate instead of reusing the headline
+   one. Why, and why does version 2 not need to?
 7. Why is B odd, and which sorted values bound the 90% interval when B = 101?
 8. Why must a game that is drawn twice get two different ids?
 9. Why were 2024 and 2025 kept out of the resampling?
-10. The paper is confident on 48% of plays and we are on 62%. Give two possible reasons
+10. The paper is confident on 48% of plays and we are on 72%. Give two possible reasons
     and say what you would run to find out.
 11. Up 4 with 4:00 left at your own 30, fourth and 1: what does the one-step engine say,
     with what confidence, and name three things it cannot see.
-12. Split-half agreement is 85%. Why does that understate the stability of the B = 101
+12. Split-half agreement is 89%. Why does that understate the stability of the B = 101
     categories?
+13. With version 1 the one-step answer to question 1 was "punt unless fourth and 1"; with
+    version 2 it is "go on fourth and 1 to 3". Which error in version 1 most likely caused
+    the difference, why does it push toward punting, and what would you run to confirm it?
