@@ -134,4 +134,9 @@ nflreadpy, polars or pandas, scikit-learn, XGBoost or LightGBM, NumPy for dynami
 14. How does the blown-lead distribution act as a calibration test, and what would an overconfident model look like under it?
 
 ## Decision log
-(empty)
+
+- **2026-11-17. Working mode: build first, teach at the end.** The owner asked for the milestones to be built autonomously, with the teaching pass and the quiz moved to the end. `CLAUDE.md` was updated to match. To keep the teaching pass honest, each milestone records its concepts, decisions and results in `docs/NOTES.md` as it is built.
+- **2026-11-17. Blown-lead analysis (M3b) moves to right after M1.** It needs only the data pipeline, the nflfastR win-probability column and our own win-probability model, and it is the most original result, so it should exist early. Build order is now M0, M1, M3b, M2, M3, M4, M5, M6, M7.
+- **2026-11-17. Full-game MDP discretization.** Yard line exact (1 to 99). Distance 1 to 10 exact, then bins 11 to 15 and 16+. Score differential clipped to -21..+21. Clock measured in plays remaining, not seconds. Timeouts left out of the first version. Because the clock only decreases, the model is solved by one backward pass (finite-horizon backward induction) instead of iterating to convergence.
+- **2026-11-17. The opponent in the full-game MDP.** The plan did not say how the other team behaves. Decision: both teams follow the same policy and the game is zero-sum, so the value of a state for the team without the ball is 1 minus the value for the team with it. Backward induction then solves both sides at once.
+- **2026-11-17. nfl4th comparison (M2).** nfl4th is an R package. It is used once, from a short R script, to produce a reference table of well-known fourth downs saved under `results/` and labelled as nfl4th output. The project itself stays in Python.
