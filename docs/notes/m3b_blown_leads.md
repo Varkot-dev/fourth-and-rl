@@ -297,25 +297,40 @@ What this shows:
    483. The simulator independently lands in the same place (360). Taking the formula at
    face value would have led to the wrong conclusion that these models are badly
    underconfident.
-3. **After the correction, small departures remain, and they differ by model.**
+3. **After the correction, small departures remain, and they differ by model.** Each
+   result below gives two z values: the first treats every first crossing as an
+   independent episode, the second (`team_season_bootstrap` in the results file) uses the
+   same season-stratified team bootstrap weights as the PIT test, so both sides of a game,
+   and games that share a team-season, are resampled together.
    - nflfastR without spread: at first crossings of 0.90 and 0.95 teams lost less often
-     than implied (7.3% against 8.3%, and 3.1% against 3.9%; z = -2.4 and -2.7). That is
-     mild underconfidence at the top.
+     than implied (7.3% against 8.3%, and 3.1% against 3.9%; z = -2.4 and -2.7 assuming
+     independence, -1.5 and -1.8 with the team bootstrap, two-sided p = 0.12 and 0.07).
+     That is mild underconfidence at the top, and it is not clearly there once the
+     dependence is allowed for.
    - Ours: at 0.90 and 0.99 observed and implied agree (359 against 348, 17 against
-     19); at 0.95 there are a few more losses than implied (160 against 141, z = 1.6).
-     At first crossings of 0.60, 0.70 and 0.80 teams lost more often than our model
-     implied: 33.6% against 32.7%, 26.5% against 25.3%, and 18.3% against 16.9%
-     (z = 1.5, 2.1, 2.7). That is mild overconfidence in the middle of the range, about
-     one to one and a half points, and it is the one place where this analysis finds a
-     fault in our model. The cross-fitted development seasons show the same thing in M1
-     (a pooled Platt slope of 0.93, `docs/notes/m1_wp.md` section 6.5).
-     The spread version of nflfastR shows the same pattern more weakly (z about 2.2).
+     19); at 0.95 there are a few more losses than implied (160 against 141, z = 1.6, or
+     0.9 with the team bootstrap). At first crossings of 0.60, 0.70 and 0.80 teams lost
+     more often than our model implied: 33.6% against 32.7%, 26.5% against 25.3%, and
+     18.3% against 16.9% (z = 1.5, 2.1, 2.7 assuming independence; 1.6, 1.7, 1.8 with
+     the team bootstrap, two-sided p = 0.11, 0.08, 0.07). That is mild overconfidence in
+     the middle of the range, about one to one and a half points, and it is the one place
+     where this analysis finds a possible fault in our model. The cross-fitted development
+     seasons show the same thing in M1 (a pooled Platt slope of 0.93,
+     `docs/notes/m1_wp.md` section 6.5).
+     The spread version of nflfastR shows the same pattern (z = 2.2, 2.1, 2.4 assuming
+     independence; 2.4, 1.7, 1.6 with the team bootstrap, p = 0.02 at 0.60).
    - At 0.99 the two nflfastR models have fewer losses than implied (11 and 12 observed
      against 17 and 20), within or at the edge of their 95% intervals.
-   There are 18 crossing tests here, so a single z of 2 means little. Our largest,
-   z = 2.7 at 0.80, sits at the edge of a correction for 18 tests (a one-sided
-   Bonferroni bar of about 2.8), so the mid-range overconfidence is suggestive, not
-   established. The intervals assume independent games.
+   The team bootstrap mostly shrinks the z values, by about a third at 0.80 and above,
+   because games that share a team carry correlated surprises. At 0.60 it can widen them
+   slightly: both teams of a game can cross 0.60, and since one of them must lose, the two
+   episodes' surprises tend to cancel, which the independence count does not credit.
+   There are 18 crossing tests here, so a single z of 2 means little. With the team
+   bootstrap no test reaches the bar of a Bonferroni correction for 18 tests (two-sided
+   p below 0.0028, or |z| above about 3.0); the largest is nflfastR with spread at 0.60
+   (z = 2.4, p = 0.02), and ours is z = 1.8 at 0.80. Even under the independence
+   assumption our z = 2.7 at 0.80 only sat at the edge of that bar. So the mid-range
+   overconfidence is suggestive, not established.
 4. **Against the simulated reference the PIT is much flatter** (KS 0.036, 0.051, 0.042
    instead of 0.085, 0.067, 0.064) but not flat: there are somewhat too many moderately
    high peaks and too few very high ones, and the one-sided bootstrap test rejects for
@@ -330,9 +345,10 @@ What this shows:
 
 **Answer to "does discreteness change the conclusion": yes, completely.** With the
 continuous formula the conclusion would be "strongly underconfident". With the correct
-discrete references it is "close to calibrated in the tail, with a small mid-range
-overconfidence in the spread-aware models and a small underconfidence at the top for
-nflfastR without spread".
+discrete references it is "close to calibrated in the tail, with a possible small
+mid-range overconfidence in the spread-aware models and a possible small underconfidence
+at the top for nflfastR without spread", neither of which survives the correction for 18
+tests once the dependence between crossings is allowed for.
 
 ### Collapse rankings
 
@@ -457,7 +473,9 @@ either way.
    nothing else. One free parameter (the Gamma shape of the gaps) is fitted to the real
    jump sizes. The number of plays is the real median, 163.
 9. **Team bootstrap** for the PIT test follows the paper (season-stratified pigeonhole
-   bootstrap, 2,000 draws). Count intervals use the simpler assumption of independent
+   bootstrap, 2,000 draws). The first-crossing test reports both the independence z and
+   an interval and p-values from the same bootstrap weights, each crossing taking its
+   game's weight. The peak-count intervals use the simpler assumption of independent
    games and say so.
 10. **Ranking ties.** Raw peaks are compared after rounding to three decimals, because
     differences beyond a tenth of a point are below what any model can support; ties go
@@ -473,8 +491,9 @@ either way.
 - The simulated reference is an approximation. It matches the jump-size quantiles and the
   share of losers who never rise above their start, but it is not football, and the PIT
   against it is not flat.
-- All intervals for counts assume independent games. The team bootstrap is used only for
-  the PIT statistic and its tail shares.
+- The peak-count intervals assume independent games. The team bootstrap is used for the
+  PIT statistic, its tail shares and the first-crossing test (reported next to the
+  independence z, which is kept for comparison).
 - The nflfastR models are tested partly in-sample. Ours is tested on out-of-fold
   predictions.
 - The crossing tests at six thresholds and three models are 18 looks at the data.

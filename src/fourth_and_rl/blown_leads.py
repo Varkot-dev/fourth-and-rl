@@ -428,7 +428,11 @@ def extreme_peak_counts(
 
 
 def crossing_test(
-    crossings: pl.DataFrame, rng: np.random.Generator, n_sim: int = 20000
+    crossings: pl.DataFrame,
+    rng: np.random.Generator,
+    n_sim: int = 20000,
+    weights: np.ndarray | None = None,
+    weight_game_ids: np.ndarray | None = None,
 ) -> dict:
     """Blown leads after a first crossing: observed losses versus implied losses.
 
@@ -437,6 +441,14 @@ def crossing_test(
     crossings gives the expected number of losers whose peak reached the threshold.
     This holds exactly for paths that jump (optional stopping needs no continuity),
     so it is the discreteness-proof version of the peak count.
+
+    The `z`, `p_upper` and `expected_interval95` from `extreme_peak_counts` treat every
+    crossing as an independent episode. They are not: both teams of a game can cross,
+    and games share team-seasons. With `weights` (shape (n_boot, n_games), from
+    `pigeonhole_weights`) and `weight_game_ids` (the game id of each weight column),
+    `team_season_bootstrap` adds the same comparison with that dependence allowed for:
+    each crossing takes its game's weight, so a game's two episodes and a team's games
+    move together. See `pigeonhole_excess`.
     """
     p = crossings["p_cross"].to_numpy()
     lost = ~crossings["won"].to_numpy()
@@ -449,9 +461,59 @@ def crossing_test(
             "observed_loss_rate": float(lost.mean()) if p.size else float("nan"),
             "implied_loss_rate": float(implied.mean()) if p.size else float("nan"),
             "mean_p_at_crossing": float(p.mean()) if p.size else float("nan"),
+            "z_assumes": "independent episodes (both sides of a game and every game counted "
+            "as separate draws)",
         }
     )
+    if weights is not None:
+        if weight_game_ids is None:
+            raise ValueError("weights need weight_game_ids (the game of each weight column)")
+        column = {g: i for i, g in enumerate(np.asarray(weight_game_ids).tolist())}
+        try:
+            col = np.array([column[g] for g in crossings["game_id"].to_list()], dtype=np.int64)
+        except KeyError as exc:
+            raise ValueError(f"a crossing's game has no bootstrap weight: {exc}") from None
+        out["team_season_bootstrap"] = pigeonhole_excess(
+            lost.astype(float) - implied, weights[:, col]
+        )
     return out
+
+
+def pigeonhole_excess(excess: np.ndarray, weights: np.ndarray) -> dict:
+    """Interval and p-values for a sum of per-episode excesses under game weights.
+
+    `excess[i]` is observed minus implied for episode i (lost - (1 - p_cross)), and
+    `weights[b, i]` the bootstrap weight of episode i's game in draw b (shape (n_boot, n)).
+    The statistic is D = sum(excess): observed minus expected losses. Each draw gives
+    D*_b = sum(weights[b] * excess), whose spread around D reflects the dependence between
+    episodes that share a game or a team-season. Reported:
+
+      excess, excess_interval95   D and the 2.5% and 97.5% percentiles of D*_b
+      se                          standard deviation of D*_b
+      z                           D / se (the dependence-aware counterpart of the
+                                  independence z)
+      p_upper, p_two_sided        normal p-values from that z
+      p_two_sided_bootstrap       share of draws with |D*_b - D| >= |D| (recentered)
+    """
+    excess = np.asarray(excess, float)
+    d = float(excess.sum())
+    boot = weights @ excess
+    se = float(np.std(boot, ddof=1)) if boot.size > 1 else float("nan")
+    z = d / se if se > 0 else float("nan")
+    lo, hi = np.quantile(boot, [0.025, 0.975]) if boot.size else (np.nan, np.nan)
+    extreme = np.sum(np.abs(boot - d) >= abs(d))
+    return {
+        "excess": d,
+        "excess_interval95": [float(lo), float(hi)],
+        "se": se,
+        "z": float(z),
+        "p_upper": float(stats.norm.sf(z)) if se > 0 else None,
+        "p_two_sided": float(2 * stats.norm.sf(abs(z))) if se > 0 else None,
+        "p_two_sided_bootstrap": float((1 + extreme) / (boot.size + 1)),
+        "n_boot": int(weights.shape[0]),
+        "assumes": "season-stratified team (pigeonhole) bootstrap: a crossing takes its "
+        "game's weight, so both sides of a game and games sharing a team move together",
+    }
 
 
 # ---------------------------------------------------------------------------

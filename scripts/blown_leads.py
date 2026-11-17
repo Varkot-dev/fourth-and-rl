@@ -19,6 +19,7 @@ Outputs:
 from __future__ import annotations
 
 import time
+from collections.abc import Callable
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -115,7 +116,12 @@ def calibrate_gap_shape(
 
 
 def peak_counts(
-    peak: np.ndarray, p0: np.ndarray, sf, thresholds: list[float], rng, n_sim: int
+    peak: np.ndarray,
+    p0: np.ndarray,
+    sf: Callable[[float, np.ndarray], np.ndarray],
+    thresholds: list[float],
+    rng: np.random.Generator,
+    n_sim: int,
 ) -> dict:
     return {
         f"{x:.2f}": bl.extreme_peak_counts(peak >= x, sf(x, p0), rng, n_sim) for x in thresholds
@@ -148,8 +154,12 @@ def analyze_model(
         "pit_game_bootstrap": bl.pit_bootstrap_test(games["pit_game"].to_numpy(), weights),
         "extreme_peaks": peak_counts(peak, p0, bl.peak_sf, thresholds, rng, cfg["n_count_sim"]),
     }
+    # The pigeonhole weights are per game (columns in the order of `games`); each crossing
+    # takes its game's weight, which allows for dependence the independence z ignores.
+    game_ids = games["game_id"].to_numpy()
     crossing = {
-        f"{x:.2f}": bl.crossing_test(bl.first_crossings(hp, x), rng, cfg["n_count_sim"])
+        f"{x:.2f}": bl.crossing_test(bl.first_crossings(hp, x), rng, cfg["n_count_sim"],
+                                     weights, game_ids)  # fmt: skip
         for x in cfg["crossing_thresholds"]
     }
 
@@ -526,7 +536,11 @@ def main() -> None:
             ),
             "first_crossing": (
                 "expected blown leads = sum of (1 - p) at each team's first value at or "
-                "above the threshold; exact for a calibrated model even when paths jump"
+                "above the threshold; exact for a calibrated model even when paths jump. "
+                "z, p_upper and expected_interval95 treat crossings as independent; "
+                "team_season_bootstrap gives the interval and p-values with both sides of "
+                "a game and games sharing a team-season resampled together (the same "
+                "pigeonhole weights as pit_bootstrap)"
             ),
             "discrete_adjusted_reference": (
                 "simulated calibrated game reported at play times, with time gaps fitted "
@@ -558,6 +572,11 @@ def main() -> None:
             f = s["first_crossing"][k]
             print(f"  peak >= {k}: observed {c['observed']:4d} | formula {c['expected']:6.1f} | "
                   f"simulated {d['expected']:6.1f} | first crossing {f['expected']:6.1f}")
+        for k, f in s["first_crossing"].items():
+            tb = f["team_season_bootstrap"]
+            print(f"  first crossing {k}: excess {tb['excess']:+6.1f}, z independent "
+                  f"{f['z']:+.2f}, z team-season {tb['z']:+.2f} (p two-sided "
+                  f"{tb['p_two_sided']:.3f})")  # fmt: skip
         print(f"  PIT KS (formula) {s['continuous_reference']['pit_ks']['ks_two_sided']:.3f}, "
               f"(simulated) {s['discrete_adjusted_reference']['pit_ks']['ks_two_sided']:.3f}")
     print(f"\ndone in {time.time() - t0:.0f}s")

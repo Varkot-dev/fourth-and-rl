@@ -313,6 +313,47 @@ def test_first_crossings_and_jumps(tiny_plays: pl.DataFrame) -> None:
     assert jumps.max() == pytest.approx(0.55)  # away game: 0.35 -> 0.90 for the home side
 
 
+def test_crossing_test_maps_each_crossing_to_its_game_weight(tiny_plays: pl.DataFrame) -> None:
+    hp = bl.home_paths(tiny_plays, "wp")
+    cr = bl.first_crossings(hp, 0.75)
+    ids = np.array(["2024_01_BBB_HOM", "2024_01_AWY_HOM"])
+    # Draw 0 keeps every game once; draw 1 drops the lost game (AWY) and doubles the other.
+    w = np.array([[1.0, 1.0], [2.0, 0.0]])
+    res = bl.crossing_test(cr, np.random.default_rng(0), 200, w, ids)
+    tb = res["team_season_bootstrap"]
+    excess = {(r["game_id"], r["side"]): float(not r["won"]) - (1 - r["p_cross"])
+              for r in cr.iter_rows(named=True)}  # fmt: skip
+    assert tb["excess"] == pytest.approx(res["observed"] - res["expected"])
+    bbb = excess[("2024_01_BBB_HOM", "away")] + excess[("2024_01_BBB_HOM", "home")]
+    lo, hi = sorted([tb["excess"], 2 * bbb])
+    assert tb["excess_interval95"][0] == pytest.approx(lo + 0.025 * (hi - lo))
+    with pytest.raises(ValueError, match="no bootstrap weight"):
+        bl.crossing_test(cr, np.random.default_rng(0), 200, w[:, :1], ids[:1])
+
+
+def test_pigeonhole_excess_widens_when_episodes_share_a_game() -> None:
+    """Two episodes of one game with the same excess carry twice the variance of
+    independent ones; a game-level weight must show it, the independence z cannot."""
+    rng = np.random.default_rng(4)
+    n_games, n_boot = 600, 4000
+    e = rng.choice([-0.5, 0.5], size=n_games)
+    counts = rng.multinomial(n_games, np.full(n_games, 1 / n_games), size=n_boot).astype(float)
+    shared = bl.pigeonhole_excess(np.repeat(e, 2), np.repeat(counts, 2, axis=1))
+    e2 = rng.choice([-0.5, 0.5], size=2 * n_games)
+    counts2 = rng.multinomial(2 * n_games, np.full(2 * n_games, 1 / (2 * n_games)),
+                              size=n_boot).astype(float)  # fmt: skip
+    separate = bl.pigeonhole_excess(e2, counts2)
+    assert 1.25 < shared["se"] / separate["se"] < 1.6  # about the square root of 2
+    assert shared["p_two_sided"] == pytest.approx(2 * stats_norm_sf(abs(shared["z"])))
+    assert 0 < shared["p_two_sided_bootstrap"] <= 1
+
+
+def stats_norm_sf(z: float) -> float:
+    from scipy import stats
+
+    return float(stats.norm.sf(z))
+
+
 def test_rankings_differ_when_starts_differ() -> None:
     games = pl.DataFrame(
         {
