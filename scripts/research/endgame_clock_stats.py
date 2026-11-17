@@ -3,7 +3,15 @@
 Produces every number quoted in docs/research/endgame_clock.md and saves them to
 results/research/endgame_clock_stats.json. Nothing here is random, so there is no seed.
 
-Run:  .venv/bin/python scripts/research/endgame_clock_stats.py
+Run:  .venv/bin/python scripts/research/endgame_clock_stats.py              (all seasons)
+      .venv/bin/python scripts/research/endgame_clock_stats.py --dev-only   (development)
+      .venv/bin/python scripts/research/endgame_clock_stats.py --split test (test seasons)
+
+The all-seasons file is the descriptive research record behind the document. The
+development file (endgame_clock_stats_dev.json) is the source of every "measured" constant
+in configs/mdp.yaml, so that the game model holds nothing from the test seasons. The test
+file (endgame_clock_stats_test.json) is used only by scripts/validate_simulator.py as the
+out-of-sample target for late trailing drives.
 
 What is measured
   elapsed        seconds between the snap of a play and the snap of the next play, by
@@ -22,6 +30,7 @@ timeouts-remaining count between two consecutive rows.
 
 from __future__ import annotations
 
+import argparse
 import json
 import os
 
@@ -30,10 +39,16 @@ os.environ.setdefault("POLARS_MAX_THREADS", "1")
 import numpy as np  # noqa: E402
 import polars as pl  # noqa: E402
 
+from fourth_and_rl import splits  # noqa: E402
 from fourth_and_rl.data import load_plays  # noqa: E402
 from fourth_and_rl.paths import RESULTS  # noqa: E402
 
 OUT = RESULTS / "research" / "endgame_clock_stats.json"
+OUT_BY_SPLIT = {
+    "all": OUT,
+    "dev": RESULTS / "research" / "endgame_clock_stats_dev.json",
+    "test": RESULTS / "research" / "endgame_clock_stats_test.json",
+}
 
 PLAY_CLOCK = 40
 MAX_ELAPSED = 60  # larger gaps between snaps are treated as timestamp errors
@@ -228,6 +243,18 @@ def timeout_usage(df: pl.DataFrame) -> dict:
     return out
 
 
+def shares_summing_to_one(counts: list[int], digits: int = 3) -> list[float]:
+    """Shares rounded to `digits` decimals that sum to exactly 1 (largest-remainder
+    rounding). Plain rounding of each share can sum to 1.001, which is not a distribution."""
+    scale = 10**digits
+    exact = np.asarray(counts, dtype=float) / sum(counts) * scale
+    floor = np.floor(exact).astype(int)
+    short = int(scale - floor.sum())
+    order = np.argsort(-(exact - floor), kind="stable")
+    floor[order[:short]] += 1
+    return [float(x) / scale for x in floor]
+
+
 def timeouts_entering_endgame(df: pl.DataFrame) -> dict:
     """Timeouts each side holds at the first snap inside 5:00 of a one-score game."""
     first = (
@@ -251,14 +278,17 @@ def timeouts_entering_endgame(df: pl.DataFrame) -> dict:
         )
     )
     n = first.height
+    trailing = shares_summing_to_one(
+        [first.filter(pl.col("trailing_to") == k).height for k in range(4)]
+    )
+    leading = shares_summing_to_one(
+        [first.filter(pl.col("leading_to") == k).height for k in range(4)]
+    )
     return {
         "n_games": n,
-        "trailing_team_share": {
-            str(k): round(first.filter(pl.col("trailing_to") == k).height / n, 3) for k in range(4)
-        },
-        "leading_team_share": {
-            str(k): round(first.filter(pl.col("leading_to") == k).height / n, 3) for k in range(4)
-        },
+        "trailing_team_share": {str(k): trailing[k] for k in range(4)},
+        "leading_team_share": {str(k): leading[k] for k in range(4)},
+        "rounding": "largest-remainder, so each set of shares sums to exactly 1",
     }
 
 
@@ -657,13 +687,34 @@ def state_space() -> dict:
     return out
 
 
+def load_split(split: str) -> tuple[pl.DataFrame, str]:
+    """The plays of one split and a description of where they came from."""
+    if split == "dev":
+        source = "development seasons via fourth_and_rl.splits.load_dev_plays()"
+        return splits.load_dev_plays(), source
+    if split == "test":
+        plays = splits.load_test_plays(
+            "end-game clock statistics of the test seasons: out-of-sample targets for the "
+            "simulator validation (descriptive, nothing is fitted)"
+        )
+        return plays, "test seasons via fourth_and_rl.splits.load_test_plays()"
+    return load_plays(), "data/processed/plays.parquet via fourth_and_rl.data.load_plays()"
+
+
 def main() -> None:
-    plays = load_plays()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--split", choices=["all", "dev", "test"], default="all")
+    parser.add_argument("--dev-only", action="store_true", help="same as --split dev")
+    args = parser.parse_args()
+    split = "dev" if args.dev_only else args.split
+    out_path = OUT_BY_SPLIT[split]
+    plays, source = load_split(split)
     df = add_sequence_columns(plays)
     elapsed = elapsed_tables(df)
     kneel_seconds = elapsed["followed_by_defensive_timeout"]["kneel"]["median"]
     results = {
-        "source": "data/processed/plays.parquet via fourth_and_rl.data.load_plays()",
+        "source": source,
+        "split": split,
         "n_rows": plays.height,
         "seasons": [int(plays["season"].min()), int(plays["season"].max())],
         "elapsed_seconds_snap_to_snap": elapsed,
@@ -675,9 +726,9 @@ def main() -> None:
         "overtime": overtime(plays),
         "state_space": state_space(),
     }
-    OUT.parent.mkdir(parents=True, exist_ok=True)
-    OUT.write_text(json.dumps(results, indent=2) + "\n")
-    print(f"wrote {OUT}")
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    out_path.write_text(json.dumps(results, indent=2) + "\n")
+    print(f"wrote {out_path}")
 
 
 if __name__ == "__main__":

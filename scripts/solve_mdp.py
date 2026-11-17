@@ -3,6 +3,12 @@
 Run:  .venv/bin/python scripts/solve_mdp.py            (everything, about 3 minutes)
       .venv/bin/python scripts/solve_mdp.py --reuse    (keep the saved game, redo the rest)
 
+Leakage discipline: every input is a development-season fit. The play-outcome models are
+the development bundle (`ComponentModels.load()`), and the count tables, the protect and
+chase calibration and the coach table are fitted on `splits.load_dev_plays()` only, so
+scripts/validate_simulator.py can compare the simulator with real 2024 to 2025 games out
+of sample. The stamps of both are saved with the tables and in the solution's meta.json.
+
 Writes
   data/mdp/                         value and policy arrays, model, count tables (gitignored)
   results/m4_mdp_summary.json       sizes, timings, stage 1 numbers, checks
@@ -28,9 +34,9 @@ import polars as pl  # noqa: E402
 from matplotlib.colors import ListedColormap  # noqa: E402
 from matplotlib.patches import Patch  # noqa: E402
 
-from fourth_and_rl import data, mdp, style  # noqa: E402
+from fourth_and_rl import mdp, splits, style  # noqa: E402
 from fourth_and_rl import mdp_game as mg  # noqa: E402
-from fourth_and_rl.components import ComponentModels  # noqa: E402
+from fourth_and_rl.components import ComponentModels, config_hash  # noqa: E402
 from fourth_and_rl.io import write_json  # noqa: E402
 from fourth_and_rl.mdp_drive import (  # noqa: E402
     DRIVE_ACTIONS,
@@ -43,14 +49,28 @@ from fourth_and_rl.paths import ASSETS, RESULTS, ROOT  # noqa: E402
 TABLES_PATH = mg.SOLUTION_DIR / "tables.joblib"
 
 
+def tables_key(cfg: dict, models: ComponentModels) -> dict[str, Any]:
+    """What the cached tables depend on: the MDP config and the bundle they were built with."""
+    stamp = models.stamp or {}
+    return {
+        "mdp_config_hash": config_hash(cfg),
+        "components_config_hash": stamp.get("config_hash"),
+        "components_seasons": stamp.get("seasons"),
+    }
+
+
 def load_tables(
     cfg: dict, plays: pl.DataFrame | None = None, models: ComponentModels | None = None
 ) -> dict[str, Any]:
-    """Count tables and the coach table, fitted once and cached next to the solution."""
-    if plays is None and TABLES_PATH.exists():
-        return joblib.load(TABLES_PATH)
-    plays = data.load_plays() if plays is None else plays
+    """Count tables and the coach table, fitted on development seasons and cached next to
+    the solution. The cache is reused only when its key matches the config and bundle."""
     models = ComponentModels.load() if models is None else models
+    key = tables_key(cfg, models)
+    if plays is None and TABLES_PATH.exists():
+        cached = joblib.load(TABLES_PATH)
+        if cached.get("key") == key:
+            return cached
+    plays = splits.load_dev_plays() if plays is None else plays
     out = {
         "tables": mdp.fit_tables(plays, cfg),
         "coach": mdp.fit_coach_table(plays, mdp.grid_from_config(cfg), cfg),
@@ -58,9 +78,25 @@ def load_tables(
     out["tables"]["adjust"] = mdp.fit_mode_adjustments(plays, models, cfg)
     out["coach"]["end_fg_max_yardline"] = cfg["coach"]["end_fg_max_yardline"]
     out["coach"]["end_fg_ticks"] = cfg["coach"]["end_fg_ticks"]
+    out["key"] = key
+    out["stamp"] = splits.fit_stamp(plays, "game-model tables (count, mode, coach)")
+    out["components_stamp"] = models.stamp
     TABLES_PATH.parent.mkdir(parents=True, exist_ok=True)
     joblib.dump(out, TABLES_PATH)
     return out
+
+
+def combined_stamp(bundle: dict[str, Any], models: ComponentModels) -> dict[str, Any]:
+    """One stamp for the solved game: the union of the seasons behind every input."""
+    seasons = set(bundle["stamp"]["seasons"]) | set((models.stamp or {}).get("seasons", []))
+    return {
+        "what": "solved game model (components plus count, mode and coach tables)",
+        "seasons": sorted(int(x) for x in seasons),
+        "tables": bundle["stamp"],
+        "components": models.stamp,
+        "note": "the only test-season content is the components' kickoff rule tables; the "
+        "solved game uses the latest rule's table for every kickoff",
+    }
 
 
 # --------------------------------------------------------------------------------------
@@ -418,9 +454,10 @@ def main() -> None:
     parser.add_argument("--reuse", action="store_true", help="load the saved game, do not solve")
     args = parser.parse_args()
     cfg = mdp.load_config()
-    plays = data.load_plays()
-    models = ComponentModels.load()
+    plays = splits.load_dev_plays()
+    models = ComponentModels.load()  # the development bundle
     bundle = load_tables(cfg, plays, models)
+    stamp = combined_stamp(bundle, models)
     tables = bundle["tables"]
 
     print("stage 1: single drive")
@@ -436,6 +473,7 @@ def main() -> None:
         sol = mg.solve(model, progress=True)
         sol.meta["kernel_build_seconds"] = build_seconds
         sol.meta["seed"] = cfg["seed"]
+        sol.meta["stamp"] = stamp
         t0 = time.time()
         mg.save_solution(sol, ROOT / cfg["solve"]["output_dir"])
         sol.meta["save_seconds"] = time.time() - t0
@@ -447,6 +485,12 @@ def main() -> None:
     files = sorted((ROOT / cfg["solve"]["output_dir"]).glob("*.npy"))
     summary = {
         "seed": cfg["seed"],
+        "fitted_on": {
+            "components": models.stamp,
+            "tables": bundle["stamp"],
+            "note": "every input of the game model is fitted on development seasons; the "
+            "components' kickoff rule tables are the one logged exception",
+        },
         "stage_1_single_drive": drive,
         "stage_2_game": {
             "state": "ticks left, field state (4 downs x 12 distance bins x 99 yard lines), "
@@ -477,8 +521,10 @@ def main() -> None:
             ).tolist(),
             "solution": describe_solution(sol),
         },
-        "count_tables": {k: v for k, v in tables.items() if k != "free_kick"},
-        "coach_table": {k: bundle["coach"][k] for k in ("n", "n_by_situation", "first_season")}
+        "count_tables": {k: v for k, v in tables.items() if k not in ("free_kick", "stamp")},
+        "coach_table": {
+            k: bundle["coach"][k] for k in ("n", "n_by_situation", "first_season", "last_season")
+        }
         | {"situations": list(mdp.SITUATIONS)},
         "monte_carlo_check": mc,
         "unit_tests": "tests/test_mdp.py: hand-solved game, random walk football (arXiv "

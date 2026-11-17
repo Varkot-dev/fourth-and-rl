@@ -28,6 +28,7 @@ import polars as pl
 import scipy.sparse as sp
 import yaml
 
+from fourth_and_rl import splits
 from fourth_and_rl.paths import CONFIGS
 
 MODES = ("neutral", "protect", "chase")  # what the offense can choose with a play
@@ -409,6 +410,22 @@ def coach_situation(
     return out
 
 
+def _guard(
+    plays: pl.DataFrame, what: str, allow_test_seasons: bool = False, reason: str | None = None
+) -> None:
+    """Refuse test-season and holdout rows in anything estimated from plays. Every table
+    of the game model is fitted on development seasons, so that simulated games can be
+    compared with real test-season games out of sample (audit finding M6)."""
+    if "season" in plays.columns and plays.height:
+        splits.assert_no_test_seasons(plays, what, allow_test_seasons, reason)
+
+
+def _stamp(plays: pl.DataFrame, what: str) -> dict | None:
+    if not {"season", "game_id"} <= set(plays.columns):
+        return None
+    return splits.fit_stamp(plays, what)
+
+
 def _sequence(plays: pl.DataFrame) -> pl.DataFrame:
     """Real plays in order, with the gap to the next row and whether a timeout followed."""
     is_home = pl.col("is_home") == 1
@@ -441,8 +458,18 @@ def _sequence(plays: pl.DataFrame) -> pl.DataFrame:
     )
 
 
-def fit_tables(plays: pl.DataFrame, cfg: dict) -> dict[str, Any]:
+def fit_tables(
+    plays: pl.DataFrame,
+    cfg: dict,
+    *,
+    allow_test_seasons: bool = False,
+    reason: str | None = None,
+) -> dict[str, Any]:
     """Count tables the game model needs beyond the M1 component models.
+
+    `plays` must hold development seasons only (test-season rows raise `LeakageError`
+    unless explicitly allowed with a written reason); the result carries a `stamp` of the
+    seasons it saw.
 
     Returns plain lists and numbers (JSON friendly):
       stop_prob[mode]      P(clock stopped | yards-gained bucket) for kept-ball plays
@@ -452,6 +479,7 @@ def fit_tables(plays: pl.DataFrame, cfg: dict) -> dict[str, Any]:
       burn_median_seconds  a leading offense's in-bounds play, snap to snap (a check)
       free_kick            receiving team's yard line after a safety
     """
+    _guard(plays, "game-model count tables (clock, stops, free kick)", allow_test_seasons, reason)
     t = cfg["tables"]
     tick = cfg["clock"]["tick_seconds"]
     max_ticks = cfg["clock"]["max_play_ticks"]
@@ -529,6 +557,7 @@ def fit_tables(plays: pl.DataFrame, cfg: dict) -> dict[str, Any]:
     out["free_kick_n"] = int(fk.sum())
     out["free_kick"] = (fk / fk.sum()).tolist() if fk.sum() >= 30 else None
     out["free_kick_mean_yardline_100"] = float(fk @ np.arange(100) / fk.sum()) if fk.sum() else None
+    out["stamp"] = _stamp(plays, "game-model count tables")
     return out
 
 
@@ -540,7 +569,14 @@ def stop_prob_by_gain(tables: dict[str, Any]) -> dict[str, np.ndarray]:
     return {m: np.asarray(tables["stop_prob"][m])[bucket] for m in KERNEL_KEYS}
 
 
-def fit_mode_adjustments(plays: pl.DataFrame, models: Any, cfg: dict) -> dict[str, Any]:
+def fit_mode_adjustments(
+    plays: pl.DataFrame,
+    models: Any,
+    cfg: dict,
+    *,
+    allow_test_seasons: bool = False,
+    reason: str | None = None,
+) -> dict[str, Any]:
     """How "protect" and "chase" football differs from the generic play of M1.
 
     For plays on downs 1 to 3 in the last 5:00 by a team leading (protect) or trailing
@@ -551,7 +587,10 @@ def fit_mode_adjustments(plays: pl.DataFrame, models: Any, cfg: dict) -> dict[st
                       equal the observed one (found by bisection)
     The last `chase_exclude_last_seconds` are left out of the chase sample: those plays are
     mostly desperation heaves, which say little about a real drive.
+
+    Development seasons only, like every other fit (`_guard`).
     """
+    _guard(plays, "protect and chase mode calibration", allow_test_seasons, reason)
     t = cfg["tables"]
     one = t["one_score"]
     base = plays.filter(
@@ -651,14 +690,23 @@ def mode_adjustments(tables: dict[str, Any], cfg: dict, chase_extra_tilt: float 
     return {"protect": pick("protect"), "chase": chase, "chase_late": dict(chase)}
 
 
-def fit_coach_table(plays: pl.DataFrame, grid: Grid, cfg: dict) -> dict[str, Any]:
+def fit_coach_table(
+    plays: pl.DataFrame,
+    grid: Grid,
+    cfg: dict,
+    *,
+    allow_test_seasons: bool = False,
+    reason: str | None = None,
+) -> dict[str, Any]:
     """Observed fourth-down choices, as P(go, field goal, punt | situation, distance, field).
 
     Cells are (situation, distance group, 5-yard field band). A thin cell is pulled toward
     a coarser cell (same situation and distance, three field zones), which is in turn pulled
     toward the neutral-situation cell, each with `prior_strength` pseudo-counts.
-    Returns {"table": array (n_situations, n_dist, n_yl, 3), "n": cell counts}.
+    Returns {"table": array (n_situations, n_dist, n_yl, 3), "n": cell counts, "stamp"}.
+    Development seasons only, like every other fit (`_guard`).
     """
+    _guard(plays, "observed coach fourth-down table", allow_test_seasons, reason)
     c = cfg["coach"]
     k0 = float(c["prior_strength"])
     d = plays.filter(
@@ -712,4 +760,6 @@ def fit_coach_table(plays: pl.DataFrame, grid: Grid, cfg: dict) -> dict[str, Any
         "n_by_situation": fine.sum(axis=(1, 2, 3)).astype(int).tolist(),
         "n": int(d.height),
         "first_season": int(c["first_season"]),
+        "last_season": int(d["season"].max()) if d.height else None,
+        "stamp": _stamp(d, "observed coach fourth-down table"),
     }

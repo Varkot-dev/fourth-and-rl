@@ -11,9 +11,11 @@ from __future__ import annotations
 from functools import lru_cache
 
 import numpy as np
+import polars as pl
 import pytest
 import scipy.sparse as sp
 
+from fourth_and_rl import mdp
 from fourth_and_rl import mdp_game as mg
 from fourth_and_rl.mdp import KERNEL_KEYS, FieldKernels, Grid, coach_situation
 from fourth_and_rl.mdp_drive import solve_drive
@@ -732,3 +734,85 @@ def test_real_solution_monte_carlo(solved: mg.Solution) -> None:
         out = mg.simulate(sim, st, rng)
         se = max(float(out["result"].std()) / np.sqrt(n), 1e-3)
         assert abs(out["result"].mean() - expect) < 4.5 * se, (case, expect, out["result"].mean())
+
+
+# ------------------------------------------------------------------ leakage barriers
+
+
+@pytest.mark.parametrize(
+    "fit",
+    [
+        lambda df: mdp.fit_tables(df, mdp.load_config()),
+        lambda df: mdp.fit_coach_table(df, Grid(), mdp.load_config()),
+        lambda df: mdp.fit_mode_adjustments(df, None, mdp.load_config()),
+    ],
+)
+def test_game_model_tables_refuse_test_and_holdout_seasons(fit, tmp_path, monkeypatch) -> None:
+    from fourth_and_rl import splits
+
+    monkeypatch.setattr(splits, "ACCESS_LOG", tmp_path / "access.jsonl")
+    for season in (splits.test_seasons()[0], splits.holdout_seasons()[0]):
+        with pytest.raises(splits.LeakageError):
+            fit(pl.DataFrame({"season": [2020, season], "game_id": ["a", "b"]}))
+
+
+def test_measured_constants_come_from_the_development_seasons() -> None:
+    """configs/mdp.yaml holds the end-game statistics of the development seasons only."""
+    import json
+
+    from fourth_and_rl.paths import RESULTS
+
+    path = RESULTS / "research" / "endgame_clock_stats_dev.json"
+    if not path.exists():
+        pytest.skip("run scripts/research/endgame_clock_stats.py --dev-only")
+    stats = json.loads(path.read_text())
+    from fourth_and_rl import splits
+
+    assert set(range(stats["seasons"][0], stats["seasons"][1] + 1)) == set(splits.dev_seasons())
+    clock = mdp.load_config()["clock"]
+    shares = stats["timeouts_entering_last_5_min"]
+    for side in ("trailing", "leading"):
+        configured = clock[f"timeout_shares_{side}"]
+        assert configured == [shares[f"{side}_team_share"][str(k)] for k in range(4)]
+        assert sum(configured) == pytest.approx(1.0, abs=1e-12)  # no 1.001 at the source
+    usage = stats["defensive_timeout_usage"]
+    for when in ("before", "after"):
+        rates = [usage[f"{when}_warning"][f"defense_has_{k}"]["rate"] for k in (1, 2, 3)]
+        assert clock[f"defense_timeout_rate_{when}_warning"] == [0.0, *rates]
+    assert clock["kneel_seconds"] == stats["kneels"]["kneel_seconds_used"]
+
+
+@pytest.mark.data
+def test_saved_solution_is_stamped_with_development_seasons_only() -> None:
+    from fourth_and_rl import splits
+
+    if not mg.solution_exists():
+        pytest.skip("solved game not built (run scripts/solve_mdp.py)")
+    stamp = mg.load_solution().meta.get("stamp")
+    assert stamp is not None
+    assert set(stamp["tables"]["seasons"]) <= set(splits.dev_seasons())
+    assert set(stamp["components"]["seasons"]) <= set(splits.dev_seasons())
+
+
+@pytest.mark.data
+def test_question_1_go_region_has_no_isolated_cells() -> None:
+    """In every panel of the question 1 map (time, lead, opponent timeouts), no cell's
+    go-or-punt call differs from all four of its neighbours: an isolated cell would be a
+    numerical artifact, since the values are smooth in distance and field position."""
+    import json
+
+    from fourth_and_rl.paths import RESULTS
+
+    path = RESULTS / "questions" / "q1_late_lead_dp.json"
+    if not path.exists():
+        pytest.skip("run scripts/questions/q1_late_lead_dp.py")
+    grid = json.loads(path.read_text())["grid"]
+    go = np.array(grid["go_wp"]) > np.array(grid["punt_wp"])  # [time, lead, to, dist, yl]
+    padded = np.pad(go, [(0, 0)] * 3 + [(1, 1), (1, 1)], mode="edge")
+    c = padded[..., 1:-1, 1:-1]
+    differs = [
+        padded[..., :-2, 1:-1] != c, padded[..., 2:, 1:-1] != c,
+        padded[..., 1:-1, :-2] != c, padded[..., 1:-1, 2:] != c,
+    ]  # fmt: skip
+    isolated = np.logical_and.reduce(differs)
+    assert int(isolated.sum()) == 0, np.argwhere(isolated)[:10].tolist()

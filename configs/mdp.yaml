@@ -1,6 +1,10 @@
 # M4: the Markov decision process and its exact solution. Read by fourth_and_rl.mdp.load_config.
 # Every constant of the model lives here. Numbers marked "measured" come from
-# results/research/endgame_clock_stats.json (see docs/research/endgame_clock.md).
+# results/research/endgame_clock_stats_dev.json: the end-game research statistics computed
+# on DEVELOPMENT seasons only (scripts/research/endgame_clock_stats.py --dev-only), so the
+# game model holds nothing from the test seasons. tests/test_mdp.py checks that the values
+# below equal that file. The all-seasons research record (endgame_clock_stats.json, see
+# docs/research/endgame_clock.md) is descriptive and is not used by the model.
 
 seed: 20261117
 
@@ -29,22 +33,24 @@ clock:
   punt_ticks: 2
   max_play_ticks: 10             # empirical play-length histograms cover 1..10 ticks
   n_timeouts: 3
-  kneel_seconds: 2               # measured: seconds a kneel itself takes (n = 183)
+  kneel_seconds: 2               # measured: seconds a kneel itself takes (n = 159)
   play_clock_seconds: 40
   # measured (section 2.2): timeouts held at the first snap inside 5:00 of a one-score game,
   # for 0, 1, 2, 3 timeouts. Used to enter the end game from the coarser early-game model.
-  timeout_shares_trailing: [0.060, 0.094, 0.296, 0.550]
-  timeout_shares_leading: [0.029, 0.140, 0.340, 0.492]
+  # Each set sums to exactly 1 (largest-remainder rounding in the research script).
+  timeout_shares_trailing: [0.063, 0.097, 0.304, 0.536]
+  timeout_shares_leading: [0.031, 0.140, 0.347, 0.482]
   # "optimal": the defense takes a timeout after an in-bounds play exactly when that lowers the
   # offense's win probability. "empirical": it takes one with the measured rates below when the
   # offense leads, and never otherwise.
   defense_timeout: optimal
   # measured (section 2.2), by timeouts the defense holds (0, 1, 2, 3)
-  defense_timeout_rate_before_warning: [0.0, 0.669, 0.563, 0.403]
-  defense_timeout_rate_after_warning: [0.0, 0.806, 0.938, 0.939]
+  defense_timeout_rate_before_warning: [0.0, 0.669, 0.555, 0.412]
+  defense_timeout_rate_after_warning: [0.0, 0.802, 0.933, 0.929]
 
-tables:                          # small count tables fitted from the play-by-play cache
-  first_season: 2018
+tables:                          # small count tables fitted from DEVELOPMENT seasons only
+  first_season: 2018             # (the fits refuse test seasons, so the last season used is
+                                 # the last development season of configs/splits.yaml)
   gain_bucket_edges: [-99, 0, 1, 4, 8, 15]   # lower edges of the yards-gained buckets
   one_score: 8                   # "protect" = leading by 1..8, "chase" = trailing by 1..8
   calibrate_modes: true          # false: protect and chase use the generic play's yards and turnovers
@@ -80,6 +86,9 @@ monte_carlo:                     # DP value against simulated win frequency
   seed: 20261118
 
 validation:
+  # Real comparison targets: the test seasons (out of sample, the headline) and the
+  # development seasons from in_sample_first_season on (in sample, labelled as such).
+  in_sample_first_season: 2021
   n_games: 40000
   seed: 20261119
   checkpoints_seconds: [2700, 1800, 900, 600, 300, 120]
