@@ -1,0 +1,3074 @@
+{
+  "paper": {
+    "title": "The Blown Lead Paradox: A Pathwise Calibration Benchmark for Win Probability Forecasts",
+    "title_of_first_version": "The Blown Lead Paradox: Conditional Laws for the Running Maximum of Binary Doob Martingales",
+    "authors": [
+      "Jonathan Pipping-Gamon",
+      "Abraham J. Wyner"
+    ],
+    "arxiv": "2601.18774",
+    "first_submitted": "2026-01-26",
+    "version_read": "v4, 2026-08-25",
+    "numbers_quoted_from_paper": {
+      "note": "ESPN public NFL feed, regular seasons 2018 to 2024, 1,848 games. These are the paper's numbers, not ours, and use a different model and sample.",
+      "nfl_d_upper": 0.015,
+      "nfl_d_upper_p": 0.736,
+      "nfl_share_with_game_pit_at_least": {
+        "0.90": 0.085,
+        "0.95": 0.045,
+        "0.99": 0.015
+      },
+      "nfl_first_crossing_observed_vs_implied_loss": {
+        "0.90": [
+          0.085,
+          0.076
+        ],
+        "0.95": [
+          0.046,
+          0.033
+        ],
+        "0.99": [
+          0.016,
+          0.005
+        ]
+      }
+    }
+  },
+  "notes": {
+    "p0": "the losing team's first win probability of the game (before the kickoff)",
+    "peak": "the losing team's largest win probability over all plays",
+    "continuous_reference": "P(peak >= x | lost) = p0 (1 - x) / (x (1 - p0)); expected counts are sums of this over games; intervals assume independent games",
+    "first_crossing": "expected blown leads = sum of (1 - p) at each team's first value at or above the threshold; exact for a calibrated model even when paths jump",
+    "discrete_adjusted_reference": "simulated calibrated game reported at play times, with time gaps fitted to the real jump sizes; an approximation, see docs/notes/m3b_blown_leads.md",
+    "pit_bootstrap": "season-stratified team (pigeonhole) bootstrap of the one-sided statistic d_upper, as in the paper",
+    "wp_ours": "out-of-fold predictions from scripts/fit_wp.py when present"
+  },
+  "config": {
+    "seed": 20261117,
+    "models": [
+      {
+        "key": "nflfastr",
+        "column": "wp",
+        "label": "nflfastR (no spread)"
+      },
+      {
+        "key": "vegas",
+        "column": "vegas_wp",
+        "label": "nflfastR with spread"
+      },
+      {
+        "key": "ours",
+        "column": "wp_ours",
+        "label": "Ours"
+      }
+    ],
+    "predictions_path": "data/processed/wp_predictions.parquet",
+    "min_plays": 50,
+    "thresholds": [
+      0.9,
+      0.95,
+      0.99
+    ],
+    "crossing_thresholds": [
+      0.6,
+      0.7,
+      0.8,
+      0.9,
+      0.95,
+      0.99
+    ],
+    "n_boot": 2000,
+    "n_count_sim": 20000,
+    "discrete": {
+      "n_steps": null,
+      "gap_shape_grid": [
+        null,
+        3.0,
+        2.0,
+        1.5,
+        1.2,
+        1.0,
+        0.8,
+        0.6,
+        0.5,
+        0.4,
+        0.3
+      ],
+      "calibration_paths": 20000,
+      "reference_paths": 200000,
+      "p0_grid": {
+        "start": 0.02,
+        "stop": 0.98,
+        "step": 0.02
+      },
+      "sensitivity_gap_shapes": [
+        null,
+        0.5
+      ],
+      "sweep_steps": [
+        20,
+        40,
+        80,
+        163,
+        650,
+        2600,
+        10400
+      ],
+      "sweep_normals_budget": 600000000,
+      "sweep_max_paths": 300000
+    },
+    "rankings": {
+      "top": 25,
+      "peak_decimals": 3
+    },
+    "gallery": {
+      "model": "vegas",
+      "n_surprising": 6,
+      "n_unsurprising": 3,
+      "unsurprising_min_peak": 0.95
+    },
+    "sample_size_sim": {
+      "seed": 20261118,
+      "plays_per_game": 50,
+      "nominal_level": 0.9,
+      "n_test_states": 20000,
+      "threads": 2,
+      "games_grid": [
+        100,
+        200,
+        400,
+        800,
+        1600,
+        3200
+      ],
+      "probit_reps": 50,
+      "gbm_reps": 6,
+      "gbm": {
+        "n_estimators": 150,
+        "learning_rate": 0.05,
+        "num_leaves": 15,
+        "min_child_samples": 50
+      },
+      "coverage_games": 400,
+      "probit_coverage_reps": 200,
+      "probit_boot": 100,
+      "gbm_coverage_reps": 8,
+      "gbm_boot": 40
+    }
+  },
+  "models": {
+    "nflfastr": {
+      "label": "nflfastR (no spread)",
+      "column": "wp",
+      "n_games": 4350,
+      "n_nontied_games": 4350,
+      "n_games_dropped": 0,
+      "seasons": [
+        2010,
+        2025
+      ],
+      "median_plays_per_game": 163.0,
+      "loser_p0": {
+        "mean": 0.49280989701035377,
+        "q05": 0.4220241606235504,
+        "median": 0.45814669132232666,
+        "q95": 0.5779758393764496
+      },
+      "loser_peak": {
+        "median": 0.6471989750862122,
+        "share_at_least": {
+          "0.50": 0.8441379310344828,
+          "0.67": 0.45379310344827584,
+          "0.75": 0.29149425287356323,
+          "0.90": 0.07172413793103448,
+          "0.95": 0.025977011494252873,
+          "0.99": 0.002528735632183908
+        },
+        "share_never_above_start": 0.08
+      },
+      "jump_sizes": {
+        "n_jumps": 709242,
+        "mean": 0.023132953675911172,
+        "median": 0.013931512832641602,
+        "q90": 0.05396108478307724,
+        "q99": 0.1540082008857278,
+        "q999": 0.31464989922425635,
+        "share_above_0.05": 0.1137947273286128,
+        "share_above_0.10": 0.02926786625721545,
+        "share_above_0.20": 0.0045485179952681875,
+        "max": 0.8360617445141543
+      },
+      "mean_largest_jump_per_game": 0.20314623594914752,
+      "continuous_reference": {
+        "pit_ks": {
+          "n": 4350,
+          "ks_two_sided": 0.08455105676071784,
+          "ks_two_sided_p": 1.6739557061934716e-27,
+          "d_upper": 0.0,
+          "d_upper_p_iid": 1.0,
+          "d_lower": 0.08455105676071784,
+          "d_lower_p_iid": 8.369778530967358e-28
+        },
+        "pit_bootstrap": {
+          "d_upper": 0.0,
+          "d_upper_p_bootstrap": 1.0,
+          "bootstrap_critical_value_95": 0.031872658109842175,
+          "n_boot": 2000,
+          "tails": {
+            "0.90": {
+              "observed_share": 0.06620689655172414,
+              "nominal_share": 0.09999999999999998,
+              "excess": -0.03379310344827584,
+              "excess_ci95": [
+                -0.04571893610941802,
+                -0.020928032045760797
+              ]
+            },
+            "0.95": {
+              "observed_share": 0.02528735632183908,
+              "nominal_share": 0.050000000000000044,
+              "excess": -0.024712643678160964,
+              "excess_ci95": [
+                -0.03191681229081643,
+                -0.016421321048454715
+              ]
+            },
+            "0.99": {
+              "observed_share": 0.003218390804597701,
+              "nominal_share": 0.010000000000000009,
+              "excess": -0.006781609195402308,
+              "excess_ci95": [
+                -0.009038995966750236,
+                -0.0038689823995481896
+              ]
+            }
+          }
+        },
+        "pit_game_ks": {
+          "n": 4350,
+          "ks_two_sided": 0.06408964426612679,
+          "ks_two_sided_p": 5.616841614236756e-16,
+          "d_upper": 0.0,
+          "d_upper_p_iid": 1.0,
+          "d_lower": 0.06408964426612679,
+          "d_lower_p_iid": 2.808420807118378e-16
+        },
+        "pit_game_bootstrap": {
+          "d_upper": 0.0,
+          "d_upper_p_bootstrap": 1.0,
+          "bootstrap_critical_value_95": 0.031875200820826524,
+          "n_boot": 2000,
+          "tails": {
+            "0.90": {
+              "observed_share": 0.06091954022988506,
+              "nominal_share": 0.09999999999999998,
+              "excess": -0.03908045977011492,
+              "excess_ci95": [
+                -0.0506007860496882,
+                -0.026405959958954464
+              ]
+            },
+            "0.95": {
+              "observed_share": 0.02367816091954023,
+              "nominal_share": 0.050000000000000044,
+              "excess": -0.026321839080459816,
+              "excess_ci95": [
+                -0.03329865251526566,
+                -0.01798250591292943
+              ]
+            },
+            "0.99": {
+              "observed_share": 0.002528735632183908,
+              "nominal_share": 0.010000000000000009,
+              "excess": -0.0074712643678161005,
+              "excess_ci95": [
+                -0.009329727652690004,
+                -0.004874510636538157
+              ]
+            }
+          }
+        },
+        "extreme_peaks": {
+          "0.90": {
+            "observed": 312,
+            "expected": 482.88753033770115,
+            "expected_interval95": [
+              443.0,
+              524.0
+            ],
+            "ratio_observed_to_expected": 0.6461131845376228,
+            "z": -8.277145269226374,
+            "p_upper": 1.0
+          },
+          "0.95": {
+            "observed": 113,
+            "expected": 228.7361985810166,
+            "expected_interval95": [
+              200.0,
+              258.0
+            ],
+            "ratio_observed_to_expected": 0.4940188772087872,
+            "z": -7.874358780936528,
+            "p_upper": 0.9999999999999987
+          },
+          "0.99": {
+            "observed": 11,
+            "expected": 43.89886639433652,
+            "expected_interval95": [
+              31.0,
+              57.0
+            ],
+            "ratio_observed_to_expected": 0.25057594656747517,
+            "z": -4.992088495125759,
+            "p_upper": 0.9999997989477063
+          }
+        }
+      },
+      "first_crossing": {
+        "0.60": {
+          "observed": 2680,
+          "expected": 2611.548514346895,
+          "expected_interval95": [
+            2532.0,
+            2690.0
+          ],
+          "ratio_observed_to_expected": 1.0262110718131627,
+          "z": 1.693074882898659,
+          "p_upper": 0.04640983139187552,
+          "episodes": 7025,
+          "games": 4350,
+          "observed_loss_rate": 0.38149466192170817,
+          "implied_loss_rate": 0.3717506781988463,
+          "mean_p_at_crossing": 0.6282493218011539
+        },
+        "0.70": {
+          "observed": 1728,
+          "expected": 1665.634259060025,
+          "expected_interval95": [
+            1598.0,
+            1735.0
+          ],
+          "ratio_observed_to_expected": 1.037442638202681,
+          "z": 1.799975758136007,
+          "p_upper": 0.03708648333451016,
+          "episodes": 6050,
+          "games": 4350,
+          "observed_loss_rate": 0.2856198347107438,
+          "implied_loss_rate": 0.2753114477785165,
+          "mean_p_at_crossing": 0.7246885522214834
+        },
+        "0.80": {
+          "observed": 910,
+          "expected": 903.6365608081717,
+          "expected_interval95": [
+            851.0,
+            957.0
+          ],
+          "ratio_observed_to_expected": 1.00704203378639,
+          "z": 0.2338088379527263,
+          "p_upper": 0.4147130888189394,
+          "episodes": 5147,
+          "games": 4335,
+          "observed_loss_rate": 0.17680202059452108,
+          "implied_loss_rate": 0.1755656811362292,
+          "mean_p_at_crossing": 0.8244343188637707
+        },
+        "0.90": {
+          "observed": 312,
+          "expected": 354.35278385164776,
+          "expected_interval95": [
+            319.9750000000004,
+            390.0
+          ],
+          "ratio_observed_to_expected": 0.8804784785622595,
+          "z": -2.3545917085965473,
+          "p_upper": 0.9913996433969793,
+          "episodes": 4291,
+          "games": 4109,
+          "observed_loss_rate": 0.07271032393381496,
+          "implied_loss_rate": 0.08258046698943085,
+          "mean_p_at_crossing": 0.9174195330105692
+        },
+        "0.95": {
+          "observed": 113,
+          "expected": 145.15647295372392,
+          "expected_interval95": [
+            123.0,
+            169.0
+          ],
+          "ratio_observed_to_expected": 0.7784702790072927,
+          "z": -2.7268500267142897,
+          "p_upper": 0.9971907224576851,
+          "episodes": 3701,
+          "games": 3674,
+          "observed_loss_rate": 0.03053228857065658,
+          "implied_loss_rate": 0.039220878939131024,
+          "mean_p_at_crossing": 0.9607791210608689
+        },
+        "0.99": {
+          "observed": 11,
+          "expected": 16.670360105453256,
+          "expected_interval95": [
+            9.0,
+            25.0
+          ],
+          "ratio_observed_to_expected": 0.6598537722290503,
+          "z": -1.3940005616179503,
+          "p_upper": 0.9353566206693069,
+          "episodes": 2613,
+          "games": 2613,
+          "observed_loss_rate": 0.004209720627631076,
+          "implied_loss_rate": 0.00637977807326952,
+          "mean_p_at_crossing": 0.9936202219267305
+        }
+      },
+      "discrete_adjusted_reference": {
+        "n_steps": 163,
+        "gap_shape": 1.2,
+        "jump_calibration": {
+          "quantile_probs": [
+            0.5,
+            0.9,
+            0.99,
+            0.999
+          ],
+          "real_quantiles": [
+            0.013931512832641602,
+            0.05396108478307724,
+            0.1540082008857278,
+            0.31464989922425635
+          ],
+          "candidates": [
+            {
+              "gap_shape": null,
+              "quantiles": [
+                0.016927198666004617,
+                0.05790802121275306,
+                0.12526566636489556,
+                0.25151298425656915
+              ],
+              "distance": 0.13574956947081254
+            },
+            {
+              "gap_shape": 3.0,
+              "quantiles": [
+                0.014973036555792518,
+                0.056580802741868705,
+                0.12979112609957358,
+                0.26297900480490627
+              ],
+              "distance": 0.06889310080218931
+            },
+            {
+              "gap_shape": 2.0,
+              "quantiles": [
+                0.01421630981024527,
+                0.05629597347345777,
+                0.13274080239742492,
+                0.27006353659409704
+              ],
+              "distance": 0.047636918626851175
+            },
+            {
+              "gap_shape": 1.5,
+              "quantiles": [
+                0.013390684954949494,
+                0.05566912000398936,
+                0.1334593495852612,
+                0.2753807392562047
+              ],
+              "distance": 0.040818058557223806
+            },
+            {
+              "gap_shape": 1.2,
+              "quantiles": [
+                0.012586426494722053,
+                0.05524149829781962,
+                0.1364109883546252,
+                0.2832765602039047
+              ],
+              "distance": 0.036613787659384736
+            },
+            {
+              "gap_shape": 1.0,
+              "quantiles": [
+                0.011923330163609525,
+                0.05491422122331158,
+                0.13871594947118748,
+                0.28606387020598617
+              ],
+              "distance": 0.0445436467808203
+            },
+            {
+              "gap_shape": 0.8,
+              "quantiles": [
+                0.010934336817098711,
+                0.05444271293590017,
+                0.1416094070079285,
+                0.2921727151993107
+              ],
+              "distance": 0.071299674905251
+            },
+            {
+              "gap_shape": 0.6,
+              "quantiles": [
+                0.009443277523981941,
+                0.05314510789446963,
+                0.1443468970080908,
+                0.30047201302022997
+              ],
+              "distance": 0.1577597445692173
+            },
+            {
+              "gap_shape": 0.5,
+              "quantiles": [
+                0.008472401850783684,
+                0.05246181902621945,
+                0.1470265928688497,
+                0.3111673830754337
+              ],
+              "distance": 0.25041651534967974
+            },
+            {
+              "gap_shape": 0.4,
+              "quantiles": [
+                0.007137312092685005,
+                0.05102862232537704,
+                0.1504654319167871,
+                0.32264786623506786
+              ],
+              "distance": 0.4516102041046188
+            },
+            {
+              "gap_shape": 0.3,
+              "quantiles": [
+                0.005436855354470582,
+                0.049054680206037586,
+                0.15461955967267718,
+                0.334887623450876
+              ],
+              "distance": 0.8983803188180914
+            }
+          ],
+          "chosen_gap_shape": 1.2,
+          "chosen_quantiles": [
+            0.012586426494722053,
+            0.05524149829781962,
+            0.1364109883546252,
+            0.2832765602039047
+          ]
+        },
+        "simulated_share_never_above_start": 0.08887874444837791,
+        "pit_ks": {
+          "n": 4350,
+          "ks_two_sided": 0.03605515198979575,
+          "ks_two_sided_p": 2.385864558487504e-05,
+          "d_upper": 0.03605515198979575,
+          "d_upper_p_iid": 1.192932279243752e-05,
+          "d_lower": 0.010526063103634575,
+          "d_lower_p_iid": 0.3787289342900477
+        },
+        "pit_bootstrap": {
+          "d_upper": 0.03605515198979575,
+          "d_upper_p_bootstrap": 0.020989505247376312,
+          "bootstrap_critical_value_95": 0.031621736435325086,
+          "n_boot": 2000,
+          "tails": {
+            "0.90": {
+              "observed_share": 0.09195402298850575,
+              "nominal_share": 0.09999999999999998,
+              "excess": -0.008045977011494232,
+              "excess_ci95": [
+                -0.02202557823035213,
+                0.007062569981625175
+              ]
+            },
+            "0.95": {
+              "observed_share": 0.040229885057471264,
+              "nominal_share": 0.050000000000000044,
+              "excess": -0.00977011494252878,
+              "excess_ci95": [
+                -0.01909777370764598,
+                0.0011561180386972653
+              ]
+            },
+            "0.99": {
+              "observed_share": 0.004827586206896552,
+              "nominal_share": 0.010000000000000009,
+              "excess": -0.005172413793103457,
+              "excess_ci95": [
+                -0.007964066312662405,
+                -0.0015585096229749316
+              ]
+            }
+          }
+        },
+        "extreme_peaks": {
+          "0.90": {
+            "observed": 312,
+            "expected": 360.19649622909265,
+            "expected_interval95": [
+              325.0,
+              396.0
+            ],
+            "ratio_observed_to_expected": 0.8661938782479476,
+            "z": -2.6597133689506465,
+            "p_upper": 0.9963984508842392
+          },
+          "0.95": {
+            "observed": 113,
+            "expected": 154.33015021233817,
+            "expected_interval95": [
+              131.0,
+              179.0
+            ],
+            "ratio_observed_to_expected": 0.732196527020331,
+            "z": -3.3917137103247397,
+            "p_upper": 0.9997012488470985
+          },
+          "0.99": {
+            "observed": 11,
+            "expected": 23.528067751844702,
+            "expected_interval95": [
+              15.0,
+              34.0
+            ],
+            "ratio_observed_to_expected": 0.4675267053809615,
+            "z": -2.590208368409715,
+            "p_upper": 0.9964655896153817
+          }
+        },
+        "expected_counts_other_simulators": {
+          "equal_spacing": {
+            "0.90": 371.78209692998246,
+            "0.95": 160.5641315072751,
+            "0.99": 24.73918318805979
+          },
+          "gap_shape_0.5": {
+            "0.90": 335.39043534818575,
+            "0.95": 142.1424984980104,
+            "0.99": 20.822091426071253
+          }
+        },
+        "discrete_to_continuous_expected_ratio": {
+          "0.90": 0.7459221321726694,
+          "0.95": 0.6747080312155997,
+          "0.99": 0.5359607134383795
+        }
+      },
+      "rankings": {
+        "overlap": 20,
+        "only_in_peak_list": [
+          "2012_13_IND_DET",
+          "2012_19_BAL_DEN",
+          "2014_05_CLE_TEN",
+          "2022_02_ARI_LV",
+          "2025_05_TEN_ARI"
+        ],
+        "only_in_surprise_list": [
+          "2013_14_CLE_NE",
+          "2014_20_GB_SEA",
+          "2017_11_WAS_NO",
+          "2025_10_JAX_HOU",
+          "2025_16_GB_CHI"
+        ],
+        "spearman_all_games": 0.9263804432508879,
+        "ties_at_top_rounded_peak": 1,
+        "games_with_peak_at_least_0.99": 11
+      }
+    },
+    "vegas": {
+      "label": "nflfastR with spread",
+      "column": "vegas_wp",
+      "n_games": 4350,
+      "n_nontied_games": 4350,
+      "n_games_dropped": 0,
+      "seasons": [
+        2010,
+        2025
+      ],
+      "median_plays_per_game": 163.0,
+      "loser_p0": {
+        "mean": 0.4198801703596937,
+        "q05": 0.14074116945266724,
+        "median": 0.4040569067001343,
+        "q95": 0.7382693290710449
+      },
+      "loser_peak": {
+        "median": 0.6082281470298767,
+        "share_at_least": {
+          "0.50": 0.654712643678161,
+          "0.67": 0.40367816091954023,
+          "0.75": 0.28804597701149426,
+          "0.90": 0.0735632183908046,
+          "0.95": 0.03126436781609195,
+          "0.99": 0.002758620689655172
+        },
+        "share_never_above_start": 0.06666666666666667
+      },
+      "jump_sizes": {
+        "n_jumps": 709242,
+        "mean": 0.021265715506953,
+        "median": 0.01190236210823059,
+        "q90": 0.05076592564582829,
+        "q99": 0.14707059666514397,
+        "q999": 0.3184242944352688,
+        "share_above_0.05": 0.10252071930314335,
+        "share_above_0.10": 0.025837443355018457,
+        "share_above_0.20": 0.004093102213348899,
+        "max": 0.839920163154602
+      },
+      "mean_largest_jump_per_game": 0.19170671758693547,
+      "continuous_reference": {
+        "pit_ks": {
+          "n": 4350,
+          "ks_two_sided": 0.06666666666666667,
+          "ks_two_sided_p": 2.973146508048849e-17,
+          "d_upper": 0.0,
+          "d_upper_p_iid": 1.0,
+          "d_lower": 0.06666666666666667,
+          "d_lower_p_iid": 1.4865732540244244e-17
+        },
+        "pit_bootstrap": {
+          "d_upper": 0.0,
+          "d_upper_p_bootstrap": 1.0,
+          "bootstrap_critical_value_95": 0.031397957481902286,
+          "n_boot": 2000,
+          "tails": {
+            "0.90": {
+              "observed_share": 0.07563218390804598,
+              "nominal_share": 0.09999999999999998,
+              "excess": -0.024367816091954,
+              "excess_ci95": [
+                -0.037108719136883295,
+                -0.010374980108513843
+              ]
+            },
+            "0.95": {
+              "observed_share": 0.028735632183908046,
+              "nominal_share": 0.050000000000000044,
+              "excess": -0.021264367816092,
+              "excess_ci95": [
+                -0.029339670792741024,
+                -0.012649416806527522
+              ]
+            },
+            "0.99": {
+              "observed_share": 0.004367816091954023,
+              "nominal_share": 0.010000000000000009,
+              "excess": -0.005632183908045986,
+              "excess_ci95": [
+                -0.008360217162140917,
+                -0.002072771632520582
+              ]
+            }
+          }
+        },
+        "pit_game_ks": {
+          "n": 4350,
+          "ks_two_sided": 0.03954022988505747,
+          "ks_two_sided_p": 2.4022645406407906e-06,
+          "d_upper": 0.0,
+          "d_upper_p_iid": 1.0,
+          "d_lower": 0.03954022988505747,
+          "d_lower_p_iid": 1.2011322703203953e-06
+        },
+        "pit_game_bootstrap": {
+          "d_upper": 0.0,
+          "d_upper_p_bootstrap": 1.0,
+          "bootstrap_critical_value_95": 0.031043348293950866,
+          "n_boot": 2000,
+          "tails": {
+            "0.90": {
+              "observed_share": 0.06735632183908045,
+              "nominal_share": 0.09999999999999998,
+              "excess": -0.03264367816091952,
+              "excess_ci95": [
+                -0.04475423833247401,
+                -0.019701562736004152
+              ]
+            },
+            "0.95": {
+              "observed_share": 0.029425287356321838,
+              "nominal_share": 0.050000000000000044,
+              "excess": -0.020574712643678206,
+              "excess_ci95": [
+                -0.028253481982405192,
+                -0.011559404688194372
+              ]
+            },
+            "0.99": {
+              "observed_share": 0.002758620689655172,
+              "nominal_share": 0.010000000000000009,
+              "excess": -0.007241379310344837,
+              "excess_ci95": [
+                -0.009297993514923674,
+                -0.004289449978736683
+              ]
+            }
+          }
+        },
+        "extreme_peaks": {
+          "0.90": {
+            "observed": 320,
+            "expected": 478.95105886574174,
+            "expected_interval95": [
+              441.0,
+              517.0
+            ],
+            "ratio_observed_to_expected": 0.6681267199989666,
+            "z": -8.195360424154092,
+            "p_upper": 0.9999999999999999
+          },
+          "0.95": {
+            "observed": 136,
+            "expected": 227.5698265633112,
+            "expected_interval95": [
+              200.0,
+              256.0
+            ],
+            "ratio_observed_to_expected": 0.597618770703611,
+            "z": -6.415849773805669,
+            "p_upper": 0.9999999999443996
+          },
+          "0.99": {
+            "observed": 12,
+            "expected": 43.67501721922134,
+            "expected_interval95": [
+              31.0,
+              57.0
+            ],
+            "ratio_observed_to_expected": 0.2747566174906695,
+            "z": -4.841898815666254,
+            "p_upper": 0.9999995635709488
+          }
+        }
+      },
+      "first_crossing": {
+        "0.60": {
+          "observed": 2236,
+          "expected": 2154.0838649871375,
+          "expected_interval95": [
+            2081.0,
+            2228.0
+          ],
+          "ratio_observed_to_expected": 1.0380282942295525,
+          "z": 2.1820046166100706,
+          "p_upper": 0.015053262112691092,
+          "episodes": 6579,
+          "games": 4350,
+          "observed_loss_rate": 0.33986928104575165,
+          "implied_loss_rate": 0.32741812813301985,
+          "mean_p_at_crossing": 0.6725818718669803
+        },
+        "0.70": {
+          "observed": 1590,
+          "expected": 1519.411215675437,
+          "expected_interval95": [
+            1455.0,
+            1583.0
+          ],
+          "ratio_observed_to_expected": 1.0464579855646146,
+          "z": 2.114341754490444,
+          "p_upper": 0.01789235628658535,
+          "episodes": 5911,
+          "games": 4350,
+          "observed_loss_rate": 0.2689900186093724,
+          "implied_loss_rate": 0.2570480825030345,
+          "mean_p_at_crossing": 0.7429519174969654
+        },
+        "0.80": {
+          "observed": 956,
+          "expected": 892.1259537115022,
+          "expected_interval95": [
+            839.0,
+            946.0
+          ],
+          "ratio_observed_to_expected": 1.0715975653692882,
+          "z": 2.357404562301157,
+          "p_upper": 0.009668984221424513,
+          "episodes": 5221,
+          "games": 4340,
+          "observed_loss_rate": 0.18310668454319096,
+          "implied_loss_rate": 0.17087262089858307,
+          "mean_p_at_crossing": 0.829127379101417
+        },
+        "0.90": {
+          "observed": 320,
+          "expected": 356.6541136017547,
+          "expected_interval95": [
+            321.0,
+            392.0
+          ],
+          "ratio_observed_to_expected": 0.8972278400728521,
+          "z": -2.0303905249527157,
+          "p_upper": 0.9802091158758074,
+          "episodes": 4369,
+          "games": 4171,
+          "observed_loss_rate": 0.07324330510414283,
+          "implied_loss_rate": 0.08163289393494043,
+          "mean_p_at_crossing": 0.9183671060650596
+        },
+        "0.95": {
+          "observed": 136,
+          "expected": 148.77160066769682,
+          "expected_interval95": [
+            126.0,
+            172.0
+          ],
+          "ratio_observed_to_expected": 0.9141529659533336,
+          "z": -1.0697934390905264,
+          "p_upper": 0.8668610798970546,
+          "episodes": 3830,
+          "games": 3793,
+          "observed_loss_rate": 0.035509138381201046,
+          "implied_loss_rate": 0.03884375996545609,
+          "mean_p_at_crossing": 0.9611562400345439
+        },
+        "0.99": {
+          "observed": 12,
+          "expected": 19.60634878039526,
+          "expected_interval95": [
+            11.0,
+            29.0
+          ],
+          "ratio_observed_to_expected": 0.6120466454212533,
+          "z": -1.7245222348716707,
+          "p_upper": 0.9669601722973269,
+          "episodes": 2936,
+          "games": 2936,
+          "observed_loss_rate": 0.004087193460490463,
+          "implied_loss_rate": 0.006677911709943889,
+          "mean_p_at_crossing": 0.9933220882900562
+        }
+      },
+      "discrete_adjusted_reference": {
+        "n_steps": 163,
+        "gap_shape": 1.5,
+        "jump_calibration": {
+          "quantile_probs": [
+            0.5,
+            0.9,
+            0.99,
+            0.999
+          ],
+          "real_quantiles": [
+            0.01190236210823059,
+            0.05076592564582829,
+            0.14707059666514397,
+            0.3184242944352688
+          ],
+          "candidates": [
+            {
+              "gap_shape": null,
+              "quantiles": [
+                0.013376607095247128,
+                0.052884476121038984,
+                0.11862130330929477,
+                0.23995070314114775
+              ],
+              "distance": 0.14158326676990507
+            },
+            {
+              "gap_shape": 3.0,
+              "quantiles": [
+                0.011997100825548696,
+                0.0516304771260095,
+                0.12391400403488753,
+                0.2536997792945972
+              ],
+              "distance": 0.08133515093006924
+            },
+            {
+              "gap_shape": 2.0,
+              "quantiles": [
+                0.011205224780686779,
+                0.050888214184445155,
+                0.12564901892432662,
+                0.25581646411210435
+              ],
+              "distance": 0.07635779860890798
+            },
+            {
+              "gap_shape": 1.5,
+              "quantiles": [
+                0.010593987961687923,
+                0.050438489968423365,
+                0.12772234487812273,
+                0.26360163465600694
+              ],
+              "distance": 0.0691992478348884
+            },
+            {
+              "gap_shape": 1.2,
+              "quantiles": [
+                0.009975666386731197,
+                0.049911379611940886,
+                0.12878907393444897,
+                0.2666425653190315
+              ],
+              "distance": 0.08058822287935527
+            },
+            {
+              "gap_shape": 1.0,
+              "quantiles": [
+                0.009488303518941255,
+                0.04970345155971742,
+                0.1313595820460714,
+                0.2724201914607515
+              ],
+              "distance": 0.08894121753635052
+            },
+            {
+              "gap_shape": 0.8,
+              "quantiles": [
+                0.008627699143744866,
+                0.04878600240903936,
+                0.1326140319053033,
+                0.2791320317020091
+              ],
+              "distance": 0.13316232470919348
+            },
+            {
+              "gap_shape": 0.6,
+              "quantiles": [
+                0.007428581215559671,
+                0.04761671032526517,
+                0.1359606341886527,
+                0.2908459776099206
+              ],
+              "distance": 0.24069756154618707
+            },
+            {
+              "gap_shape": 0.5,
+              "quantiles": [
+                0.0066212059286964164,
+                0.046735314703385045,
+                0.13825131289577258,
+                0.2987500909575825
+              ],
+              "distance": 0.35866973771220023
+            },
+            {
+              "gap_shape": 0.4,
+              "quantiles": [
+                0.0055736112905409585,
+                0.045432422476135326,
+                0.1411795942859666,
+                0.3058822093797203
+              ],
+              "distance": 0.5912229457588041
+            },
+            {
+              "gap_shape": 0.3,
+              "quantiles": [
+                0.004068771073208688,
+                0.04289210944758443,
+                0.14394663675227087,
+                0.31782779732284094
+              ],
+              "distance": 1.1810480617820833
+            }
+          ],
+          "chosen_gap_shape": 1.5,
+          "chosen_quantiles": [
+            0.010593987961687923,
+            0.050438489968423365,
+            0.12772234487812273,
+            0.26360163465600694
+          ]
+        },
+        "simulated_share_never_above_start": 0.08339885969562484,
+        "pit_ks": {
+          "n": 4350,
+          "ks_two_sided": 0.05084296708839664,
+          "ks_two_sided_p": 3.266521880998959e-10,
+          "d_upper": 0.05084296708839664,
+          "d_upper_p_iid": 1.6332609404994796e-10,
+          "d_lower": 0.006705586622288373,
+          "d_lower_p_iid": 0.6732430944407347
+        },
+        "pit_bootstrap": {
+          "d_upper": 0.05084296708839664,
+          "d_upper_p_bootstrap": 0.0004997501249375312,
+          "bootstrap_critical_value_95": 0.0312618017708364,
+          "n_boot": 2000,
+          "tails": {
+            "0.90": {
+              "observed_share": 0.10781609195402299,
+              "nominal_share": 0.09999999999999998,
+              "excess": 0.00781609195402301,
+              "excess_ci95": [
+                -0.007676239772969065,
+                0.024300298528383918
+              ]
+            },
+            "0.95": {
+              "observed_share": 0.04735632183908046,
+              "nominal_share": 0.050000000000000044,
+              "excess": -0.0026436781609195867,
+              "excess_ci95": [
+                -0.012548773764050565,
+                0.008030924720175817
+              ]
+            },
+            "0.99": {
+              "observed_share": 0.006896551724137931,
+              "nominal_share": 0.010000000000000009,
+              "excess": -0.003103448275862078,
+              "excess_ci95": [
+                -0.006713860297855561,
+                0.0013749125111582085
+              ]
+            }
+          }
+        },
+        "extreme_peaks": {
+          "0.90": {
+            "observed": 320,
+            "expected": 372.12468126019405,
+            "expected_interval95": [
+              339.0,
+              407.0
+            ],
+            "ratio_observed_to_expected": 0.8599268366621782,
+            "z": -3.000840885790999,
+            "p_upper": 0.9987757167091958
+          },
+          "0.95": {
+            "observed": 136,
+            "expected": 160.94352289473005,
+            "expected_interval95": [
+              138.0,
+              185.0
+            ],
+            "ratio_observed_to_expected": 0.8450169199350438,
+            "z": -2.057585746545774,
+            "p_upper": 0.9820840834636345
+          },
+          "0.99": {
+            "observed": 12,
+            "expected": 24.991944063005008,
+            "expected_interval95": [
+              16.0,
+              35.0
+            ],
+            "ratio_observed_to_expected": 0.48015472384812674,
+            "z": -2.617746512311234,
+            "p_upper": 0.9967209829721715
+          }
+        },
+        "expected_counts_other_simulators": {
+          "equal_spacing": {
+            "0.90": 382.56313479019565,
+            "0.95": 166.90671237659805,
+            "0.99": 26.254538661110963
+          },
+          "gap_shape_0.5": {
+            "0.90": 351.00774171938775,
+            "0.95": 148.97363732891932,
+            "0.99": 22.079087714301313
+          }
+        },
+        "discrete_to_continuous_expected_ratio": {
+          "0.90": 0.7769576335032324,
+          "0.95": 0.7072269875371842,
+          "0.99": 0.5722251679389395
+        }
+      },
+      "rankings": {
+        "overlap": 14,
+        "only_in_peak_list": [
+          "2011_04_SF_PHI",
+          "2012_13_IND_DET",
+          "2012_19_BAL_DEN",
+          "2013_15_GB_DAL",
+          "2015_05_CHI_KC",
+          "2016_04_NO_SD",
+          "2020_03_CHI_ATL",
+          "2022_02_ARI_LV",
+          "2023_14_TEN_MIA",
+          "2023_22_SF_KC",
+          "2025_05_TEN_ARI"
+        ],
+        "only_in_surprise_list": [
+          "2010_09_ARI_MIN",
+          "2012_11_JAX_HOU",
+          "2013_09_TB_SEA",
+          "2013_14_CLE_NE",
+          "2014_20_GB_SEA",
+          "2016_01_SD_KC",
+          "2017_04_SF_ARI",
+          "2017_11_WAS_NO",
+          "2021_17_TB_NYJ",
+          "2023_08_NYJ_NYG",
+          "2023_11_CHI_DET"
+        ],
+        "spearman_all_games": 0.5876380330322011,
+        "ties_at_top_rounded_peak": 2,
+        "games_with_peak_at_least_0.99": 12
+      }
+    },
+    "ours": {
+      "label": "Ours",
+      "column": "wp_ours",
+      "n_games": 4350,
+      "n_nontied_games": 4350,
+      "n_games_dropped": 0,
+      "seasons": [
+        2010,
+        2025
+      ],
+      "median_plays_per_game": 163.0,
+      "loser_p0": {
+        "mean": 0.4170559530013841,
+        "q05": 0.10857373741251697,
+        "median": 0.4071326279301578,
+        "q95": 0.7581601450066621
+      },
+      "loser_peak": {
+        "median": 0.6096976973908912,
+        "share_at_least": {
+          "0.50": 0.6402298850574712,
+          "0.67": 0.40988505747126436,
+          "0.75": 0.29402298850574715,
+          "0.90": 0.08045977011494253,
+          "0.95": 0.035402298850574714,
+          "0.99": 0.003218390804597701
+        },
+        "share_never_above_start": 0.0535632183908046
+      },
+      "jump_sizes": {
+        "n_jumps": 709238,
+        "mean": 0.022089849091913142,
+        "median": 0.01225652229279467,
+        "q90": 0.05277033605190232,
+        "q99": 0.14802660451049254,
+        "q999": 0.3171160043728554,
+        "share_above_0.05": 0.11003076541302073,
+        "share_above_0.10": 0.026405804539519878,
+        "share_above_0.20": 0.004279240537027063,
+        "max": 0.8357365225454162
+      },
+      "mean_largest_jump_per_game": 0.19173522018217962,
+      "continuous_reference": {
+        "pit_ks": {
+          "n": 4350,
+          "ks_two_sided": 0.06370527781985491,
+          "ks_two_sided_p": 8.620365926655703e-16,
+          "d_upper": 0.0,
+          "d_upper_p_iid": 1.0,
+          "d_lower": 0.06370527781985491,
+          "d_lower_p_iid": 4.3101829633278515e-16
+        },
+        "pit_bootstrap": {
+          "d_upper": 0.0,
+          "d_upper_p_bootstrap": 1.0,
+          "bootstrap_critical_value_95": 0.031163607657393236,
+          "n_boot": 2000,
+          "tails": {
+            "0.90": {
+              "observed_share": 0.07954022988505748,
+              "nominal_share": 0.09999999999999998,
+              "excess": -0.020459770114942502,
+              "excess_ci95": [
+                -0.03441650885574629,
+                -0.005626467989034711
+              ]
+            },
+            "0.95": {
+              "observed_share": 0.03103448275862069,
+              "nominal_share": 0.050000000000000044,
+              "excess": -0.018965517241379355,
+              "excess_ci95": [
+                -0.02713461431983293,
+                -0.009396973666449468
+              ]
+            },
+            "0.99": {
+              "observed_share": 0.002758620689655172,
+              "nominal_share": 0.010000000000000009,
+              "excess": -0.007241379310344837,
+              "excess_ci95": [
+                -0.009288590092705926,
+                -0.004119229180387838
+              ]
+            }
+          }
+        },
+        "pit_game_ks": {
+          "n": 4350,
+          "ks_two_sided": 0.04124625188091625,
+          "ks_two_sided_p": 7.228153334024964e-07,
+          "d_upper": 0.0,
+          "d_upper_p_iid": 1.0,
+          "d_lower": 0.04124625188091625,
+          "d_lower_p_iid": 3.614076667012482e-07
+        },
+        "pit_game_bootstrap": {
+          "d_upper": 0.0,
+          "d_upper_p_bootstrap": 1.0,
+          "bootstrap_critical_value_95": 0.031109988681303487,
+          "n_boot": 2000,
+          "tails": {
+            "0.90": {
+              "observed_share": 0.07241379310344828,
+              "nominal_share": 0.09999999999999998,
+              "excess": -0.027586206896551696,
+              "excess_ci95": [
+                -0.039948394275132484,
+                -0.014226532996067742
+              ]
+            },
+            "0.95": {
+              "observed_share": 0.03264367816091954,
+              "nominal_share": 0.050000000000000044,
+              "excess": -0.017356321839080507,
+              "excess_ci95": [
+                -0.02597460549683162,
+                -0.007550445401270221
+              ]
+            },
+            "0.99": {
+              "observed_share": 0.003218390804597701,
+              "nominal_share": 0.010000000000000009,
+              "excess": -0.006781609195402308,
+              "excess_ci95": [
+                -0.009052548707723679,
+                -0.0035632181105798603
+              ]
+            }
+          }
+        },
+        "extreme_peaks": {
+          "0.90": {
+            "observed": 350,
+            "expected": 501.0660068304474,
+            "expected_interval95": [
+              463.0,
+              539.0
+            ],
+            "ratio_observed_to_expected": 0.6985107655056598,
+            "z": -7.860820255269383,
+            "p_upper": 0.9999999999999984
+          },
+          "0.95": {
+            "observed": 154,
+            "expected": 239.67694670403685,
+            "expected_interval95": [
+              212.0,
+              268.0
+            ],
+            "ratio_observed_to_expected": 0.6425315497287508,
+            "z": -5.950582258595418,
+            "p_upper": 0.9999999989201036
+          },
+          "0.99": {
+            "observed": 14,
+            "expected": 45.99860593309798,
+            "expected_interval95": [
+              33.0,
+              60.0
+            ],
+            "ratio_observed_to_expected": 0.3043570498715136,
+            "z": -4.780373371046409,
+            "p_upper": 0.9999993982787524
+          }
+        }
+      },
+      "first_crossing": {
+        "0.60": {
+          "observed": 2235,
+          "expected": 2130.320257601312,
+          "expected_interval95": [
+            2057.0,
+            2202.024999999998
+          ],
+          "ratio_observed_to_expected": 1.0491380307844207,
+          "z": 2.8078644164723032,
+          "p_upper": 0.002599382053187888,
+          "episodes": 6569,
+          "games": 4350,
+          "observed_loss_rate": 0.340234434464911,
+          "implied_loss_rate": 0.32429901927253946,
+          "mean_p_at_crossing": 0.6757009807274605
+        },
+        "0.70": {
+          "observed": 1582,
+          "expected": 1480.4070268398898,
+          "expected_interval95": [
+            1417.0,
+            1546.0
+          ],
+          "ratio_observed_to_expected": 1.0686250276567335,
+          "z": 3.079493926667795,
+          "p_upper": 0.001090761843860709,
+          "episodes": 5876,
+          "games": 4350,
+          "observed_loss_rate": 0.2692307692307692,
+          "implied_loss_rate": 0.2519412911572311,
+          "mean_p_at_crossing": 0.7480587088427689
+        },
+        "0.80": {
+          "observed": 979,
+          "expected": 879.9870798281445,
+          "expected_interval95": [
+            828.0,
+            933.0
+          ],
+          "ratio_observed_to_expected": 1.1125163339798034,
+          "z": 3.680844682975064,
+          "p_upper": 0.00012500143828613952,
+          "episodes": 5143,
+          "games": 4331,
+          "observed_loss_rate": 0.19035582344934862,
+          "implied_loss_rate": 0.17110384597086223,
+          "mean_p_at_crossing": 0.8288961540291377
+        },
+        "0.90": {
+          "observed": 350,
+          "expected": 342.33066332900773,
+          "expected_interval95": [
+            308.0,
+            377.0
+          ],
+          "ratio_observed_to_expected": 1.0224033003541415,
+          "z": 0.4336601013716538,
+          "p_upper": 0.34259625075688893,
+          "episodes": 4162,
+          "games": 4024,
+          "observed_loss_rate": 0.08409418548774628,
+          "implied_loss_rate": 0.08225148085752228,
+          "mean_p_at_crossing": 0.9177485191424778
+        },
+        "0.95": {
+          "observed": 154,
+          "expected": 143.51964296452977,
+          "expected_interval95": [
+            121.0,
+            167.0
+          ],
+          "ratio_observed_to_expected": 1.073023851083997,
+          "z": 0.8938275373147415,
+          "p_upper": 0.1973334228895594,
+          "episodes": 3666,
+          "games": 3639,
+          "observed_loss_rate": 0.042007637752318604,
+          "implied_loss_rate": 0.03914883877919524,
+          "mean_p_at_crossing": 0.9608511612208048
+        },
+        "0.99": {
+          "observed": 14,
+          "expected": 21.50109558478918,
+          "expected_interval95": [
+            13.0,
+            31.0
+          ],
+          "ratio_observed_to_expected": 0.6511296108047729,
+          "z": -1.6245790139254523,
+          "p_upper": 0.9584404745895421,
+          "episodes": 2614,
+          "games": 2614,
+          "observed_loss_rate": 0.005355776587605203,
+          "implied_loss_rate": 0.008225361738633963,
+          "mean_p_at_crossing": 0.991774638261366
+        }
+      },
+      "discrete_adjusted_reference": {
+        "n_steps": 163,
+        "gap_shape": 3.0,
+        "jump_calibration": {
+          "quantile_probs": [
+            0.5,
+            0.9,
+            0.99,
+            0.999
+          ],
+          "real_quantiles": [
+            0.01225652229279467,
+            0.05277033605190232,
+            0.14802660451049254,
+            0.3171160043728554
+          ],
+          "candidates": [
+            {
+              "gap_shape": null,
+              "quantiles": [
+                0.012762038184167379,
+                0.05234050486126803,
+                0.1182621946356806,
+                0.24070761398374477
+              ],
+              "distance": 0.12809724939849554
+            },
+            {
+              "gap_shape": 3.0,
+              "quantiles": [
+                0.011486666202042686,
+                0.051007837751946915,
+                0.12306765846042808,
+                0.25242146484857186
+              ],
+              "distance": 0.09152112613660228
+            },
+            {
+              "gap_shape": 2.0,
+              "quantiles": [
+                0.010758910543182565,
+                0.050238057788122736,
+                0.12404373041579725,
+                0.2546584948828793
+              ],
+              "distance": 0.0987578728423939
+            },
+            {
+              "gap_shape": 1.5,
+              "quantiles": [
+                0.010209281407533216,
+                0.04984368955387648,
+                0.12701699614215928,
+                0.26340771334981317
+              ],
+              "distance": 0.09452209102238697
+            },
+            {
+              "gap_shape": 1.2,
+              "quantiles": [
+                0.009676266199016126,
+                0.049457480034420284,
+                0.1288563578670602,
+                0.2683991689357787
+              ],
+              "distance": 0.10713584164210246
+            },
+            {
+              "gap_shape": 1.0,
+              "quantiles": [
+                0.00907273152371968,
+                0.04887387372557325,
+                0.12984153307366797,
+                0.27128656156527736
+              ],
+              "distance": 0.13790132966859622
+            },
+            {
+              "gap_shape": 0.8,
+              "quantiles": [
+                0.008345134520636482,
+                0.0482871393251701,
+                0.1327352933482443,
+                0.2804767700312126
+              ],
+              "distance": 0.18259302280567352
+            },
+            {
+              "gap_shape": 0.6,
+              "quantiles": [
+                0.007078546981270452,
+                0.046666071421616245,
+                0.133735052709339,
+                0.28476425421929585
+              ],
+              "distance": 0.33838945714259305
+            },
+            {
+              "gap_shape": 0.5,
+              "quantiles": [
+                0.0062440574144976,
+                0.045670180363236695,
+                0.13672501755613567,
+                0.2980949799530939
+              ],
+              "distance": 0.4858681515148081
+            },
+            {
+              "gap_shape": 0.4,
+              "quantiles": [
+                0.005317273875195445,
+                0.044716860058000185,
+                0.13995866716048094,
+                0.30613597646246055
+              ],
+              "distance": 0.7291934705940141
+            },
+            {
+              "gap_shape": 0.3,
+              "quantiles": [
+                0.0039017151106173764,
+                0.042135262549600934,
+                0.1433416562292032,
+                0.31913622789210494
+              ],
+              "distance": 1.3619338754508616
+            }
+          ],
+          "chosen_gap_shape": 3.0,
+          "chosen_quantiles": [
+            0.011486666202042686,
+            0.051007837751946915,
+            0.12306765846042808,
+            0.25242146484857186
+          ]
+        },
+        "simulated_share_never_above_start": 0.08209576380791964,
+        "pit_ks": {
+          "n": 4350,
+          "ks_two_sided": 0.04022099124342182,
+          "ks_two_sided_p": 1.4966831431839783e-06,
+          "d_upper": 0.04022099124342182,
+          "d_upper_p_iid": 7.483415715919891e-07,
+          "d_lower": 0.005921482740656292,
+          "d_lower_p_iid": 0.7341875201637578
+        },
+        "pit_bootstrap": {
+          "d_upper": 0.04022099124342182,
+          "d_upper_p_bootstrap": 0.006496751624187906,
+          "bootstrap_critical_value_95": 0.03132774863799798,
+          "n_boot": 2000,
+          "tails": {
+            "0.90": {
+              "observed_share": 0.10620689655172413,
+              "nominal_share": 0.09999999999999998,
+              "excess": 0.006206896551724156,
+              "excess_ci95": [
+                -0.009525741449738459,
+                0.022246574138507585
+              ]
+            },
+            "0.95": {
+              "observed_share": 0.04781609195402299,
+              "nominal_share": 0.050000000000000044,
+              "excess": -0.002183908045977054,
+              "excess_ci95": [
+                -0.012109241366793193,
+                0.008960297192351557
+              ]
+            },
+            "0.99": {
+              "observed_share": 0.006666666666666667,
+              "nominal_share": 0.010000000000000009,
+              "excess": -0.003333333333333342,
+              "excess_ci95": [
+                -0.006883743060822001,
+                0.001128257367894906
+              ]
+            }
+          }
+        },
+        "extreme_peaks": {
+          "0.90": {
+            "observed": 350,
+            "expected": 399.79731695638145,
+            "expected_interval95": [
+              366.0,
+              433.0
+            ],
+            "ratio_observed_to_expected": 0.8754435939303354,
+            "z": -2.8646265398904984,
+            "p_upper": 0.9980944575762046
+          },
+          "0.95": {
+            "observed": 154,
+            "expected": 175.4967546337676,
+            "expected_interval95": [
+              151.0,
+              201.0
+            ],
+            "ratio_observed_to_expected": 0.8775091044924008,
+            "z": -1.7284330504702514,
+            "p_upper": 0.9615226167487445
+          },
+          "0.99": {
+            "observed": 14,
+            "expected": 27.491940338841218,
+            "expected_interval95": [
+              18.0,
+              38.0
+            ],
+            "ratio_observed_to_expected": 0.5092401564767145,
+            "z": -2.599472200272247,
+            "p_upper": 0.9964890773933927
+          }
+        },
+        "expected_counts_other_simulators": {
+          "equal_spacing": {
+            "0.90": 405.1363717523773,
+            "0.95": 179.06279156173744,
+            "0.99": 28.98212218530866
+          },
+          "gap_shape_0.5": {
+            "0.90": 375.1949172017771,
+            "0.95": 160.99038952494953,
+            "0.99": 24.27516441161529
+          }
+        },
+        "discrete_to_continuous_expected_ratio": {
+          "0.90": 0.7978935140408884,
+          "0.95": 0.732222089137669,
+          "0.99": 0.5976689897695265
+        }
+      },
+      "rankings": {
+        "overlap": 15,
+        "only_in_peak_list": [
+          "2011_04_SF_PHI",
+          "2012_13_IND_DET",
+          "2012_19_BAL_DEN",
+          "2015_05_CHI_KC",
+          "2016_04_NO_SD",
+          "2017_06_MIA_ATL",
+          "2022_02_ARI_LV",
+          "2022_02_NYJ_CLE",
+          "2023_14_TEN_MIA",
+          "2025_05_TEN_ARI"
+        ],
+        "only_in_surprise_list": [
+          "2010_09_ARI_MIN",
+          "2012_11_JAX_HOU",
+          "2012_11_TB_CAR",
+          "2013_02_TEN_HOU",
+          "2013_14_CLE_NE",
+          "2014_20_GB_SEA",
+          "2016_06_IND_HOU",
+          "2017_11_WAS_NO",
+          "2018_04_CLE_OAK",
+          "2023_11_CHI_DET"
+        ],
+        "spearman_all_games": 0.5887614593356428,
+        "ties_at_top_rounded_peak": 4,
+        "games_with_peak_at_least_0.99": 14
+      }
+    }
+  },
+  "discreteness_simulation": {
+    "description": "Simulated even game (p0 = 0.5): Brownian lead reported at n_steps play times. ratio = P(reported peak >= x | lost) / continuous formula. gap_shape null means equally spaced plays; a number means Gamma-distributed gaps.",
+    "settings": [
+      {
+        "n_steps": 20,
+        "gap_shape": null,
+        "n_losing_paths": 149873,
+        "share_never_above_start": 0.2528474108078173,
+        "tail": {
+          "0.75": {
+            "simulated": 0.21740406877823223,
+            "continuous_formula": 0.3333333333333333,
+            "ratio": 0.6522122063346968,
+            "ratio_se": 0.003196407795016886
+          },
+          "0.90": {
+            "simulated": 0.0546662841205554,
+            "continuous_formula": 0.11111111111111108,
+            "ratio": 0.4919965570849988,
+            "ratio_se": 0.005284856020670584
+          },
+          "0.95": {
+            "simulated": 0.021104535173113236,
+            "continuous_formula": 0.052631578947368474,
+            "ratio": 0.40098616828915107,
+            "ratio_se": 0.007054203019678168
+          },
+          "0.99": {
+            "simulated": 0.0024887738285081368,
+            "continuous_formula": 0.01010101010101011,
+            "ratio": 0.2463886090223053,
+            "ratio_se": 0.012741633411182505
+          }
+        },
+        "curve_x": [
+          0.5,
+          0.5224142251348866,
+          0.5447385441409293,
+          0.5668844876231727,
+          0.5887664111390223,
+          0.6103027891773711,
+          0.6314173745141455,
+          0.6520401899911379,
+          0.6721083286718803,
+          0.6915665480074215,
+          0.7103676533811207,
+          0.7284726755394474,
+          0.7458508544162108,
+          0.7624794483350197,
+          0.7783433923119539,
+          0.7934348321235029,
+          0.8077525620413929,
+          0.8213013938628834,
+          0.834091483351521,
+          0.8461376377539236,
+          0.8574586249811516,
+          0.8680765016251824,
+          0.8780159734696885,
+          0.8873037987488749,
+          0.8959682412563715,
+          0.9040385776064973,
+          0.9115446605573869,
+          0.9185165383380691,
+          0.9249841283703865,
+          0.9309769426125186,
+          0.9365238609321015,
+          0.9416529483951072,
+          0.9463913120813614,
+          0.9507649929599338,
+          0.9547988884324187,
+          0.9585167013392988,
+          0.9619409114898403,
+          0.965092766090835,
+          0.9679922857911282,
+          0.9706582834094161,
+          0.9731083927588882,
+          0.9753591053143285,
+          0.97742581277873,
+          0.9793228538933118,
+          0.9810635640949492,
+          0.9826603268577981,
+          0.9841246257617656,
+          0.985467096510607,
+          0.9866975782785228,
+          0.9878251638980949,
+          0.9888582485163929,
+          0.9898045764421759,
+          0.9906712859874118,
+          0.9914649521727839,
+          0.9921916272213004,
+          0.9928568788082072,
+          0.9934658260706659,
+          0.994023173408416,
+          0.9945332421280871,
+          0.9950000000000001
+        ],
+        "curve_ratio": [
+          1.0,
+          0.7574206437954345,
+          0.7607022255222567,
+          0.758930842827392,
+          0.7519015110631587,
+          0.7425400104906635,
+          0.7331176602265416,
+          0.720960682840032,
+          0.707830728763908,
+          0.6951743460691627,
+          0.6816461723079872,
+          0.6683681486574519,
+          0.6561278069262807,
+          0.642105224624288,
+          0.6273777010289923,
+          0.6163505582521175,
+          0.6042297600376716,
+          0.5893403589775148,
+          0.5737455016918397,
+          0.5592772767831301,
+          0.5463497756413029,
+          0.5338390003184571,
+          0.5215619217088162,
+          0.5085807093002868,
+          0.4978766034761828,
+          0.48564798346946236,
+          0.4722378401661302,
+          0.46338857049801757,
+          0.451514625999079,
+          0.44097849592903954,
+          0.4291131389264732,
+          0.4179190783492981,
+          0.41120843537762375,
+          0.39942704880118446,
+          0.38829427944369066,
+          0.3797234451262171,
+          0.37135042621854575,
+          0.3610115105158063,
+          0.3549438653433764,
+          0.3467637025926897,
+          0.3401982310439825,
+          0.33092969603121325,
+          0.3229907496204355,
+          0.3169661066389381,
+          0.3093844908295976,
+          0.2941837720652389,
+          0.2849849651094809,
+          0.2764442419317974,
+          0.2682435179902299,
+          0.26256407240017876,
+          0.25523159985173227,
+          0.24939142316704077,
+          0.23241183476776878,
+          0.22632412938850235,
+          0.22552425408200785,
+          0.22165275356394185,
+          0.22216874215798404,
+          0.2174996308519765,
+          0.21242425949324906,
+          0.21111874720597223
+        ]
+      },
+      {
+        "n_steps": 40,
+        "gap_shape": null,
+        "n_losing_paths": 150013,
+        "share_never_above_start": 0.17885783232119884,
+        "tail": {
+          "0.75": {
+            "simulated": 0.247945178084566,
+            "continuous_formula": 0.3333333333333333,
+            "ratio": 0.7438355342536981,
+            "ratio_se": 0.0033447170961789026
+          },
+          "0.90": {
+            "simulated": 0.06724083912727563,
+            "continuous_formula": 0.11111111111111108,
+            "ratio": 0.6051675521454809,
+            "ratio_se": 0.00581941574979475
+          },
+          "0.95": {
+            "simulated": 0.0277909247865185,
+            "continuous_formula": 0.052631578947368474,
+            "ratio": 0.528027570943851,
+            "ratio_se": 0.008063442393053708
+          },
+          "0.99": {
+            "simulated": 0.003946324651863505,
+            "continuous_formula": 0.01010101010101011,
+            "ratio": 0.39068614053448664,
+            "ratio_se": 0.016025386876908607
+          }
+        },
+        "curve_x": [
+          0.5,
+          0.5224142251348866,
+          0.5447385441409293,
+          0.5668844876231727,
+          0.5887664111390223,
+          0.6103027891773711,
+          0.6314173745141455,
+          0.6520401899911379,
+          0.6721083286718803,
+          0.6915665480074215,
+          0.7103676533811207,
+          0.7284726755394474,
+          0.7458508544162108,
+          0.7624794483350197,
+          0.7783433923119539,
+          0.7934348321235029,
+          0.8077525620413929,
+          0.8213013938628834,
+          0.834091483351521,
+          0.8461376377539236,
+          0.8574586249811516,
+          0.8680765016251824,
+          0.8780159734696885,
+          0.8873037987488749,
+          0.8959682412563715,
+          0.9040385776064973,
+          0.9115446605573869,
+          0.9185165383380691,
+          0.9249841283703865,
+          0.9309769426125186,
+          0.9365238609321015,
+          0.9416529483951072,
+          0.9463913120813614,
+          0.9507649929599338,
+          0.9547988884324187,
+          0.9585167013392988,
+          0.9619409114898403,
+          0.965092766090835,
+          0.9679922857911282,
+          0.9706582834094161,
+          0.9731083927588882,
+          0.9753591053143285,
+          0.97742581277873,
+          0.9793228538933118,
+          0.9810635640949492,
+          0.9826603268577981,
+          0.9841246257617656,
+          0.985467096510607,
+          0.9866975782785228,
+          0.9878251638980949,
+          0.9888582485163929,
+          0.9898045764421759,
+          0.9906712859874118,
+          0.9914649521727839,
+          0.9921916272213004,
+          0.9928568788082072,
+          0.9934658260706659,
+          0.994023173408416,
+          0.9945332421280871,
+          0.9950000000000001
+        ],
+        "curve_ratio": [
+          1.0,
+          0.8315932676154718,
+          0.8345462330702769,
+          0.8316690272667915,
+          0.8246305078341662,
+          0.8164806448068455,
+          0.8091164224243237,
+          0.7988097374539358,
+          0.7877334853665792,
+          0.7777783639429235,
+          0.7676302223873398,
+          0.7571120097955004,
+          0.7455441899170527,
+          0.7380164847992262,
+          0.7252924634502866,
+          0.7136377692409952,
+          0.7044682289803772,
+          0.6903228376179948,
+          0.681055582481102,
+          0.6677789718764293,
+          0.6553126313190714,
+          0.6436145626186783,
+          0.6340707558115297,
+          0.6233628606590983,
+          0.6124068981707393,
+          0.5979840049007051,
+          0.586311654802215,
+          0.5758960626853071,
+          0.5660036646686573,
+          0.562217377300351,
+          0.5529301719907073,
+          0.5438313243271234,
+          0.5343898152608443,
+          0.5259792898104271,
+          0.5142385877416834,
+          0.5061334775134091,
+          0.500905759891311,
+          0.4913431129139221,
+          0.48141837413807137,
+          0.46927084650066025,
+          0.46121502858992414,
+          0.4504148440730202,
+          0.44102797626409335,
+          0.4338035776786939,
+          0.42479081687593234,
+          0.41895286605618004,
+          0.40992924553646964,
+          0.4059169430433079,
+          0.3975396973650571,
+          0.4007802145823445,
+          0.39343529903270436,
+          0.3915350654442833,
+          0.3780246821512867,
+          0.3709180985319355,
+          0.3566056490639431,
+          0.3576490196530812,
+          0.34966522332868205,
+          0.334814224153391,
+          0.3371361822913564,
+          0.3329644764120514
+        ]
+      },
+      {
+        "n_steps": 80,
+        "gap_shape": null,
+        "n_losing_paths": 149886,
+        "share_never_above_start": 0.12785717145030223,
+        "tail": {
+          "0.75": {
+            "simulated": 0.2710726819049144,
+            "continuous_formula": 0.3333333333333333,
+            "ratio": 0.8132180457147432,
+            "ratio_se": 0.0034444961957970084
+          },
+          "0.90": {
+            "simulated": 0.07767903606741124,
+            "continuous_formula": 0.11111111111111108,
+            "ratio": 0.6991113246067013,
+            "ratio_se": 0.006222357055104652
+          },
+          "0.95": {
+            "simulated": 0.03290500780593251,
+            "continuous_formula": 0.052631578947368474,
+            "ratio": 0.625195148312717,
+            "ratio_se": 0.00875464685844498
+          },
+          "0.99": {
+            "simulated": 0.004763620351467115,
+            "continuous_formula": 0.01010101010101011,
+            "ratio": 0.4715984147952439,
+            "ratio_se": 0.01760704004952802
+          }
+        },
+        "curve_x": [
+          0.5,
+          0.5224142251348866,
+          0.5447385441409293,
+          0.5668844876231727,
+          0.5887664111390223,
+          0.6103027891773711,
+          0.6314173745141455,
+          0.6520401899911379,
+          0.6721083286718803,
+          0.6915665480074215,
+          0.7103676533811207,
+          0.7284726755394474,
+          0.7458508544162108,
+          0.7624794483350197,
+          0.7783433923119539,
+          0.7934348321235029,
+          0.8077525620413929,
+          0.8213013938628834,
+          0.834091483351521,
+          0.8461376377539236,
+          0.8574586249811516,
+          0.8680765016251824,
+          0.8780159734696885,
+          0.8873037987488749,
+          0.8959682412563715,
+          0.9040385776064973,
+          0.9115446605573869,
+          0.9185165383380691,
+          0.9249841283703865,
+          0.9309769426125186,
+          0.9365238609321015,
+          0.9416529483951072,
+          0.9463913120813614,
+          0.9507649929599338,
+          0.9547988884324187,
+          0.9585167013392988,
+          0.9619409114898403,
+          0.965092766090835,
+          0.9679922857911282,
+          0.9706582834094161,
+          0.9731083927588882,
+          0.9753591053143285,
+          0.97742581277873,
+          0.9793228538933118,
+          0.9810635640949492,
+          0.9826603268577981,
+          0.9841246257617656,
+          0.985467096510607,
+          0.9866975782785228,
+          0.9878251638980949,
+          0.9888582485163929,
+          0.9898045764421759,
+          0.9906712859874118,
+          0.9914649521727839,
+          0.9921916272213004,
+          0.9928568788082072,
+          0.9934658260706659,
+          0.994023173408416,
+          0.9945332421280871,
+          0.9950000000000001
+        ],
+        "curve_ratio": [
+          1.0,
+          0.88301153359729,
+          0.885570204727344,
+          0.8812048564679525,
+          0.87686215475802,
+          0.8702930034277887,
+          0.8625483322673163,
+          0.8555211498958039,
+          0.8473703220103782,
+          0.8394115133057116,
+          0.8328672062242375,
+          0.8262903503187925,
+          0.816388092867884,
+          0.8081625553735589,
+          0.7999619433043254,
+          0.7905332013208622,
+          0.7787617065459039,
+          0.7679342192671461,
+          0.7575373170742422,
+          0.7475217782501983,
+          0.7370587261054974,
+          0.7273084666259678,
+          0.7173975839443705,
+          0.7072025854142291,
+          0.7017589537134824,
+          0.6944050689867634,
+          0.6876693668238363,
+          0.6794171825025552,
+          0.6677526146418118,
+          0.6576308852410628,
+          0.6506519469423413,
+          0.63990663888492,
+          0.6290672488339445,
+          0.6238251700786637,
+          0.6093788898927003,
+          0.6001360772534026,
+          0.5979538606531408,
+          0.5830651043497111,
+          0.5695961485214492,
+          0.5575105929352095,
+          0.5497261790681626,
+          0.5453396263961123,
+          0.5338418030011205,
+          0.5201205990683181,
+          0.5153656611800349,
+          0.5111850425726444,
+          0.5082962907603065,
+          0.50398064720506,
+          0.49041747281198134,
+          0.47798756184267943,
+          0.47725945972690853,
+          0.47283103570746926,
+          0.4662003765991132,
+          0.45415903024408155,
+          0.457791483615209,
+          0.4581044491619767,
+          0.45545713848022673,
+          0.4482766820664665,
+          0.45030037102349285,
+          0.43282227826482383
+        ]
+      },
+      {
+        "n_steps": 163,
+        "gap_shape": null,
+        "n_losing_paths": 150371,
+        "share_never_above_start": 0.08780948454156719,
+        "tail": {
+          "0.75": {
+            "simulated": 0.29056134494018127,
+            "continuous_formula": 0.3333333333333333,
+            "ratio": 0.8716840348205438,
+            "ratio_se": 0.0035124936952387405
+          },
+          "0.90": {
+            "simulated": 0.08619348145586582,
+            "continuous_formula": 0.11111111111111108,
+            "ratio": 0.7757413331027926,
+            "ratio_se": 0.006513655758549914
+          },
+          "0.95": {
+            "simulated": 0.037460680583357164,
+            "continuous_formula": 0.052631578947368474,
+            "ratio": 0.7117529310837855,
+            "ratio_se": 0.009303977004879055
+          },
+          "0.99": {
+            "simulated": 0.005978546395249084,
+            "continuous_formula": 0.01010101010101011,
+            "ratio": 0.5918760931296587,
+            "ratio_se": 0.019681075683957404
+          }
+        },
+        "curve_x": [
+          0.5,
+          0.5224142251348866,
+          0.5447385441409293,
+          0.5668844876231727,
+          0.5887664111390223,
+          0.6103027891773711,
+          0.6314173745141455,
+          0.6520401899911379,
+          0.6721083286718803,
+          0.6915665480074215,
+          0.7103676533811207,
+          0.7284726755394474,
+          0.7458508544162108,
+          0.7624794483350197,
+          0.7783433923119539,
+          0.7934348321235029,
+          0.8077525620413929,
+          0.8213013938628834,
+          0.834091483351521,
+          0.8461376377539236,
+          0.8574586249811516,
+          0.8680765016251824,
+          0.8780159734696885,
+          0.8873037987488749,
+          0.8959682412563715,
+          0.9040385776064973,
+          0.9115446605573869,
+          0.9185165383380691,
+          0.9249841283703865,
+          0.9309769426125186,
+          0.9365238609321015,
+          0.9416529483951072,
+          0.9463913120813614,
+          0.9507649929599338,
+          0.9547988884324187,
+          0.9585167013392988,
+          0.9619409114898403,
+          0.965092766090835,
+          0.9679922857911282,
+          0.9706582834094161,
+          0.9731083927588882,
+          0.9753591053143285,
+          0.97742581277873,
+          0.9793228538933118,
+          0.9810635640949492,
+          0.9826603268577981,
+          0.9841246257617656,
+          0.985467096510607,
+          0.9866975782785228,
+          0.9878251638980949,
+          0.9888582485163929,
+          0.9898045764421759,
+          0.9906712859874118,
+          0.9914649521727839,
+          0.9921916272213004,
+          0.9928568788082072,
+          0.9934658260706659,
+          0.994023173408416,
+          0.9945332421280871,
+          0.9950000000000001
+        ],
+        "curve_ratio": [
+          1.0,
+          0.921700555419636,
+          0.9208371219460587,
+          0.917696745388739,
+          0.9133373554258473,
+          0.9083435446358028,
+          0.9039234887929294,
+          0.8999422095899395,
+          0.8951557245585872,
+          0.8905032041719906,
+          0.8840387733472161,
+          0.8776141801248574,
+          0.8722845721487357,
+          0.8656513476320467,
+          0.8570464697201468,
+          0.8498767303140354,
+          0.8428071855806503,
+          0.833188291836697,
+          0.823699385488546,
+          0.817888333765306,
+          0.8094497384296704,
+          0.8010165441765495,
+          0.7929153119083971,
+          0.7831473260901394,
+          0.7784772997098246,
+          0.7711679474559501,
+          0.7639884100370773,
+          0.7547387157694578,
+          0.7467794693286014,
+          0.7408121741127084,
+          0.7365643108365371,
+          0.7272458720936785,
+          0.7170847842720118,
+          0.7106802480365849,
+          0.6956316572298639,
+          0.6900894188813773,
+          0.6802352433804341,
+          0.6718279678201824,
+          0.6604748671859547,
+          0.6505311299663012,
+          0.6463777210462661,
+          0.6383453881672733,
+          0.6303087777357875,
+          0.6242734359330304,
+          0.6163752009389706,
+          0.610539044335129,
+          0.6047726649698091,
+          0.5997597156180348,
+          0.5884772879542559,
+          0.5940735174155581,
+          0.5961257188191733,
+          0.592037795020331,
+          0.5833426840832322,
+          0.5817043291832127,
+          0.5830690939973029,
+          0.5814136024860844,
+          0.5672323815055368,
+          0.5474783686873562,
+          0.5504739525033582,
+          0.5346509632841553
+        ]
+      },
+      {
+        "n_steps": 650,
+        "gap_shape": null,
+        "n_losing_paths": 149766,
+        "share_never_above_start": 0.04491673677603728,
+        "tail": {
+          "0.75": {
+            "simulated": 0.31004366812227074,
+            "continuous_formula": 0.3333333333333333,
+            "ratio": 0.9301310043668123,
+            "ratio_se": 0.0035853938968865022
+          },
+          "0.90": {
+            "simulated": 0.0958161398448246,
+            "continuous_formula": 0.11111111111111108,
+            "ratio": 0.8623452586034216,
+            "ratio_se": 0.006845160011200354
+          },
+          "0.95": {
+            "simulated": 0.04280677857457634,
+            "continuous_formula": 0.052631578947368474,
+            "ratio": 0.8133287929169497,
+            "ratio_se": 0.009938093215191292
+          },
+          "0.99": {
+            "simulated": 0.007104416222640653,
+            "continuous_formula": 0.01010101010101011,
+            "ratio": 0.703337206041424,
+            "ratio_se": 0.02148545560396398
+          }
+        },
+        "curve_x": [
+          0.5,
+          0.5224142251348866,
+          0.5447385441409293,
+          0.5668844876231727,
+          0.5887664111390223,
+          0.6103027891773711,
+          0.6314173745141455,
+          0.6520401899911379,
+          0.6721083286718803,
+          0.6915665480074215,
+          0.7103676533811207,
+          0.7284726755394474,
+          0.7458508544162108,
+          0.7624794483350197,
+          0.7783433923119539,
+          0.7934348321235029,
+          0.8077525620413929,
+          0.8213013938628834,
+          0.834091483351521,
+          0.8461376377539236,
+          0.8574586249811516,
+          0.8680765016251824,
+          0.8780159734696885,
+          0.8873037987488749,
+          0.8959682412563715,
+          0.9040385776064973,
+          0.9115446605573869,
+          0.9185165383380691,
+          0.9249841283703865,
+          0.9309769426125186,
+          0.9365238609321015,
+          0.9416529483951072,
+          0.9463913120813614,
+          0.9507649929599338,
+          0.9547988884324187,
+          0.9585167013392988,
+          0.9619409114898403,
+          0.965092766090835,
+          0.9679922857911282,
+          0.9706582834094161,
+          0.9731083927588882,
+          0.9753591053143285,
+          0.97742581277873,
+          0.9793228538933118,
+          0.9810635640949492,
+          0.9826603268577981,
+          0.9841246257617656,
+          0.985467096510607,
+          0.9866975782785228,
+          0.9878251638980949,
+          0.9888582485163929,
+          0.9898045764421759,
+          0.9906712859874118,
+          0.9914649521727839,
+          0.9921916272213004,
+          0.9928568788082072,
+          0.9934658260706659,
+          0.994023173408416,
+          0.9945332421280871,
+          0.9950000000000001
+        ],
+        "curve_ratio": [
+          1.0,
+          0.9613441025527087,
+          0.9590392046306626,
+          0.9571651997351537,
+          0.955255877087579,
+          0.9543949195255562,
+          0.9512928926405977,
+          0.9472200377749574,
+          0.9445671997859573,
+          0.9416193921178029,
+          0.9391142727700952,
+          0.935563478278201,
+          0.9310276088536972,
+          0.9271286339704892,
+          0.9217273386887721,
+          0.916196998952396,
+          0.9107374692247917,
+          0.9045279226254724,
+          0.898729120133641,
+          0.8964303220971633,
+          0.8913245571156306,
+          0.8836011574615753,
+          0.878734007513465,
+          0.8733692521789432,
+          0.8655233729419535,
+          0.8578194645041001,
+          0.8532914124719553,
+          0.8531508019464179,
+          0.8464537814401094,
+          0.8357559516887991,
+          0.8328319098618915,
+          0.8231808046369142,
+          0.8174643116959706,
+          0.8123187861997478,
+          0.8050697777554419,
+          0.8027253838520566,
+          0.80381732701825,
+          0.8002570251487947,
+          0.7897539758407702,
+          0.784806920329724,
+          0.778013440402279,
+          0.766994496086393,
+          0.7557254260181678,
+          0.7450704656159658,
+          0.7395939921457733,
+          0.7303089016682283,
+          0.716903638205623,
+          0.7221662624497885,
+          0.7201194251978239,
+          0.7178267020297696,
+          0.7010549937081517,
+          0.707221906414118,
+          0.7019881161569022,
+          0.6965214791460758,
+          0.6931765224595172,
+          0.6839949381121843,
+          0.6903318707637982,
+          0.6929425222053629,
+          0.6972493638151785,
+          0.6829721031475915
+        ]
+      },
+      {
+        "n_steps": 2600,
+        "gap_shape": null,
+        "n_losing_paths": 115544,
+        "share_never_above_start": 0.0223983936855224,
+        "tail": {
+          "0.75": {
+            "simulated": 0.32256975697569756,
+            "continuous_formula": 0.3333333333333333,
+            "ratio": 0.9677092709270927,
+            "ratio_se": 0.00412564323593522
+          },
+          "0.90": {
+            "simulated": 0.10441044104410441,
+            "continuous_formula": 0.11111111111111108,
+            "ratio": 0.9396939693969399,
+            "ratio_se": 0.008096462083283127
+          },
+          "0.95": {
+            "simulated": 0.04792113826767292,
+            "continuous_formula": 0.052631578947368474,
+            "ratio": 0.9105016270857845,
+            "ratio_se": 0.011939329169716725
+          },
+          "0.99": {
+            "simulated": 0.008741258741258742,
+            "continuous_formula": 0.01010101010101011,
+            "ratio": 0.8653846153846146,
+            "ratio_se": 0.02711077909611862
+          }
+        },
+        "curve_x": [
+          0.5,
+          0.5224142251348866,
+          0.5447385441409293,
+          0.5668844876231727,
+          0.5887664111390223,
+          0.6103027891773711,
+          0.6314173745141455,
+          0.6520401899911379,
+          0.6721083286718803,
+          0.6915665480074215,
+          0.7103676533811207,
+          0.7284726755394474,
+          0.7458508544162108,
+          0.7624794483350197,
+          0.7783433923119539,
+          0.7934348321235029,
+          0.8077525620413929,
+          0.8213013938628834,
+          0.834091483351521,
+          0.8461376377539236,
+          0.8574586249811516,
+          0.8680765016251824,
+          0.8780159734696885,
+          0.8873037987488749,
+          0.8959682412563715,
+          0.9040385776064973,
+          0.9115446605573869,
+          0.9185165383380691,
+          0.9249841283703865,
+          0.9309769426125186,
+          0.9365238609321015,
+          0.9416529483951072,
+          0.9463913120813614,
+          0.9507649929599338,
+          0.9547988884324187,
+          0.9585167013392988,
+          0.9619409114898403,
+          0.965092766090835,
+          0.9679922857911282,
+          0.9706582834094161,
+          0.9731083927588882,
+          0.9753591053143285,
+          0.97742581277873,
+          0.9793228538933118,
+          0.9810635640949492,
+          0.9826603268577981,
+          0.9841246257617656,
+          0.985467096510607,
+          0.9866975782785228,
+          0.9878251638980949,
+          0.9888582485163929,
+          0.9898045764421759,
+          0.9906712859874118,
+          0.9914649521727839,
+          0.9921916272213004,
+          0.9928568788082072,
+          0.9934658260706659,
+          0.994023173408416,
+          0.9945332421280871,
+          0.9950000000000001
+        ],
+        "curve_ratio": [
+          1.0,
+          0.9821436562012943,
+          0.9814312231162137,
+          0.9822513614394722,
+          0.9811828953337391,
+          0.9804357639271639,
+          0.9796956058679761,
+          0.9777845391806824,
+          0.9763031297068413,
+          0.9752628147368041,
+          0.972557675098695,
+          0.9694361487087958,
+          0.9685385533115086,
+          0.9652101183903337,
+          0.962813217760005,
+          0.9617677695040713,
+          0.9585522503828658,
+          0.9569196325925171,
+          0.9511907808797411,
+          0.9514238055821842,
+          0.9460793411109344,
+          0.9463266319691933,
+          0.9464454589422938,
+          0.9412471566012455,
+          0.9412692045438771,
+          0.9385468194396944,
+          0.9369201010668814,
+          0.9385235687316925,
+          0.9297187497493162,
+          0.9246499436268719,
+          0.921802724734117,
+          0.9189342604779153,
+          0.9139755486498801,
+          0.9113543645247153,
+          0.910243356404345,
+          0.9060936048629471,
+          0.90561364112184,
+          0.9078279561246252,
+          0.902740718176859,
+          0.8941398132967677,
+          0.8963274353163879,
+          0.8937884761923682,
+          0.8933682923893737,
+          0.8845845200502672,
+          0.8851128677049663,
+          0.8843228449137592,
+          0.8766591727626173,
+          0.8791321325847474,
+          0.8833328588985576,
+          0.8840875884573176,
+          0.879505706556251,
+          0.8704754793323058,
+          0.8520010540690147,
+          0.8344534253922867,
+          0.8346980458250994,
+          0.8264336067619338,
+          0.8355810248702682,
+          0.8334067602808577,
+          0.8014193959952495,
+          0.7853631516998022
+        ]
+      },
+      {
+        "n_steps": 10400,
+        "gap_shape": null,
+        "n_losing_paths": 28859,
+        "share_never_above_start": 0.010949790360026334,
+        "tail": {
+          "0.75": {
+            "simulated": 0.3270383589174954,
+            "continuous_formula": 0.3333333333333333,
+            "ratio": 0.9811150767524862,
+            "ratio_se": 0.008284668169928828
+          },
+          "0.90": {
+            "simulated": 0.10842371530545064,
+            "continuous_formula": 0.11111111111111108,
+            "ratio": 0.975813437749056,
+            "ratio_se": 0.016471883683808915
+          },
+          "0.95": {
+            "simulated": 0.04958591773796736,
+            "continuous_formula": 0.052631578947368474,
+            "ratio": 0.9421324370213789,
+            "ratio_se": 0.024279993769711614
+          },
+          "0.99": {
+            "simulated": 0.009182577358882844,
+            "continuous_formula": 0.01010101010101011,
+            "ratio": 0.9090751585294007,
+            "ratio_se": 0.0555870556368714
+          }
+        },
+        "curve_x": [
+          0.5,
+          0.5224142251348866,
+          0.5447385441409293,
+          0.5668844876231727,
+          0.5887664111390223,
+          0.6103027891773711,
+          0.6314173745141455,
+          0.6520401899911379,
+          0.6721083286718803,
+          0.6915665480074215,
+          0.7103676533811207,
+          0.7284726755394474,
+          0.7458508544162108,
+          0.7624794483350197,
+          0.7783433923119539,
+          0.7934348321235029,
+          0.8077525620413929,
+          0.8213013938628834,
+          0.834091483351521,
+          0.8461376377539236,
+          0.8574586249811516,
+          0.8680765016251824,
+          0.8780159734696885,
+          0.8873037987488749,
+          0.8959682412563715,
+          0.9040385776064973,
+          0.9115446605573869,
+          0.9185165383380691,
+          0.9249841283703865,
+          0.9309769426125186,
+          0.9365238609321015,
+          0.9416529483951072,
+          0.9463913120813614,
+          0.9507649929599338,
+          0.9547988884324187,
+          0.9585167013392988,
+          0.9619409114898403,
+          0.965092766090835,
+          0.9679922857911282,
+          0.9706582834094161,
+          0.9731083927588882,
+          0.9753591053143285,
+          0.97742581277873,
+          0.9793228538933118,
+          0.9810635640949492,
+          0.9826603268577981,
+          0.9841246257617656,
+          0.985467096510607,
+          0.9866975782785228,
+          0.9878251638980949,
+          0.9888582485163929,
+          0.9898045764421759,
+          0.9906712859874118,
+          0.9914649521727839,
+          0.9921916272213004,
+          0.9928568788082072,
+          0.9934658260706659,
+          0.994023173408416,
+          0.9945332421280871,
+          0.9950000000000001
+        ],
+        "curve_ratio": [
+          1.0,
+          0.9905769545650591,
+          0.9920929073022935,
+          0.9911525324572216,
+          0.990720689430394,
+          0.9899950822728536,
+          0.9908519459844192,
+          0.9872379987898279,
+          0.9818866124524163,
+          0.9848576337360354,
+          0.9848346562964998,
+          0.9829166235862896,
+          0.9805035864292803,
+          0.9808797423630167,
+          0.979379951985367,
+          0.9769423887590343,
+          0.980559846975139,
+          0.9803896728758301,
+          0.9826974472990034,
+          0.9766100954510017,
+          0.9767720757493431,
+          0.9699560318958294,
+          0.9679698199606114,
+          0.9742527395930561,
+          0.9725899048708782,
+          0.9728038316382761,
+          0.9612750614117769,
+          0.961275436841643,
+          0.9643427103341756,
+          0.968396487138471,
+          0.9611361564067201,
+          0.9674683812918609,
+          0.9518398460580462,
+          0.9408128073143367,
+          0.9325045071932613,
+          0.9247558925223179,
+          0.9125915717220536,
+          0.9043662369812936,
+          0.8959877504173703,
+          0.9044333584189882,
+          0.8915234707319695,
+          0.8942817903527944,
+          0.909207537605278,
+          0.9042855969485064,
+          0.9012003327540841,
+          0.8601126761158518,
+          0.8549248114457096,
+          0.8623320445081365,
+          0.8507462939768071,
+          0.8771831438904035,
+          0.885710478766604,
+          0.9015663640761306,
+          0.8868365025650476,
+          0.8774989855207412,
+          0.8497888919970917,
+          0.8332272322660325,
+          0.8482167412371394,
+          0.8644419500233261,
+          0.8510242886961298,
+          0.8550538826709355
+        ]
+      },
+      {
+        "n_steps": 163,
+        "gap_shape": 1.2,
+        "n_losing_paths": 149843,
+        "share_never_above_start": 0.0888263048657595,
+        "tail": {
+          "0.75": {
+            "simulated": 0.28273593027368643,
+            "continuous_formula": 0.3333333333333333,
+            "ratio": 0.8482077908210593,
+            "ratio_se": 0.0034900613738742966
+          },
+          "0.90": {
+            "simulated": 0.08324045834640256,
+            "continuous_formula": 0.11111111111111108,
+            "ratio": 0.7491641251176233,
+            "ratio_se": 0.0064227235687298505
+          },
+          "0.95": {
+            "simulated": 0.035530521946303795,
+            "continuous_formula": 0.052631578947368474,
+            "ratio": 0.6750799169797714,
+            "ratio_se": 0.009086160605995555
+          },
+          "0.99": {
+            "simulated": 0.005545804608823902,
+            "continuous_formula": 0.01010101010101011,
+            "ratio": 0.5490346562735658,
+            "ratio_se": 0.018992915637128877
+          }
+        },
+        "curve_x": [
+          0.5,
+          0.5224142251348866,
+          0.5447385441409293,
+          0.5668844876231727,
+          0.5887664111390223,
+          0.6103027891773711,
+          0.6314173745141455,
+          0.6520401899911379,
+          0.6721083286718803,
+          0.6915665480074215,
+          0.7103676533811207,
+          0.7284726755394474,
+          0.7458508544162108,
+          0.7624794483350197,
+          0.7783433923119539,
+          0.7934348321235029,
+          0.8077525620413929,
+          0.8213013938628834,
+          0.834091483351521,
+          0.8461376377539236,
+          0.8574586249811516,
+          0.8680765016251824,
+          0.8780159734696885,
+          0.8873037987488749,
+          0.8959682412563715,
+          0.9040385776064973,
+          0.9115446605573869,
+          0.9185165383380691,
+          0.9249841283703865,
+          0.9309769426125186,
+          0.9365238609321015,
+          0.9416529483951072,
+          0.9463913120813614,
+          0.9507649929599338,
+          0.9547988884324187,
+          0.9585167013392988,
+          0.9619409114898403,
+          0.965092766090835,
+          0.9679922857911282,
+          0.9706582834094161,
+          0.9731083927588882,
+          0.9753591053143285,
+          0.97742581277873,
+          0.9793228538933118,
+          0.9810635640949492,
+          0.9826603268577981,
+          0.9841246257617656,
+          0.985467096510607,
+          0.9866975782785228,
+          0.9878251638980949,
+          0.9888582485163929,
+          0.9898045764421759,
+          0.9906712859874118,
+          0.9914649521727839,
+          0.9921916272213004,
+          0.9928568788082072,
+          0.9934658260706659,
+          0.994023173408416,
+          0.9945332421280871,
+          0.9950000000000001
+        ],
+        "curve_ratio": [
+          1.0,
+          0.909377286843715,
+          0.9056837536308531,
+          0.9004297803789553,
+          0.8961850073590822,
+          0.8919162126348684,
+          0.8857868244126612,
+          0.880565505873354,
+          0.8762995467277795,
+          0.8698190110948844,
+          0.8617668461847213,
+          0.8563206297532935,
+          0.8492316422808284,
+          0.8429291586061917,
+          0.8343823162672543,
+          0.826340159452308,
+          0.8181012840235875,
+          0.8100221448433639,
+          0.8057665265707554,
+          0.7986032061237965,
+          0.7902220178609052,
+          0.7824531367373037,
+          0.7751500721224416,
+          0.7639433253784941,
+          0.7552410388163859,
+          0.7425124239193864,
+          0.7378646151467254,
+          0.7257270797382848,
+          0.7184700183183288,
+          0.7080472088225861,
+          0.7001684916371336,
+          0.6916809221429683,
+          0.6836781148811045,
+          0.6718161562499939,
+          0.6665055930993805,
+          0.6585966438299505,
+          0.6480535795521729,
+          0.6376625308882417,
+          0.6305097422519176,
+          0.6203698852168621,
+          0.613397096258537,
+          0.615763417814342,
+          0.6001664560803369,
+          0.5970776178519299,
+          0.5950361010457499,
+          0.592267380399443,
+          0.5837362740067444,
+          0.5824140272823689,
+          0.5747104719422003,
+          0.5631367130826521,
+          0.5656496013263044,
+          0.5494188777871174,
+          0.5393317573236005,
+          0.524835999969505,
+          0.5232192617311436,
+          0.520385314835177,
+          0.5124094855869687,
+          0.4983514601211358,
+          0.4953511420260612,
+          0.4820845818623596
+        ]
+      }
+    ]
+  },
+  "gallery": {
+    "model": "vegas",
+    "games": [
+      {
+        "group": "Surprising",
+        "game_id": "2022_15_IND_MIN",
+        "loser": "IND",
+        "p0": 0.3675704002380371,
+        "peak": 0.9989044958492741,
+        "tail_prob": 0.0006374093102407642
+      },
+      {
+        "group": "Surprising",
+        "game_id": "2022_19_LAC_JAX",
+        "loser": "LAC",
+        "p0": 0.5541814565658569,
+        "peak": 0.9986500836675987,
+        "tail_prob": 0.0016803021004078303
+      },
+      {
+        "group": "Surprising",
+        "game_id": "2010_15_PHI_NYG",
+        "loser": "NYG",
+        "p0": 0.5934242010116577,
+        "peak": 0.9984472704818472,
+        "tail_prob": 0.0022698356082860296
+      },
+      {
+        "group": "Surprising",
+        "game_id": "2025_07_NYG_DEN",
+        "loser": "NYG",
+        "p0": 0.23159995675086975,
+        "peak": 0.9923523860052228,
+        "tail_prob": 0.0023227963469177634
+      },
+      {
+        "group": "Surprising",
+        "game_id": "2011_04_DET_DAL",
+        "loser": "DAL",
+        "p0": 0.5687520802021027,
+        "peak": 0.9980058073997498,
+        "tail_prob": 0.0026352997259141264
+      },
+      {
+        "group": "Surprising",
+        "game_id": "2013_18_KC_IND",
+        "loser": "KC",
+        "p0": 0.5787056684494019,
+        "peak": 0.997096932027489,
+        "tail_prob": 0.003999373319953685
+      },
+      {
+        "group": "High peak, not surprising",
+        "game_id": "2019_17_MIA_NE",
+        "loser": "NE",
+        "p0": 0.9229950308799744,
+        "peak": 0.9695470333099365,
+        "tail_prob": 0.37647950388470236
+      },
+      {
+        "group": "High peak, not surprising",
+        "game_id": "2011_10_ARI_PHI",
+        "loser": "PHI",
+        "p0": 0.8701020777225494,
+        "peak": 0.9572001099586487,
+        "tail_prob": 0.299507646539847
+      },
+      {
+        "group": "High peak, not surprising",
+        "game_id": "2015_13_PHI_NE",
+        "loser": "NE",
+        "p0": 0.835102841258049,
+        "peak": 0.9614197760820389,
+        "tail_prob": 0.20322563135736305
+      }
+    ]
+  },
+  "runtime_seconds": 108.6
+}
