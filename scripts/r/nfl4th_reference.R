@@ -2,15 +2,17 @@
 # These numbers are nfl4th's, not ours. They are used only as a sanity check for
 # this project's decision engine (milestone M2).
 #
-# Usage:  Rscript scripts/r/nfl4th_reference.R [games.rds]
+# Usage:  Rscript scripts/r/nfl4th_reference.R [games.rds] [first_season last_season]
 #
 # The optional argument is a local copy of
 #   https://raw.githubusercontent.com/nflverse/nfldata/master/data/games.rds
 # for machines where nflreadr cannot download the schedule itself.
 #
 # Outputs (under results/reference/):
-#   nfl4th_real_fourth_downs.csv   every real fourth down in the chosen seasons
+#   nfl4th_real_fourth_downs.csv   every real fourth down in 2024 and 2025 (the default)
 #   nfl4th_scenarios.csv           a grid of hypothetical late-lead situations
+#   nfl4th_real_fourth_downs_<first>_<last>.csv   with explicit seasons (for example 2023
+#                                  2023, a development season for design comparisons)
 
 suppressMessages({
   library(nfl4th)
@@ -25,6 +27,11 @@ if (length(args) >= 1) {
 }
 
 seasons <- 2024:2025
+suffix <- ""
+if (length(args) >= 3) {
+  seasons <- as.integer(args[2]):as.integer(args[3])
+  suffix <- paste0("_", args[2], "_", args[3])
+}
 out_dir <- file.path("results", "reference")
 dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
 
@@ -38,7 +45,13 @@ real <- nfl4th::load_4th_pbp(seasons) %>%
     nfl4th_go_wp = go_wp, nfl4th_fg_wp = fg_wp, nfl4th_punt_wp = punt_wp,
     nfl4th_go_boost = go_boost, went = go
   )
-write.csv(real, file.path(out_dir, "nfl4th_real_fourth_downs.csv"), row.names = FALSE)
+write.csv(real, file.path(out_dir, paste0("nfl4th_real_fourth_downs", suffix, ".csv")),
+          row.names = FALSE)
+if (suffix != "") {
+  cat("nfl4th version", as.character(packageVersion("nfl4th")), "\n")
+  cat("real fourth downs:", nrow(real), "\n")
+  quit(save = "no")
+}
 
 # 2. Hypothetical late-lead grid (burning question 1): leading in the fourth quarter,
 # fourth down in your own half. Teams are a neutral matchup (pick'em spread).
