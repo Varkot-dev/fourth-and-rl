@@ -1,0 +1,2319 @@
+{
+  "seed": 20261117,
+  "seed_note": "recorded only; no step of the fit draws random numbers",
+  "seasons_in_final_fit": [
+    2010,
+    2025
+  ],
+  "seasons_by_component": {
+    "conversion_probability": [
+      2010,
+      2025
+    ],
+    "field_goal": [
+      2010,
+      2025
+    ],
+    "gain_distributions_punts_turnovers_clock_extra_points": [
+      2018,
+      2025
+    ],
+    "kickoff": [
+      2025
+    ]
+  },
+  "config": {
+    "seed": 20261117,
+    "holdout_seasons": [
+      2024,
+      2025
+    ],
+    "era_first_season": 2018,
+    "go": {
+      "max_ydstogo": 30,
+      "season_trend": true,
+      "fourth_by_distance": false,
+      "use_spread": true,
+      "fit_downs": [
+        3,
+        4
+      ],
+      "distance_knots": [
+        1,
+        2,
+        3,
+        4,
+        6,
+        8,
+        10,
+        13,
+        17,
+        22,
+        30
+      ],
+      "yardline_knots": [
+        1,
+        5,
+        10,
+        20,
+        40,
+        60,
+        80,
+        99
+      ],
+      "min_turnover_n": 100
+    },
+    "field_goal": {
+      "snap_to_kick_yards": 18,
+      "miss_spot_yards": 8,
+      "miss_min_own_yardline": 20,
+      "season_trend": true,
+      "max_kick_distance": 68
+    },
+    "punt": {
+      "bandwidth": 2.0,
+      "min_effective_n": 400,
+      "landing_below": 50
+    },
+    "play": {
+      "min_cell_n": 300,
+      "min_turnover_n": 50
+    },
+    "kickoff": {
+      "seasons": [
+        2025
+      ]
+    },
+    "drives": {
+      "recent_first_season": 2021
+    }
+  },
+  "sample_sizes": {
+    "plays_in_table": 729962,
+    "conversion_model_third_downs": 113069,
+    "conversion_model_fourth_downs": 9948,
+    "failed_fourth_downs_by_distance_1_2__3_6__7_plus": [
+      1143,
+      827,
+      830
+    ],
+    "go_gain_cells_with_own_distribution": 43,
+    "go_gain_cells_total": 63,
+    "field_goal_attempts": 16927,
+    "punts": 17551,
+    "punts_used": 17316,
+    "play_model_plays": 270393,
+    "play_model_cells_with_own_distribution": 102,
+    "play_model_cells_total": 189,
+    "play_model_turnovers_by_field_bin": [
+      116,
+      203,
+      367,
+      912,
+      2855,
+      721,
+      43
+    ],
+    "kickoffs": 2927,
+    "extra_points": 10378,
+    "two_point_attempts": 1083
+  },
+  "kick_distance_check": {
+    "share_kick_distance_minus_yardline_100_equals_17": 0.02144502865244875,
+    "share_kick_distance_minus_yardline_100_equals_18": 0.9007502806167661,
+    "share_kick_distance_minus_yardline_100_equals_19": 0.07745022744727359
+  },
+  "missed_field_goal_spot_check": {
+    "n": 2003,
+    "from_outside_the_12_share_taking_over_8_yards_behind_the_line": 0.8822003113648158,
+    "from_outside_the_12_share_taking_over_7_to_9_yards_behind": 0.99429164504411,
+    "from_the_12_or_closer_share_taking_over_at_own_20": 0.9736842105263158
+  },
+  "fitted": {
+    "conversion_probability_fourth_down": {
+      "yardline_100_50": {
+        "fourth_and_1": 0.7138502483815103,
+        "fourth_and_2": 0.6043210705220072,
+        "fourth_and_3": 0.5531365498570283,
+        "fourth_and_5": 0.4763825912544606,
+        "fourth_and_10": 0.31869515557966444,
+        "fourth_and_15": 0.18021147768869594
+      },
+      "yardline_100_30": {
+        "fourth_and_1": 0.694475851067066,
+        "fourth_and_2": 0.5818745033968693,
+        "fourth_and_3": 0.5300443797569057,
+        "fourth_and_5": 0.4532446637245958,
+        "fourth_and_10": 0.29884494703590686,
+        "fourth_and_15": 0.16687415687533072
+      },
+      "yardline_100_5": {
+        "fourth_and_1": 0.6202679770586752,
+        "fourth_and_2": 0.5000076033468167,
+        "fourth_and_3": 0.4476623473842835,
+        "fourth_and_5": 0.3733171871772636
+      }
+    },
+    "conversion_model": {
+      "intercept": -0.9230486319621786,
+      "coefficients": {
+        "distance_spline_0": 0.5000804171028317,
+        "distance_spline_1": 2.0910951970676406,
+        "distance_spline_2": 0.9502152084814186,
+        "distance_spline_3": 0.9787880358316897,
+        "distance_spline_4": 0.666367318968328,
+        "distance_spline_5": 0.5591220882518041,
+        "distance_spline_6": 0.15056747426756306,
+        "distance_spline_7": -0.02264391538206573,
+        "distance_spline_8": -0.6982008448053881,
+        "distance_spline_9": -0.9139302396228663,
+        "distance_spline_10": -2.8654930372743683,
+        "distance_spline_11": -2.03339038215076,
+        "fourth_down": 0.05850096510888973,
+        "spread_per_10": 0.15478368439712126,
+        "season_per_decade": 0.026035219585559634,
+        "yardline_spline_0": -0.17122742104588026,
+        "yardline_spline_1": -0.5707919202609109,
+        "yardline_spline_2": -0.24373795749668728,
+        "yardline_spline_3": -0.08502111977000842,
+        "yardline_spline_4": -0.04040963226321725,
+        "yardline_spline_5": 0.14281022671246438,
+        "yardline_spline_6": 0.11359699826206662,
+        "yardline_spline_7": 0.16449833540237896,
+        "yardline_spline_8": -0.1517456660432058
+      },
+      "reference_season": 2025.0,
+      "largest_monotone_correction": 0.030093654527682423,
+      "share_of_failed_fourth_downs_that_are_turnovers_by_distance_1_2__3_6__7_plus": [
+        0.0778652668416448,
+        0.07859733978234583,
+        0.10843373493975904
+      ]
+    },
+    "go_outcomes_example_fourth_and_3_at_yardline_100_40": {
+      "p_convert": 0.5473446551286564,
+      "p_touchdown": 0.02412894930127541,
+      "p_first_down_short_of_end_zone": 0.523215705827381,
+      "mean_new_yardline_100_after_first_down": 29.470413753160543,
+      "p_turnover_any_kind": 0.45265534487134357,
+      "p_returned_for_touchdown": 0.003201303532981803,
+      "mean_opponent_yardline_100_after_turnover": 59.400891806773565,
+      "p_safety": 0.0
+    },
+    "field_goal_make_probability_by_kick_distance": {
+      "20": 0.9944351646215384,
+      "30": 0.960201477451114,
+      "40": 0.8788220562456098,
+      "45": 0.8226544924782812,
+      "50": 0.7525765333668734,
+      "55": 0.6585413081117741,
+      "60": 0.5272772043412379,
+      "65": 0.35691824484440887,
+      "68": 0.24898229879597275
+    },
+    "field_goal_make_probability_at_first_season_of_trend": {
+      "30": 0.9380261290312101,
+      "40": 0.8198119508852363,
+      "50": 0.6561430244041314,
+      "55": 0.5474944108482329,
+      "60": 0.4116784310645183
+    },
+    "field_goal_model": {
+      "intercept": 1.7637397765516791,
+      "coefficients": {
+        "distance_per_10": -0.9575671172565888,
+        "distance_per_10_squared": 0.16653500327975115,
+        "distance_per_10_cubed": -0.07788886105049399,
+        "season_per_decade": 0.3108322670486994
+      },
+      "reference_season": 2025.0,
+      "largest_monotone_correction": 0.0,
+      "longest_made_kick_in_data": 68,
+      "miss_rule": "opponent takes over at the spot of the kick (8 yards behind the line of scrimmage) or its own 20, whichever is farther from its goal line",
+      "opponent_yardline_100_after_miss_from_yardline_100": {
+        "5": 80,
+        "12": 80,
+        "13": 79,
+        "25": 67,
+        "35": 57
+      }
+    },
+    "punt": {
+      "own_20": {
+        "yardline_100": 80,
+        "expected_opponent_yardline_100": 63.69993378108462,
+        "expected_net_yards": 43.69993378108462,
+        "p_touchback": 0.013692919550945894,
+        "p_inside_opponent_10": 0.007414672095373982,
+        "p_return_touchdown": 0.008818460119708292
+      },
+      "own_30": {
+        "yardline_100": 70,
+        "expected_opponent_yardline_100": 73.82274407996812,
+        "expected_net_yards": 43.82274407996812,
+        "p_touchback": 0.05494426154678322,
+        "p_inside_opponent_10": 0.05118632191884941,
+        "p_return_touchdown": 0.005265401023100702
+      },
+      "own_40": {
+        "yardline_100": 60,
+        "expected_opponent_yardline_100": 82.17717120630027,
+        "expected_net_yards": 42.17717120630027,
+        "p_touchback": 0.15648043919567442,
+        "p_inside_opponent_10": 0.19971490932011277,
+        "p_return_touchdown": 0.002711596790841395
+      },
+      "midfield": {
+        "yardline_100": 50,
+        "expected_opponent_yardline_100": 86.67063150305688,
+        "expected_net_yards": 36.67063150305688,
+        "p_touchback": 0.15329567725083343,
+        "p_inside_opponent_10": 0.3896784401418538,
+        "p_return_touchdown": 0.0015959893979912492
+      },
+      "opp_40": {
+        "yardline_100": 40,
+        "expected_opponent_yardline_100": 88.86973580744518,
+        "expected_net_yards": 28.86973580744518,
+        "p_touchback": 0.20244254413840318,
+        "p_inside_opponent_10": 0.562394427329117,
+        "p_return_touchdown": 0.0006476984600544881
+      }
+    },
+    "punt_rates": {
+      "return_touchdown": 0.0049569825081191956,
+      "kicking_team_keeps_ball": 0.010312802689305452,
+      "blocked": 0.0054127969916244086,
+      "touchback": 0.06951170873454504,
+      "dropped_end_of_half_safety_or_kicking_team_score": 0.00307674776366019
+    },
+    "play_model_examples": {
+      "down_1_and_10_at_yardline_100_75": {
+        "p_first_down": 0.21216074637304316,
+        "p_touchdown": 0.0035326128558238897,
+        "p_turnover": 0.016559088373575583,
+        "p_safety": 0.0
+      },
+      "down_2_and_5_at_yardline_100_50": {
+        "p_first_down": 0.4295308022316681,
+        "p_touchdown": 0.00898783320007886,
+        "p_turnover": 0.014027777777777778,
+        "p_safety": 0.0
+      },
+      "down_3_and_1_at_yardline_100_30": {
+        "p_first_down": 0.7231345887757803,
+        "p_touchdown": 0.01736518588212609,
+        "p_turnover": 0.013657056145675266,
+        "p_safety": 0.0
+      },
+      "down_3_and_8_at_yardline_100_12": {
+        "p_first_down": 0.29231963606323585,
+        "p_touchdown": 0.1760289922559275,
+        "p_turnover": 0.0288,
+        "p_safety": 0.0
+      },
+      "down_1_and_1_at_yardline_100_1": {
+        "p_first_down": 0.5469841865977773,
+        "p_touchdown": 0.5469841865977773,
+        "p_turnover": 0.014516129032258065,
+        "p_safety": 0.0
+      },
+      "down_1_and_10_at_yardline_100_99": {
+        "p_first_down": 0.12008116938316983,
+        "p_touchdown": 0.004059080978143842,
+        "p_turnover": 0.018480492813141684,
+        "p_safety": 0.05133720725886105
+      }
+    },
+    "kickoff": {
+      "seasons": [
+        2025
+      ],
+      "n": 2927,
+      "n_used": 2893,
+      "kicking_team_recovers_or_scores": 0.00717458148274684,
+      "return_touchdown": 0.0023915271609156134,
+      "mean_start_yardline_100": 69.1016246111303,
+      "p_start_at_own_35_touchback": 0.20152091254752852,
+      "p_start_inside_own_20": 0.062219149671621156
+    },
+    "seconds_per_play": {
+      "mean_scrimmage_play": 26.98374554993442,
+      "mean_by_clock": {
+        "stops": 12.386749245341939,
+        "runs": 34.71205925468714
+      },
+      "by_type": [
+        {
+          "play": "pass_complete",
+          "clock": "runs",
+          "phase": "normal",
+          "n": 60886,
+          "mean_seconds": 36.141461091219654
+        },
+        {
+          "play": "pass_complete",
+          "clock": "runs",
+          "phase": "two_minute",
+          "n": 8921,
+          "mean_seconds": 17.379890146844524
+        },
+        {
+          "play": "pass_complete",
+          "clock": "stops",
+          "phase": "normal",
+          "n": 25873,
+          "mean_seconds": 22.64387585513856
+        },
+        {
+          "play": "pass_complete",
+          "clock": "stops",
+          "phase": "two_minute",
+          "n": 5366,
+          "mean_seconds": 6.164740961610138
+        },
+        {
+          "play": "pass_incomplete",
+          "clock": "stops",
+          "phase": "normal",
+          "n": 41605,
+          "mean_seconds": 5.060617714217042
+        },
+        {
+          "play": "pass_incomplete",
+          "clock": "stops",
+          "phase": "two_minute",
+          "n": 8415,
+          "mean_seconds": 4.885561497326203
+        },
+        {
+          "play": "run",
+          "clock": "runs",
+          "phase": "normal",
+          "n": 94903,
+          "mean_seconds": 36.47376795254102
+        },
+        {
+          "play": "run",
+          "clock": "runs",
+          "phase": "two_minute",
+          "n": 7017,
+          "mean_seconds": 20.59954396465726
+        },
+        {
+          "play": "run",
+          "clock": "stops",
+          "phase": "normal",
+          "n": 12624,
+          "mean_seconds": 23.601394169835235
+        },
+        {
+          "play": "run",
+          "clock": "stops",
+          "phase": "two_minute",
+          "n": 1192,
+          "mean_seconds": 6.351510067114094
+        },
+        {
+          "play": "sack",
+          "clock": "runs",
+          "phase": "normal",
+          "n": 8329,
+          "mean_seconds": 37.808980669948376
+        },
+        {
+          "play": "sack",
+          "clock": "runs",
+          "phase": "two_minute",
+          "n": 1398,
+          "mean_seconds": 15.850500715307582
+        },
+        {
+          "play": "sack",
+          "clock": "stops",
+          "phase": "normal",
+          "n": 829,
+          "mean_seconds": 15.110977080820266
+        },
+        {
+          "play": "sack",
+          "clock": "stops",
+          "phase": "two_minute",
+          "n": 166,
+          "mean_seconds": 8.126506024096386
+        }
+      ],
+      "kicks": {
+        "field_goal": {
+          "n": 8616,
+          "mean_seconds": 4.055246053853296
+        },
+        "kickoff": {
+          "n": 22822,
+          "mean_seconds": 2.339803698185961
+        },
+        "punt": {
+          "n": 17551,
+          "mean_seconds": 9.455187738590393
+        }
+      }
+    },
+    "after_touchdown": {
+      "p_extra_point": 0.9456542686452111,
+      "n_extra_point": 10378,
+      "p_two_point": 0.4903047091412742,
+      "n_two_point": 1083
+    }
+  },
+  "diagnostics": {
+    "who_goes_on_fourth_and_3_or_less": {
+      "field_goal": {
+        "n": 3475,
+        "mean_spread": 0.5824460431654677,
+        "mean_score_differential": 1.5801438848920863
+      },
+      "go": {
+        "n": 6036,
+        "mean_spread": -0.44831013916500995,
+        "mean_score_differential": -4.229290921139827
+      },
+      "punt": {
+        "n": 7247,
+        "mean_spread": -0.2671450255278046,
+        "mean_score_differential": 0.6878708431074928
+      }
+    },
+    "fourth_down_coefficient_with_spread_control": 0.05850096510888973,
+    "fourth_down_coefficient_without_spread_control": 0.03725241132744767,
+    "share_of_failed_third_downs_that_are_turnovers": 0.04646458636999137,
+    "play_model_touchdown_rate_in_sample_by_yardline_100": {
+      "1-4": {
+        "plays_without_turnover": 8000,
+        "touchdown_rate_predicted_before_calibration": 0.4549960269120299,
+        "touchdown_rate_actual": 0.454375
+      },
+      "5-10": {
+        "plays_without_turnover": 10771,
+        "touchdown_rate_predicted_before_calibration": 0.23153262931014162,
+        "touchdown_rate_actual": 0.22049948936960356
+      },
+      "11-20": {
+        "plays_without_turnover": 20482,
+        "touchdown_rate_predicted_before_calibration": 0.09827134207063301,
+        "touchdown_rate_actual": 0.09476613611951958
+      },
+      "21-40": {
+        "plays_without_turnover": 49698,
+        "touchdown_rate_predicted_before_calibration": 0.0295240603609163,
+        "touchdown_rate_actual": 0.028793915248098514
+      }
+    },
+    "punt_mean_net_yards_by_season": {
+      "2010": 37.460776545166404,
+      "2018": 40.431372549019606,
+      "2025": 41.37024221453287
+    },
+    "punts_from_yardline_100_under_30_all_seasons": 5,
+    "punts_from_yardline_100_under_35_all_seasons": 71,
+    "kickoff_start_by_season": {
+      "2010": {
+        "most_common_start_yardline_100": 80.0,
+        "mean": 73.25417800233191
+      },
+      "2011": {
+        "most_common_start_yardline_100": 80.0,
+        "mean": 77.57131989349563
+      },
+      "2012": {
+        "most_common_start_yardline_100": 80.0,
+        "mean": 77.61452095808383
+      },
+      "2013": {
+        "most_common_start_yardline_100": 80.0,
+        "mean": 77.45215485756026
+      },
+      "2014": {
+        "most_common_start_yardline_100": 80.0,
+        "mean": 77.64416947881514
+      },
+      "2015": {
+        "most_common_start_yardline_100": 80.0,
+        "mean": 77.8481577967994
+      },
+      "2016": {
+        "most_common_start_yardline_100": 75.0,
+        "mean": 74.78500184706317
+      },
+      "2017": {
+        "most_common_start_yardline_100": 75.0,
+        "mean": 74.90787461773701
+      },
+      "2018": {
+        "most_common_start_yardline_100": 75.0,
+        "mean": 74.35296296296296
+      },
+      "2019": {
+        "most_common_start_yardline_100": 75.0,
+        "mean": 74.61027756939235
+      },
+      "2020": {
+        "most_common_start_yardline_100": 75.0,
+        "mean": 74.21443587946742
+      },
+      "2021": {
+        "most_common_start_yardline_100": 75.0,
+        "mean": 74.74572127139365
+      },
+      "2022": {
+        "most_common_start_yardline_100": 75.0,
+        "mean": 74.21005706134095
+      },
+      "2023": {
+        "most_common_start_yardline_100": 75.0,
+        "mean": 74.44389204545455
+      },
+      "2024": {
+        "most_common_start_yardline_100": 70.0,
+        "mean": 69.96631144723273
+      },
+      "2025": {
+        "most_common_start_yardline_100": 65.0,
+        "mean": 69.27071057192374
+      }
+    }
+  },
+  "heldout": {
+    "trained_on_seasons": [
+      2010,
+      2023
+    ],
+    "tested_on_seasons": [
+      2024,
+      2025
+    ],
+    "go": {
+      "variants_log_loss_on_heldout_fourth_downs": {
+        "default_third_and_fourth_downs": 0.6433819745684699,
+        "fourth_downs_only": 0.6423015121943656,
+        "third_downs_only": 0.6444840974098072,
+        "no_season_trend": 0.6439094264401178,
+        "no_spread_control": 0.6438074385793457,
+        "coarser_distance_knots": 0.6432787951194536,
+        "fourth_down_effect_varies_with_distance": 0.6442894265148325
+      },
+      "fourth_down": {
+        "n": 1746,
+        "actual_rate": 0.5607101947308133,
+        "mean_predicted": 0.5384520777832796,
+        "log_loss_model": 0.6433819745684699,
+        "log_loss_constant_baseline": 0.6917144527325814,
+        "baseline_rate_from_training_seasons": 0.5062179956108266,
+        "calibration_by_distance": [
+          {
+            "bin": "1",
+            "n": 696,
+            "predicted": 0.6784324258427228,
+            "actual": 0.6910919540229885
+          },
+          {
+            "bin": "2",
+            "n": 258,
+            "predicted": 0.5594995764469948,
+            "actual": 0.6124031007751938
+          },
+          {
+            "bin": "3-4",
+            "n": 347,
+            "predicted": 0.49798868099440086,
+            "actual": 0.5360230547550432
+          },
+          {
+            "bin": "5-7",
+            "n": 204,
+            "predicted": 0.43262766263588925,
+            "actual": 0.4362745098039216
+          },
+          {
+            "bin": "8-10",
+            "n": 128,
+            "predicted": 0.32542766881501206,
+            "actual": 0.3046875
+          },
+          {
+            "bin": "11+",
+            "n": 113,
+            "predicted": 0.18481957175793248,
+            "actual": 0.23008849557522124
+          }
+        ],
+        "calibration_by_predicted_quintile": [
+          {
+            "bin": "lowest fifth",
+            "n": 330,
+            "predicted": 0.2945858129022571,
+            "actual": 0.30606060606060603
+          },
+          {
+            "bin": "second",
+            "n": 368,
+            "predicted": 0.4679295105166496,
+            "actual": 0.5108695652173914
+          },
+          {
+            "bin": "third",
+            "n": 344,
+            "predicted": 0.5582806708723969,
+            "actual": 0.6162790697674418
+          },
+          {
+            "bin": "fourth",
+            "n": 350,
+            "predicted": 0.6512368425506789,
+            "actual": 0.6571428571428571
+          },
+          {
+            "bin": "highest fifth",
+            "n": 354,
+            "predicted": 0.7083178079347234,
+            "actual": 0.7005649717514124
+          }
+        ]
+      },
+      "third_down_same_model": {
+        "n": 14309,
+        "actual_rate": 0.4028233978614858,
+        "mean_predicted": 0.4082915223047679,
+        "log_loss_model": 0.6109227625436157,
+        "log_loss_constant_baseline": 0.674166898424339,
+        "baseline_rate_from_training_seasons": 0.3992203321182665
+      }
+    },
+    "field_goal": {
+      "variants_log_loss": {
+        "default_all_seasons_with_trend": 0.36946680671078347,
+        "all_seasons_no_trend": 0.3734366005018013,
+        "recent_seasons_only_no_trend": 0.37080500517441123
+      },
+      "n": 2306,
+      "actual_rate": 0.8490893321769297,
+      "mean_predicted": 0.8378134803643117,
+      "log_loss_model": 0.36946680671078347,
+      "log_loss_constant_baseline": 0.4243772745401211,
+      "baseline_rate_from_training_seasons": 0.8441967033718624,
+      "calibration_by_kick_distance": [
+        {
+          "bin": "under 30",
+          "n": 478,
+          "predicted": 0.9788537145100179,
+          "actual": 0.9769874476987448
+        },
+        {
+          "bin": "30-39",
+          "n": 630,
+          "predicted": 0.9221781512781746,
+          "actual": 0.9349206349206349
+        },
+        {
+          "bin": "40-44",
+          "n": 322,
+          "predicted": 0.8487129853022981,
+          "actual": 0.8385093167701864
+        },
+        {
+          "bin": "45-49",
+          "n": 315,
+          "predicted": 0.7860258412059893,
+          "actual": 0.7777777777777778
+        },
+        {
+          "bin": "50-54",
+          "n": 354,
+          "predicted": 0.7025061045271176,
+          "actual": 0.731638418079096
+        },
+        {
+          "bin": "55+",
+          "n": 207,
+          "predicted": 0.5486120416871388,
+          "actual": 0.6183574879227053
+        }
+      ]
+    },
+    "punt": {
+      "n": 4112,
+      "log_loss_model": 3.5292082086323897,
+      "log_loss_baseline_one_landing_distribution": 3.926372028453354,
+      "log_loss_baseline_one_net_distribution": 3.759510627246209,
+      "mean_abs_error_expected_vs_actual_yards": 7.6203908819543855,
+      "calibration_by_field_position": [
+        {
+          "yardline_100": "30-39",
+          "n": 37,
+          "predicted_opponent_yardline": 88.87566984881941,
+          "actual_opponent_yardline": 89.91891891891892
+        },
+        {
+          "yardline_100": "40-49",
+          "n": 509,
+          "predicted_opponent_yardline": 88.08036418095462,
+          "actual_opponent_yardline": 87.35756385068763
+        },
+        {
+          "yardline_100": "50-59",
+          "n": 821,
+          "predicted_opponent_yardline": 84.50534126034164,
+          "actual_opponent_yardline": 84.95493300852618
+        },
+        {
+          "yardline_100": "60-69",
+          "n": 1197,
+          "predicted_opponent_yardline": 78.59910846666506,
+          "actual_opponent_yardline": 79.19715956558062
+        },
+        {
+          "yardline_100": "70-79",
+          "n": 904,
+          "predicted_opponent_yardline": 69.67029682906015,
+          "actual_opponent_yardline": 70.28761061946902
+        },
+        {
+          "yardline_100": "80-89",
+          "n": 477,
+          "predicted_opponent_yardline": 59.24417911269474,
+          "actual_opponent_yardline": 59.80922431865828
+        },
+        {
+          "yardline_100": "90-99",
+          "n": 167,
+          "predicted_opponent_yardline": 49.76388965357704,
+          "actual_opponent_yardline": 49.19760479041916
+        }
+      ],
+      "note": "log loss is over 100 outcomes (the receiving team's yard line, 0 = return touchdown); each distribution is mixed with 1% uniform"
+    },
+    "play_model": {
+      "n": 67658,
+      "actual_rate": 0.28561293564693013,
+      "mean_predicted": 0.2946173622906162,
+      "log_loss_model": 0.5448237873947905,
+      "log_loss_constant_baseline": 0.5982476870829185,
+      "baseline_rate_from_training_seasons": 0.29101536488519497,
+      "event": "gain reaches the line to gain (or touchdown) without a turnover",
+      "by_down": [
+        {
+          "down": 1,
+          "n": 30303,
+          "first_down_predicted": 0.20658505438727848,
+          "first_down_actual": 0.19991419991419992,
+          "touchdown_predicted": 0.03450862856490498,
+          "touchdown_actual": 0.03382503382503382,
+          "turnover_predicted": 0.015991656398467002,
+          "turnover_actual": 0.01485001485001485
+        },
+        {
+          "down": 2,
+          "n": 23046,
+          "first_down_predicted": 0.34045010746779375,
+          "first_down_actual": 0.32725852642541003,
+          "touchdown_predicted": 0.03968115041014258,
+          "touchdown_actual": 0.03952963637941508,
+          "turnover_predicted": 0.019145402766201584,
+          "turnover_actual": 0.018094246290028638
+        },
+        {
+          "down": 3,
+          "n": 14309,
+          "first_down_predicted": 0.40723051352701367,
+          "first_down_actual": 0.40002795443427214,
+          "touchdown_predicted": 0.051332056751851755,
+          "touchdown_actual": 0.0468236774058285,
+          "turnover_predicted": 0.028581068791690093,
+          "turnover_actual": 0.02543853518764414
+        }
+      ],
+      "touchdown_calibration_by_field_position": [
+        {
+          "bin": "1-4",
+          "n": 2079,
+          "predicted": 0.4531191553451567,
+          "actual": 0.42857142857142855
+        },
+        {
+          "bin": "5-10",
+          "n": 2801,
+          "predicted": 0.21595716226026113,
+          "actual": 0.2220635487325955
+        },
+        {
+          "bin": "11-20",
+          "n": 5435,
+          "predicted": 0.0964247372856089,
+          "actual": 0.08758049678012879
+        },
+        {
+          "bin": "21-40",
+          "n": 13257,
+          "predicted": 0.028197031421263213,
+          "actual": 0.02828694274722788
+        },
+        {
+          "bin": "41-75",
+          "n": 35275,
+          "predicted": 0.0064382212526859234,
+          "actual": 0.006123316796598157
+        },
+        {
+          "bin": "76-95",
+          "n": 8346,
+          "predicted": 0.0025023650883244757,
+          "actual": 0.002875629043853343
+        },
+        {
+          "bin": "96-99",
+          "n": 465,
+          "predicted": 0.004122455803254326,
+          "actual": 0.004301075268817204
+        }
+      ]
+    }
+  },
+  "drive_targets": {
+    "all_seasons": {
+      "n_drives": 98315,
+      "outcome_share": {
+        "touchdown": 0.21176829578395973,
+        "field_goal": 0.14546101815592738,
+        "missed_field_goal": 0.02645577989116615,
+        "punt": 0.38236281340588923,
+        "turnover": 0.1061791181406703,
+        "opp_touchdown": 0.013853430300564512,
+        "downs": 0.04480496363728831,
+        "safety": 0.0026954177897574125,
+        "end_of_half": 0.06641916289477699
+      },
+      "points_per_drive": 1.9224940243096171,
+      "plays_per_drive": 5.634603061587754,
+      "mean_start_yardline_100": 71.339215785994,
+      "plays_per_drive_distribution_0_to_20_plus": [
+        0.0003458271881198189,
+        0.05380664191628948,
+        0.03789859126277781,
+        0.27440370238519046,
+        0.0880231907643798,
+        0.10136805167065047,
+        0.10618928952855618,
+        0.07691603519300208,
+        0.06763972944108224,
+        0.05732594212480293,
+        0.04336062655749377,
+        0.033219752835274376,
+        0.023384020749631286,
+        0.01574530844733764,
+        0.009439047958093883,
+        0.005462035294715964,
+        0.002858159995931445,
+        0.0015358795707674311,
+        0.0006509688246961298,
+        0.00030514163657631085,
+        0.00012205665463052433
+      ],
+      "by_start": {
+        "own_1_to_20": {
+          "n_drives": 34103,
+          "outcome_share": {
+            "touchdown": 0.15992727912500365,
+            "field_goal": 0.10151599566020585,
+            "missed_field_goal": 0.019470427821599273,
+            "punt": 0.4709263114681993,
+            "turnover": 0.11573761839134387,
+            "opp_touchdown": 0.019646365422396856,
+            "downs": 0.03891153270973228,
+            "safety": 0.007096149898835879,
+            "end_of_half": 0.06676831950268305
+          },
+          "points_per_drive": 1.4369703545142656,
+          "plays_per_drive": 5.935254962906489,
+          "mean_start_yardline_100": 85.15555816203853,
+          "plays_per_drive_distribution_0_to_20_plus": [
+            0.00017593760079758378,
+            0.05237075917074744,
+            0.030877048939975955,
+            0.2766618772542005,
+            0.07471483447204058,
+            0.0940679705597748,
+            0.10224906899686245,
+            0.07181186405888045,
+            0.06946602938157934,
+            0.058118054130135176,
+            0.04697533941295487,
+            0.03879424097586723,
+            0.02920564173239891,
+            0.021053866228777526,
+            0.014514852065800663,
+            0.008855525906811717,
+            0.005072867489663666,
+            0.002609741078497493,
+            0.0014075008063806703,
+            0.0007037504031903351,
+            0.00029322933466263966
+          ]
+        },
+        "own_21_to_40": {
+          "n_drives": 47422,
+          "outcome_share": {
+            "touchdown": 0.2111888996668213,
+            "field_goal": 0.14134789760026992,
+            "missed_field_goal": 0.026907342583610983,
+            "punt": 0.3936147779511619,
+            "turnover": 0.10944287461515752,
+            "opp_touchdown": 0.012462570115136434,
+            "downs": 0.048331997806925056,
+            "safety": 0.0004639196997174307,
+            "end_of_half": 0.05623971996119944
+          },
+          "points_per_drive": 1.9026822993547299,
+          "plays_per_drive": 5.809350090675214,
+          "mean_start_yardline_100": 71.8000295221627,
+          "plays_per_drive_distribution_0_to_20_plus": [
+            2.108725907806503e-05,
+            0.048331997806925056,
+            0.030365653072413647,
+            0.26367508751212515,
+            0.08451773438488465,
+            0.10094470920669732,
+            0.10543629539032516,
+            0.08240900847707815,
+            0.07325713803719792,
+            0.06463244907426932,
+            0.04919657542912572,
+            0.0370292269410822,
+            0.02559993252077095,
+            0.01689089452153009,
+            0.00875121251739699,
+            0.004913331365189152,
+            0.0022352494622748936,
+            0.001286322803761967,
+            0.0003373961452490405,
+            0.0001265235544683902,
+            4.217451815613006e-05
+          ]
+        },
+        "own_41_to_opp_41": {
+          "n_drives": 10533,
+          "outcome_share": {
+            "touchdown": 0.2616538498053736,
+            "field_goal": 0.20222158929080034,
+            "missed_field_goal": 0.03607709104718504,
+            "punt": 0.25092566220450013,
+            "turnover": 0.08838887306560334,
+            "opp_touchdown": 0.007215418209437007,
+            "downs": 0.05174214373872591,
+            "safety": 9.493971328206589e-05,
+            "end_of_half": 0.10168043292509257
+          },
+          "points_per_drive": 2.4362479825310928,
+          "plays_per_drive": 5.003607709104719,
+          "mean_start_yardline_100": 51.57998670844014,
+          "plays_per_drive_distribution_0_to_20_plus": [
+            0.00037975885312826357,
+            0.05819804424190639,
+            0.05364093800436723,
+            0.2631728852178866,
+            0.11639608848381278,
+            0.1174404253299155,
+            0.1294028292034558,
+            0.08819899363903921,
+            0.06550840216462546,
+            0.048988892053546,
+            0.02905155226431216,
+            0.016804329250925662,
+            0.007974935915693534,
+            0.0026583119718978448,
+            0.001708914839077186,
+            0.00018987942656413178,
+            0.00018987942656413178,
+            9.493971328206589e-05,
+            0.0,
+            0.0,
+            0.0
+          ]
+        },
+        "opp_40_to_21": {
+          "n_drives": 4369,
+          "outcome_share": {
+            "touchdown": 0.3653009842069123,
+            "field_goal": 0.32387273975738157,
+            "missed_field_goal": 0.05607690547035935,
+            "punt": 0.05035477225909819,
+            "turnover": 0.06706340123598077,
+            "opp_touchdown": 0.00434882124055848,
+            "downs": 0.04097047379262989,
+            "safety": 0.0,
+            "end_of_half": 0.09201190203707943
+          },
+          "points_per_drive": 3.515907530327306,
+          "plays_per_drive": 4.102082856488899,
+          "mean_start_yardline_100": 31.5884641794461,
+          "plays_per_drive_distribution_0_to_20_plus": [
+            0.002975509269855802,
+            0.068207827878233,
+            0.0780498970016022,
+            0.3284504463263905,
+            0.15152208743419546,
+            0.1407644769970245,
+            0.11902037079423208,
+            0.05905241474021515,
+            0.026550698100251773,
+            0.01670862897688258,
+            0.0050354772259098195,
+            0.0022888532845044634,
+            0.0011444266422522317,
+            0.00022888532845044633,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ]
+        },
+        "opp_20_to_goal": {
+          "n_drives": 1888,
+          "outcome_share": {
+            "touchdown": 0.5291313559322034,
+            "field_goal": 0.3130296610169492,
+            "missed_field_goal": 0.019067796610169493,
+            "punt": 0.0015889830508474577,
+            "turnover": 0.0413135593220339,
+            "opp_touchdown": 0.0031779661016949155,
+            "downs": 0.03283898305084746,
+            "safety": 0.0,
+            "end_of_half": 0.05985169491525424
+          },
+          "points_per_drive": 4.6366525423728815,
+          "plays_per_drive": 2.8813559322033897,
+          "mean_start_yardline_100": 12.421610169491526,
+          "plays_per_drive_distribution_0_to_20_plus": [
+            0.005296610169491525,
+            0.1594279661016949,
+            0.1731991525423729,
+            0.4406779661016949,
+            0.11122881355932203,
+            0.06302966101694915,
+            0.037076271186440676,
+            0.009533898305084746,
+            0.0005296610169491525,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ]
+        }
+      },
+      "n_games": 4363,
+      "drives_per_game": 22.533807013522804,
+      "scrimmage_plays_per_game": 126.96905798762319,
+      "seasons": [
+        2010,
+        2025
+      ]
+    },
+    "recent_seasons": {
+      "n_drives": 30731,
+      "outcome_share": {
+        "touchdown": 0.22134001496859848,
+        "field_goal": 0.15521785818879957,
+        "missed_field_goal": 0.026487911229702905,
+        "punt": 0.3557645374377664,
+        "turnover": 0.10191663141453255,
+        "opp_touchdown": 0.011193908431225799,
+        "downs": 0.05756402329894894,
+        "safety": 0.002212749341056262,
+        "end_of_half": 0.06830236568936904
+      },
+      "points_per_drive": 2.0134717386352543,
+      "plays_per_drive": 5.803390712960854,
+      "mean_start_yardline_100": 70.60242100810257,
+      "plays_per_drive_distribution_0_to_20_plus": [
+        0.00035794474634733654,
+        0.05245517555562787,
+        0.03598971722365039,
+        0.26214571605219483,
+        0.08740359897172237,
+        0.09937847775861508,
+        0.10312062737951905,
+        0.07770655038885815,
+        0.06800950180599395,
+        0.06124109205688068,
+        0.04747648953825128,
+        0.03625004067553936,
+        0.026097426051869446,
+        0.018059939474797435,
+        0.011161367999739677,
+        0.00628030327682145,
+        0.0030588005596954215,
+        0.002180208909570141,
+        0.0010412938075558883,
+        0.0004230256093195796,
+        0.00016270215743060753
+      ],
+      "by_start": {
+        "own_1_to_20": {
+          "n_drives": 7694,
+          "outcome_share": {
+            "touchdown": 0.16402391473875746,
+            "field_goal": 0.10267741096958669,
+            "missed_field_goal": 0.020405510787626722,
+            "punt": 0.45425006498570314,
+            "turnover": 0.11034572394073304,
+            "opp_touchdown": 0.014946711723420847,
+            "downs": 0.04847933454639979,
+            "safety": 0.007798284377436964,
+            "end_of_half": 0.07707304393033533
+          },
+          "points_per_drive": 1.458669092799584,
+          "plays_per_drive": 6.158825058487133,
+          "mean_start_yardline_100": 86.56745515986483,
+          "plays_per_drive_distribution_0_to_20_plus": [
+            0.0002599428125812321,
+            0.05276839095399012,
+            0.029243566415388614,
+            0.267091239927216,
+            0.07083441642838575,
+            0.08747075643358461,
+            0.09916818299974006,
+            0.07213413049129191,
+            0.07070444502209514,
+            0.05861710423706785,
+            0.05081881985963088,
+            0.040551078762672214,
+            0.03041330907200416,
+            0.025604367039251365,
+            0.018066025474395633,
+            0.011047569534702366,
+            0.005198856251624643,
+            0.004938913439043411,
+            0.0028593709383935534,
+            0.0015596568754873928,
+            0.0006498570314530804
+          ]
+        },
+        "own_21_to_40": {
+          "n_drives": 18002,
+          "outcome_share": {
+            "touchdown": 0.21842017553605156,
+            "field_goal": 0.1508165759360071,
+            "missed_field_goal": 0.026108210198866794,
+            "punt": 0.37018109098989,
+            "turnover": 0.10676591489834462,
+            "opp_touchdown": 0.011276524830574381,
+            "downs": 0.06088212420842129,
+            "safety": 0.00044439506721475393,
+            "end_of_half": 0.055104988334629484
+          },
+          "points_per_drive": 1.9793911787579157,
+          "plays_per_drive": 5.970558826797022,
+          "mean_start_yardline_100": 71.65148316853683,
+          "plays_per_drive_distribution_0_to_20_plus": [
+            0.0,
+            0.04749472280857683,
+            0.028996778135762694,
+            0.2561382068659038,
+            0.08310187756915899,
+            0.0978224641706477,
+            0.1003221864237307,
+            0.08093545161648706,
+            0.07171425397178091,
+            0.06804799466725919,
+            0.05304966114876125,
+            0.04110654371736474,
+            0.029830018886790356,
+            0.019442284190645483,
+            0.01088767914676147,
+            0.005943784023997333,
+            0.0029441173202977445,
+            0.001610932118653483,
+            0.0005554938340184424,
+            5.554938340184424e-05,
+            0.0
+          ]
+        },
+        "own_41_to_opp_41": {
+          "n_drives": 3212,
+          "outcome_share": {
+            "touchdown": 0.26650062266500624,
+            "field_goal": 0.20952677459526775,
+            "missed_field_goal": 0.03798256537982565,
+            "punt": 0.2238480697384807,
+            "turnover": 0.08094645080946451,
+            "opp_touchdown": 0.006537982565379826,
+            "downs": 0.06537982565379825,
+            "safety": 0.0,
+            "end_of_half": 0.10927770859277709
+          },
+          "points_per_drive": 2.4909713574097134,
+          "plays_per_drive": 5.121419676214197,
+          "mean_start_yardline_100": 51.515255292652554,
+          "plays_per_drive_distribution_0_to_20_plus": [
+            0.0009339975093399751,
+            0.06008717310087173,
+            0.05292652552926526,
+            0.2400373599003736,
+            0.11363636363636363,
+            0.12266500622665007,
+            0.13138231631382316,
+            0.08997509339975093,
+            0.06755915317559154,
+            0.05572851805728518,
+            0.0323785803237858,
+            0.018368617683686177,
+            0.008717310087173101,
+            0.0024906600249066002,
+            0.0024906600249066002,
+            0.00031133250311332503,
+            0.00031133250311332503,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ]
+        },
+        "opp_40_to_21": {
+          "n_drives": 1320,
+          "outcome_share": {
+            "touchdown": 0.3621212121212121,
+            "field_goal": 0.3340909090909091,
+            "missed_field_goal": 0.0446969696969697,
+            "punt": 0.041666666666666664,
+            "turnover": 0.06363636363636363,
+            "opp_touchdown": 0.0030303030303030303,
+            "downs": 0.05,
+            "safety": 0.0,
+            "end_of_half": 0.10075757575757575
+          },
+          "points_per_drive": 3.5234848484848484,
+          "plays_per_drive": 4.211363636363636,
+          "mean_start_yardline_100": 31.878030303030304,
+          "plays_per_drive_distribution_0_to_20_plus": [
+            0.0030303030303030303,
+            0.06136363636363636,
+            0.07727272727272727,
+            0.30757575757575756,
+            0.1590909090909091,
+            0.14696969696969697,
+            0.12196969696969696,
+            0.06212121212121212,
+            0.02878787878787879,
+            0.020454545454545454,
+            0.006818181818181818,
+            0.0022727272727272726,
+            0.0022727272727272726,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ]
+        },
+        "opp_20_to_goal": {
+          "n_drives": 503,
+          "outcome_share": {
+            "touchdown": 0.5447316103379721,
+            "field_goal": 0.30019880715705766,
+            "missed_field_goal": 0.011928429423459244,
+            "punt": 0.0,
+            "turnover": 0.033797216699801194,
+            "opp_touchdown": 0.0019880715705765406,
+            "downs": 0.04771371769383698,
+            "safety": 0.0,
+            "end_of_half": 0.05964214711729622
+          },
+          "points_per_drive": 4.707753479125248,
+          "plays_per_drive": 2.9165009940357853,
+          "mean_start_yardline_100": 12.359840954274354,
+          "plays_per_drive_distribution_0_to_20_plus": [
+            0.003976143141153081,
+            0.15308151093439365,
+            0.17296222664015903,
+            0.4234592445328032,
+            0.13916500994035785,
+            0.0636182902584493,
+            0.033797216699801194,
+            0.009940357852882704,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ]
+        }
+      },
+      "n_games": 1424,
+      "drives_per_game": 21.58075842696629,
+      "scrimmage_plays_per_game": 125.24157303370787,
+      "seasons": [
+        2021,
+        2025
+      ]
+    },
+    "note": "real data, not model output; the simulator is compared with these in M4"
+  },
+  "figure_data": {
+    "go": [
+      {
+        "ydstogo": 1,
+        "fitted_fourth_down_at_midfield": 0.7138502483815103,
+        "third_down_n": 9659,
+        "third_down_raw": 0.6899264934258205,
+        "fourth_down_n": 2593,
+        "fourth_down_raw": 0.6872348630929426,
+        "fitted_fourth_down_same_plays": 0.7059077079292849
+      },
+      {
+        "ydstogo": 2,
+        "fitted_fourth_down_at_midfield": 0.6043210705220072,
+        "third_down_n": 6896,
+        "third_down_raw": 0.5732308584686775,
+        "fourth_down_n": 933,
+        "fourth_down_raw": 0.5669882100750268,
+        "fitted_fourth_down_same_plays": 0.5945739989259416
+      },
+      {
+        "ydstogo": 3,
+        "fitted_fourth_down_at_midfield": 0.5531365498570283,
+        "third_down_n": 6719,
+        "third_down_raw": 0.5299895817830034,
+        "fourth_down_n": 652,
+        "fourth_down_raw": 0.5107361963190185,
+        "fitted_fourth_down_same_plays": 0.5436744178789921
+      },
+      {
+        "ydstogo": 4,
+        "fitted_fourth_down_at_midfield": 0.5104325848700705,
+        "third_down_n": 6966,
+        "third_down_raw": 0.4902383003158197,
+        "fourth_down_n": 532,
+        "fourth_down_raw": 0.4699248120300752,
+        "fitted_fourth_down_same_plays": 0.5015681198879416
+      },
+      {
+        "ydstogo": 5,
+        "fitted_fourth_down_at_midfield": 0.4763825912544606,
+        "third_down_n": 7259,
+        "third_down_raw": 0.44537815126050423,
+        "fourth_down_n": 488,
+        "fourth_down_raw": 0.4672131147540984,
+        "fitted_fourth_down_same_plays": 0.46779136108259234
+      },
+      {
+        "ydstogo": 6,
+        "fitted_fourth_down_at_midfield": 0.44790405940342,
+        "third_down_n": 6951,
+        "third_down_raw": 0.4267011940727953,
+        "fourth_down_n": 351,
+        "fourth_down_raw": 0.42450142450142453,
+        "fitted_fourth_down_same_plays": 0.4392571408164359
+      },
+      {
+        "ydstogo": 7,
+        "fitted_fourth_down_at_midfield": 0.4092205225548262,
+        "third_down_n": 6624,
+        "third_down_raw": 0.3879830917874396,
+        "fourth_down_n": 235,
+        "fourth_down_raw": 0.4340425531914894,
+        "fitted_fourth_down_same_plays": 0.40008681945051466
+      },
+      {
+        "ydstogo": 8,
+        "fitted_fourth_down_at_midfield": 0.37105207341691465,
+        "third_down_n": 5988,
+        "third_down_raw": 0.35237140948563794,
+        "fourth_down_n": 207,
+        "fourth_down_raw": 0.38164251207729466,
+        "fitted_fourth_down_same_plays": 0.36356157941457035
+      },
+      {
+        "ydstogo": 9,
+        "fitted_fourth_down_at_midfield": 0.3441395704888334,
+        "third_down_n": 5046,
+        "third_down_raw": 0.31728101466508124,
+        "fourth_down_n": 152,
+        "fourth_down_raw": 0.3092105263157895,
+        "fitted_fourth_down_same_plays": 0.3376179959546577
+      },
+      {
+        "ydstogo": 10,
+        "fitted_fourth_down_at_midfield": 0.31869515557966444,
+        "third_down_n": 8350,
+        "third_down_raw": 0.2984431137724551,
+        "fourth_down_n": 452,
+        "fourth_down_raw": 0.3163716814159292,
+        "fitted_fourth_down_same_plays": 0.311908303205449
+      },
+      {
+        "ydstogo": 11,
+        "fitted_fourth_down_at_midfield": 0.28526224274942186,
+        "third_down_n": 2869,
+        "third_down_raw": 0.2784942488672011,
+        "fourth_down_n": 115,
+        "fourth_down_raw": 0.28695652173913044,
+        "fitted_fourth_down_same_plays": 0.27768172084924525
+      },
+      {
+        "ydstogo": 12,
+        "fitted_fourth_down_at_midfield": 0.24951833093803308,
+        "third_down_n": 2214,
+        "third_down_raw": 0.22944896115627822,
+        "fourth_down_n": 85,
+        "fourth_down_raw": 0.3176470588235294,
+        "fitted_fourth_down_same_plays": 0.24395046922517594
+      },
+      {
+        "ydstogo": 13,
+        "fitted_fourth_down_at_midfield": 0.2190234753817897,
+        "third_down_n": 1880,
+        "third_down_raw": 0.21329787234042552,
+        "fourth_down_n": 67,
+        "fourth_down_raw": 0.23880597014925373,
+        "fitted_fourth_down_same_plays": 0.21434338117284232
+      },
+      {
+        "ydstogo": 14,
+        "fitted_fourth_down_at_midfield": 0.19727381540895175,
+        "third_down_n": 1473,
+        "third_down_raw": 0.19144602851323828,
+        "fourth_down_n": 63,
+        "fourth_down_raw": 0.20634920634920634,
+        "fitted_fourth_down_same_plays": 0.19350548742735757
+      },
+      {
+        "ydstogo": 15,
+        "fitted_fourth_down_at_midfield": 0.18021147768869594,
+        "third_down_n": 1702,
+        "third_down_raw": 0.14394829612220916,
+        "fourth_down_n": 93,
+        "fourth_down_raw": 0.24731182795698925,
+        "fitted_fourth_down_same_plays": 0.1768386886043342
+      }
+    ],
+    "go_note": "raw rates: all seasons, plays between the 20-yard lines; fitted_same_plays: the model's fourth-down probability (last season, spread 0) averaged over the field positions of the raw fourth-down plays at that distance",
+    "field_goal_raw": [
+      {
+        "kick_distance_from": 18,
+        "kick_distance_to": 20,
+        "mean_distance": 19.771929824561404,
+        "n": 57,
+        "raw": 0.9824561403508771
+      },
+      {
+        "kick_distance_from": 21,
+        "kick_distance_to": 23,
+        "mean_distance": 22.165384615384614,
+        "n": 260,
+        "raw": 1.0
+      },
+      {
+        "kick_distance_from": 24,
+        "kick_distance_to": 26,
+        "mean_distance": 25.056962025316455,
+        "n": 316,
+        "raw": 0.9683544303797469
+      },
+      {
+        "kick_distance_from": 27,
+        "kick_distance_to": 29,
+        "mean_distance": 28.02445652173913,
+        "n": 368,
+        "raw": 0.967391304347826
+      },
+      {
+        "kick_distance_from": 30,
+        "kick_distance_to": 32,
+        "mean_distance": 30.979351032448378,
+        "n": 339,
+        "raw": 0.9705014749262537
+      },
+      {
+        "kick_distance_from": 33,
+        "kick_distance_to": 35,
+        "mean_distance": 33.93627450980392,
+        "n": 408,
+        "raw": 0.9411764705882353
+      },
+      {
+        "kick_distance_from": 36,
+        "kick_distance_to": 38,
+        "mean_distance": 37.018372703412076,
+        "n": 381,
+        "raw": 0.910761154855643
+      },
+      {
+        "kick_distance_from": 39,
+        "kick_distance_to": 41,
+        "mean_distance": 40.03013698630137,
+        "n": 365,
+        "raw": 0.8767123287671232
+      },
+      {
+        "kick_distance_from": 42,
+        "kick_distance_to": 44,
+        "mean_distance": 43.03865979381443,
+        "n": 388,
+        "raw": 0.8195876288659794
+      },
+      {
+        "kick_distance_from": 45,
+        "kick_distance_to": 47,
+        "mean_distance": 46.0,
+        "n": 351,
+        "raw": 0.7578347578347578
+      },
+      {
+        "kick_distance_from": 48,
+        "kick_distance_to": 50,
+        "mean_distance": 48.97051597051597,
+        "n": 407,
+        "raw": 0.7641277641277642
+      },
+      {
+        "kick_distance_from": 51,
+        "kick_distance_to": 53,
+        "mean_distance": 51.94827586206897,
+        "n": 406,
+        "raw": 0.7364532019704434
+      },
+      {
+        "kick_distance_from": 54,
+        "kick_distance_to": 56,
+        "mean_distance": 54.88811188811189,
+        "n": 286,
+        "raw": 0.6713286713286714
+      },
+      {
+        "kick_distance_from": 57,
+        "kick_distance_to": 59,
+        "mean_distance": 57.744,
+        "n": 125,
+        "raw": 0.648
+      },
+      {
+        "kick_distance_from": 60,
+        "kick_distance_to": 62,
+        "mean_distance": 60.714285714285715,
+        "n": 35,
+        "raw": 0.5142857142857142
+      },
+      {
+        "kick_distance_from": 63,
+        "kick_distance_to": 65,
+        "mean_distance": 63.833333333333336,
+        "n": 18,
+        "raw": 0.3888888888888889
+      }
+    ],
+    "field_goal_raw_seasons": [
+      2022,
+      2025
+    ],
+    "field_goal_fit": [
+      {
+        "kick_distance": 18,
+        "fitted": 0.9957133821977323,
+        "fitted_first_season": 0.9931844729132048
+      },
+      {
+        "kick_distance": 19,
+        "fitted": 0.9957133821977323,
+        "fitted_first_season": 0.9931844729132048
+      },
+      {
+        "kick_distance": 20,
+        "fitted": 0.9944351646215384,
+        "fitted_first_season": 0.9911588608969122
+      },
+      {
+        "kick_distance": 21,
+        "fitted": 0.9928688845305276,
+        "fitted_first_season": 0.9886809277466502
+      },
+      {
+        "kick_distance": 22,
+        "fitted": 0.9909756584009419,
+        "fitted_first_season": 0.9856918718156344
+      },
+      {
+        "kick_distance": 23,
+        "fitted": 0.9887173304463593,
+        "fitted_first_season": 0.9821351213132369
+      },
+      {
+        "kick_distance": 24,
+        "fitted": 0.9860577638828849,
+        "fitted_first_season": 0.977958576268812
+      },
+      {
+        "kick_distance": 25,
+        "fitted": 0.9829641332617578,
+        "fitted_first_season": 0.9731168194194308
+      },
+      {
+        "kick_distance": 26,
+        "fitted": 0.9794081273028331,
+        "fitted_first_season": 0.9675731287356162
+      },
+      {
+        "kick_distance": 27,
+        "fitted": 0.9753669710761471,
+        "fitted_first_season": 0.961301125859403
+      },
+      {
+        "kick_distance": 28,
+        "fitted": 0.9708241846455034,
+        "fitted_first_season": 0.9542859144999715
+      },
+      {
+        "kick_distance": 29,
+        "fitted": 0.9657700119807109,
+        "fitted_first_season": 0.9465245997059302
+      },
+      {
+        "kick_distance": 30,
+        "fitted": 0.960201477451114,
+        "fitted_first_season": 0.9380261290312101
+      },
+      {
+        "kick_distance": 31,
+        "fitted": 0.9541220549283188,
+        "fitted_first_season": 0.9288104537948705
+      },
+      {
+        "kick_distance": 32,
+        "fitted": 0.9475409632453099,
+        "fitted_first_season": 0.9189070655447463
+      },
+      {
+        "kick_distance": 33,
+        "fitted": 0.94047212818784,
+        "fitted_first_season": 0.9083530122286458
+      },
+      {
+        "kick_distance": 34,
+        "fitted": 0.9329328724732054,
+        "fitted_first_season": 0.8971905346401097
+      },
+      {
+        "kick_distance": 35,
+        "fitted": 0.9249424093053957,
+        "fitted_first_season": 0.885464483015295
+      },
+      {
+        "kick_distance": 36,
+        "fitted": 0.9165202211962206,
+        "fitted_first_season": 0.8732196755876321
+      },
+      {
+        "kick_distance": 37,
+        "fitted": 0.907684404057987,
+        "fitted_first_season": 0.8604983474337375
+      },
+      {
+        "kick_distance": 38,
+        "fitted": 0.8984500483203895,
+        "fitted_first_season": 0.8473378129683158
+      },
+      {
+        "kick_distance": 39,
+        "fitted": 0.8888277158807584,
+        "fitted_first_season": 0.8337684338595808
+      },
+      {
+        "kick_distance": 40,
+        "fitted": 0.8788220562456098,
+        "fitted_first_season": 0.8198119508852363
+      },
+      {
+        "kick_distance": 41,
+        "fitted": 0.8684305894182449,
+        "fitted_first_season": 0.8054802075853801
+      },
+      {
+        "kick_distance": 42,
+        "fitted": 0.8576426688115132,
+        "fitted_first_season": 0.7907742686083021
+      },
+      {
+        "kick_distance": 43,
+        "fitted": 0.8464386261812908,
+        "fitted_first_season": 0.7756839182290437
+      },
+      {
+        "kick_distance": 44,
+        "fitted": 0.8347890933031031,
+        "fitted_first_season": 0.760187515323639
+      },
+      {
+        "kick_distance": 45,
+        "fitted": 0.8226544924782812,
+        "fitted_first_season": 0.7442521798676016
+      },
+      {
+        "kick_distance": 46,
+        "fitted": 0.8099846902976422,
+        "fitted_first_season": 0.7278342919463717
+      },
+      {
+        "kick_distance": 47,
+        "fitted": 0.7967188165858204,
+        "fitted_first_season": 0.7108802961179895
+      },
+      {
+        "kick_distance": 48,
+        "fitted": 0.7827852632129099,
+        "fitted_first_season": 0.6933278203721596
+      },
+      {
+        "kick_distance": 49,
+        "fitted": 0.7681018956020067,
+        "fitted_first_season": 0.6751071383704793
+      },
+      {
+        "kick_distance": 50,
+        "fitted": 0.7525765333668734,
+        "fitted_first_season": 0.6561430244041314
+      },
+      {
+        "kick_distance": 51,
+        "fitted": 0.7361077855167132,
+        "fitted_first_season": 0.6363570704320297
+      },
+      {
+        "kick_distance": 52,
+        "fitted": 0.7185863595734081,
+        "fitted_first_season": 0.6156705508208421
+      },
+      {
+        "kick_distance": 53,
+        "fitted": 0.6998970013802835,
+        "fitted_first_season": 0.5940079290940469
+      },
+      {
+        "kick_distance": 54,
+        "fitted": 0.6799212603721037,
+        "fitted_first_season": 0.5713010968163859
+      },
+      {
+        "kick_distance": 55,
+        "fitted": 0.6585413081117741,
+        "fitted_first_season": 0.5474944108482329
+      },
+      {
+        "kick_distance": 56,
+        "fitted": 0.6356450567647907,
+        "fitted_first_season": 0.5225505434401616
+      },
+      {
+        "kick_distance": 57,
+        "fitted": 0.6111328148009904,
+        "fitted_first_season": 0.49645707147633683
+      },
+      {
+        "kick_distance": 58,
+        "fitted": 0.5849256599729294,
+        "fitted_first_season": 0.4692335997854348
+      },
+      {
+        "kick_distance": 59,
+        "fitted": 0.556975580078158,
+        "fitted_first_season": 0.440939037167084
+      },
+      {
+        "kick_distance": 60,
+        "fitted": 0.5272772043412379,
+        "fitted_first_season": 0.4116784310645183
+      },
+      {
+        "kick_distance": 61,
+        "fitted": 0.4958806030893936,
+        "fitted_first_season": 0.38160854177373443
+      },
+      {
+        "kick_distance": 62,
+        "fitted": 0.46290417136040884,
+        "fitted_first_season": 0.3509411439238612
+      },
+      {
+        "kick_distance": 63,
+        "fitted": 0.4285460723171608,
+        "fitted_first_season": 0.3199429459162777
+      },
+      {
+        "kick_distance": 64,
+        "fitted": 0.3930921954210123,
+        "fitted_first_season": 0.2889310927510683
+      },
+      {
+        "kick_distance": 65,
+        "fitted": 0.35691824484440887,
+        "fitted_first_season": 0.25826353133939073
+      },
+      {
+        "kick_distance": 66,
+        "fitted": 0.32048362671109676,
+        "fitted_first_season": 0.22832409837838913
+      },
+      {
+        "kick_distance": 67,
+        "fitted": 0.2843154509800862,
+        "fitted_first_season": 0.19950299666760915
+      },
+      {
+        "kick_distance": 68,
+        "fitted": 0.24898229879597275,
+        "fitted_first_season": 0.17217422470333096
+      }
+    ],
+    "punt": [
+      {
+        "yardline_100": 30,
+        "n": 3,
+        "raw_net": null,
+        "fitted_net": 18.520835188204614
+      },
+      {
+        "yardline_100": 31,
+        "n": 1,
+        "raw_net": null,
+        "fitted_net": 19.492403926846578
+      },
+      {
+        "yardline_100": 32,
+        "n": 2,
+        "raw_net": null,
+        "fitted_net": 20.454546260196338
+      },
+      {
+        "yardline_100": 33,
+        "n": 5,
+        "raw_net": null,
+        "fitted_net": 21.407239290500087
+      },
+      {
+        "yardline_100": 34,
+        "n": 4,
+        "raw_net": null,
+        "fitted_net": 22.7430458273341
+      },
+      {
+        "yardline_100": 35,
+        "n": 9,
+        "raw_net": null,
+        "fitted_net": 23.724167425557198
+      },
+      {
+        "yardline_100": 36,
+        "n": 17,
+        "raw_net": null,
+        "fitted_net": 24.686433049239554
+      },
+      {
+        "yardline_100": 37,
+        "n": 37,
+        "raw_net": 26.83783783783784,
+        "fitted_net": 25.903098697999127
+      },
+      {
+        "yardline_100": 38,
+        "n": 58,
+        "raw_net": 26.689655172413794,
+        "fitted_net": 27.008461271586384
+      },
+      {
+        "yardline_100": 39,
+        "n": 122,
+        "raw_net": 28.270491803278688,
+        "fitted_net": 27.9562301918682
+      },
+      {
+        "yardline_100": 40,
+        "n": 178,
+        "raw_net": 28.51123595505618,
+        "fitted_net": 28.86973580744518
+      },
+      {
+        "yardline_100": 41,
+        "n": 160,
+        "raw_net": 30.768749999999997,
+        "fitted_net": 29.72739393046659
+      },
+      {
+        "yardline_100": 42,
+        "n": 200,
+        "raw_net": 30.715000000000003,
+        "fitted_net": 30.5310686272081
+      },
+      {
+        "yardline_100": 43,
+        "n": 202,
+        "raw_net": 31.27722772277228,
+        "fitted_net": 31.31550698584016
+      },
+      {
+        "yardline_100": 44,
+        "n": 239,
+        "raw_net": 31.460251046025107,
+        "fitted_net": 32.11975193553775
+      },
+      {
+        "yardline_100": 45,
+        "n": 257,
+        "raw_net": 33.49027237354086,
+        "fitted_net": 32.94981299997664
+      },
+      {
+        "yardline_100": 46,
+        "n": 199,
+        "raw_net": 33.53266331658291,
+        "fitted_net": 33.77459551591964
+      },
+      {
+        "yardline_100": 47,
+        "n": 253,
+        "raw_net": 34.798418972332016,
+        "fitted_net": 34.5552107934661
+      },
+      {
+        "yardline_100": 48,
+        "n": 261,
+        "raw_net": 35.8544061302682,
+        "fitted_net": 35.27665034458454
+      },
+      {
+        "yardline_100": 49,
+        "n": 270,
+        "raw_net": 35.96666666666667,
+        "fitted_net": 35.95099418568657
+      },
+      {
+        "yardline_100": 50,
+        "n": 326,
+        "raw_net": 36.110429447852766,
+        "fitted_net": 36.67063150305688
+      },
+      {
+        "yardline_100": 51,
+        "n": 264,
+        "raw_net": 38.06439393939394,
+        "fitted_net": 37.24726578772402
+      },
+      {
+        "yardline_100": 52,
+        "n": 299,
+        "raw_net": 37.87959866220736,
+        "fitted_net": 37.79880103186751
+      },
+      {
+        "yardline_100": 53,
+        "n": 311,
+        "raw_net": 38.20578778135048,
+        "fitted_net": 38.326390403136756
+      },
+      {
+        "yardline_100": 54,
+        "n": 289,
+        "raw_net": 38.778546712802765,
+        "fitted_net": 38.838676000915285
+      },
+      {
+        "yardline_100": 55,
+        "n": 393,
+        "raw_net": 39.50381679389314,
+        "fitted_net": 39.36844849671094
+      },
+      {
+        "yardline_100": 56,
+        "n": 349,
+        "raw_net": 39.126074498567334,
+        "fitted_net": 39.944464101277845
+      },
+      {
+        "yardline_100": 57,
+        "n": 336,
+        "raw_net": 40.6875,
+        "fitted_net": 40.56586370794669
+      },
+      {
+        "yardline_100": 58,
+        "n": 331,
+        "raw_net": 41.6344410876133,
+        "fitted_net": 41.181924791895966
+      },
+      {
+        "yardline_100": 59,
+        "n": 422,
+        "raw_net": 42.002369668246445,
+        "fitted_net": 41.7318396652725
+      },
+      {
+        "yardline_100": 60,
+        "n": 402,
+        "raw_net": 41.957711442786064,
+        "fitted_net": 42.17717120630027
+      },
+      {
+        "yardline_100": 61,
+        "n": 366,
+        "raw_net": 43.09562841530055,
+        "fitted_net": 42.51223865133787
+      },
+      {
+        "yardline_100": 62,
+        "n": 376,
+        "raw_net": 42.88031914893617,
+        "fitted_net": 42.759328733248736
+      },
+      {
+        "yardline_100": 63,
+        "n": 388,
+        "raw_net": 43.677835051546396,
+        "fitted_net": 42.968889255396064
+      },
+      {
+        "yardline_100": 64,
+        "n": 393,
+        "raw_net": 40.87022900763358,
+        "fitted_net": 43.19873505094833
+      },
+      {
+        "yardline_100": 65,
+        "n": 426,
+        "raw_net": 44.47417840375587,
+        "fitted_net": 43.44229175508339
+      },
+      {
+        "yardline_100": 66,
+        "n": 529,
+        "raw_net": 44.21739130434783,
+        "fitted_net": 43.6392768422629
+      },
+      {
+        "yardline_100": 67,
+        "n": 497,
+        "raw_net": 43.897384305835004,
+        "fitted_net": 43.74854368211851
+      },
+      {
+        "yardline_100": 68,
+        "n": 491,
+        "raw_net": 43.13645621181263,
+        "fitted_net": 43.787820696008026
+      },
+      {
+        "yardline_100": 69,
+        "n": 455,
+        "raw_net": 44.45274725274726,
+        "fitted_net": 43.8029435046102
+      },
+      {
+        "yardline_100": 70,
+        "n": 537,
+        "raw_net": 43.162011173184354,
+        "fitted_net": 43.82274407996812
+      },
+      {
+        "yardline_100": 71,
+        "n": 507,
+        "raw_net": 44.205128205128204,
+        "fitted_net": 43.84500548259496
+      },
+      {
+        "yardline_100": 72,
+        "n": 495,
+        "raw_net": 44.04646464646464,
+        "fitted_net": 43.85030455235645
+      },
+      {
+        "yardline_100": 73,
+        "n": 478,
+        "raw_net": 44.19874476987448,
+        "fitted_net": 43.83690975651916
+      },
+      {
+        "yardline_100": 74,
+        "n": 420,
+        "raw_net": 42.61666666666666,
+        "fitted_net": 43.82396089278426
+      },
+      {
+        "yardline_100": 75,
+        "n": 492,
+        "raw_net": 44.28455284552845,
+        "fitted_net": 43.82647395800802
+      },
+      {
+        "yardline_100": 76,
+        "n": 387,
+        "raw_net": 43.7390180878553,
+        "fitted_net": 43.83180768609587
+      },
+      {
+        "yardline_100": 77,
+        "n": 359,
+        "raw_net": 44.57381615598885,
+        "fitted_net": 43.80966693215679
+      },
+      {
+        "yardline_100": 78,
+        "n": 314,
+        "raw_net": 43.16242038216561,
+        "fitted_net": 43.75829922142887
+      },
+      {
+        "yardline_100": 79,
+        "n": 316,
+        "raw_net": 43.13291139240506,
+        "fitted_net": 43.71111504613211
+      },
+      {
+        "yardline_100": 80,
+        "n": 349,
+        "raw_net": 44.32951289398281,
+        "fitted_net": 43.69993378108462
+      },
+      {
+        "yardline_100": 81,
+        "n": 265,
+        "raw_net": 43.0377358490566,
+        "fitted_net": 43.72352846618651
+      },
+      {
+        "yardline_100": 82,
+        "n": 262,
+        "raw_net": 43.75190839694657,
+        "fitted_net": 43.74791703646376
+      },
+      {
+        "yardline_100": 83,
+        "n": 209,
+        "raw_net": 44.9377990430622,
+        "fitted_net": 43.72743180431192
+      },
+      {
+        "yardline_100": 84,
+        "n": 209,
+        "raw_net": 43.50717703349282,
+        "fitted_net": 43.635496085673
+      },
+      {
+        "yardline_100": 85,
+        "n": 253,
+        "raw_net": 42.980237154150196,
+        "fitted_net": 43.488430518893225
+      },
+      {
+        "yardline_100": 86,
+        "n": 174,
+        "raw_net": 43.48850574712644,
+        "fitted_net": 43.32446262094521
+      },
+      {
+        "yardline_100": 87,
+        "n": 154,
+        "raw_net": 42.87662337662338,
+        "fitted_net": 43.16777119192449
+      },
+      {
+        "yardline_100": 88,
+        "n": 161,
+        "raw_net": 43.39751552795031,
+        "fitted_net": 43.024484110217784
+      },
+      {
+        "yardline_100": 89,
+        "n": 134,
+        "raw_net": 42.276119402985074,
+        "fitted_net": 42.904942874966096
+      },
+      {
+        "yardline_100": 90,
+        "n": 130,
+        "raw_net": 42.776923076923076,
+        "fitted_net": 42.83902430043038
+      },
+      {
+        "yardline_100": 91,
+        "n": 113,
+        "raw_net": 43.008849557522126,
+        "fitted_net": 42.871156212223184
+      },
+      {
+        "yardline_100": 92,
+        "n": 76,
+        "raw_net": 41.19736842105263,
+        "fitted_net": 43.02888766800615
+      },
+      {
+        "yardline_100": 93,
+        "n": 89,
+        "raw_net": 43.71910112359551,
+        "fitted_net": 43.27300042711191
+      },
+      {
+        "yardline_100": 94,
+        "n": 77,
+        "raw_net": 46.09090909090909,
+        "fitted_net": 43.30163081081558
+      },
+      {
+        "yardline_100": 95,
+        "n": 61,
+        "raw_net": 42.77049180327869,
+        "fitted_net": 43.41663898945361
+      },
+      {
+        "yardline_100": 96,
+        "n": 57,
+        "raw_net": 41.6140350877193,
+        "fitted_net": 43.51508554247308
+      },
+      {
+        "yardline_100": 97,
+        "n": 38,
+        "raw_net": 46.05263157894737,
+        "fitted_net": 43.420537551204426
+      },
+      {
+        "yardline_100": 98,
+        "n": 46,
+        "raw_net": 43.0,
+        "fitted_net": 43.48189045779533
+      },
+      {
+        "yardline_100": 99,
+        "n": 32,
+        "raw_net": 44.1875,
+        "fitted_net": 43.4381411707233
+      }
+    ],
+    "punt_note": "raw: seasons from 2018, yard lines with 20+ punts; net = receiving team's yardline_100 at its next snap minus (100 - yardline_100); a return touchdown counts as yardline 0"
+  }
+}
