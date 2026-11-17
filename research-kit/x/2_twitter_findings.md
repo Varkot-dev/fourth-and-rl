@@ -232,3 +232,46 @@ The live version of burning question 2 is a debate from the week of 2026-10-27, 
 2. **Is an average-EPA gap evidence at all?** @3firsts's endogeneity point: the averages come from the current mix, so they cannot say what happens at a different mix.
 3. **EPA or win probability?** Same reply: "teams care about expected win % more than EPA". Late-lead running (87.4% run share in the last 2:00 when leading by 1 to 8, per `docs/research/endgame_clock.md`) is a clock decision that EPA averages count as inefficiency.
 4. **Does the gap survive by down, distance and situation?** Walder's .11 is a league-wide average; Sharp's posts are single-game splits. Nobody posts the gap in neutral situations by down and distance.
+
+## 8. Scope scan: other decisions people argue about (added 2026-11-17)
+
+A wider keyword sweep for debates outside fourth downs and run versus pass, to judge what else the project could cover. Same rules as above: exact quotes, `[truncated]` where X cut the post, counts as displayed.
+
+### 8.1 Two-point tries (down 8, down 14)
+
+- @RyanPaganetti, 2026-10-09, https://x.com/RyanPaganetti/status/2108669679623623087 (105 replies, 369K views): "The go for 2 down 8 strategy has now been used 53 times by 23 different franchises since 2018. In 2025, teams went for 2 in this situation in the 4th quarter roughly half the time when it came up. Dallas was the largest favorite (9.5) to ever try the strategy. This is an" [truncated]
+- @MaioccoNBCS, 2026-10-29, https://x.com/MaioccoNBCS/status/2116003473766723743 (128 replies): "If you go for 2 when you’re down 8 (extra point cuts it to 7), why not just go for 2 every time? I don’t understand the logic."
+- @Herlens_, 2026-10-29, https://x.com/Herlens_/status/2116002448472981663 (5.5K likes): "I will forever hate the “go for 2” on the first TD score when down 14. Idc what the analytics say"
+- @FB_FilmAnalysis, 2026-01-14, https://x.com/FB_FilmAnalysis/status/2011473227948945579: "To every other candidate: so would you go for 2 down 14 with 5 minutes remaining? To Ben Johnson: how much money do you want?"
+- Read: a beat writer with a large audience openly asks for the logic and gets 128 replies. The answer is a short sequential argument, which the full-game solve produces as a by-product.
+
+### 8.2 Declining to score, kneeling, and the intentional safety
+
+- @RGIII, 2026-09-19, https://x.com/RGIII/status/2101416353345249565 (581 replies): "Dear Football Fans, this is a safe space. How do you feel about NC State trying to take an intentional safety up 31-28 on Vanderbilt with 6 secs left in the game? They fumbled and ended up losing. I’ll start. Worst execution of a smart play EVER." (college)
+- @br_betting, 2025-11-01, https://x.com/br_betting/status/1984761602772795447 (547 replies, 3M views): "OH MY GOODNESS..... Georgia (-6.5) had the easiest touchdown you will EVER see... But Gunner Stockton decided to ice the game and go down at the 1-yard line 🤮🤮🤮🤮🤮" (college)
+- @JonMetler, 2026-09-12, https://x.com/JonMetler/status/2098973934414667972 (278 replies, 1.2M views): "I will never understand why teams don’t just let them score here. Save the clock. Keep your timeouts. Put the ball back in your offense’s hands and go win the game on your terms." (college)
+- @mshap2, 2026-11-16 (shown as "11h"), https://x.com/mshap2/status/2122388066283475280: "📊 Steve Sarkisian credits two Texas staffers, Michael Bimonte and John Michael Jones, for the decision to a take a knee after taking a 22-21 lead at LSU. Says he originally planned to go for 2, was then told, “this is a take-a-knee, be-safe situation.” Sarkisian adds he gets" [truncated]
+- @HornSports, 2026-11-14, https://x.com/HornSports/status/2121826408687391091 (2.5K likes, 1.5M views): "Shoutout to the unnamed analyst standing next to Steve Sarkisian who you can see on the TV broadcast immediately told Sarkisian they needed to take a knee on the two point conversion to prevent any chance LSU had at 2 points. #HookEm"
+- @TomBradyDaily, 2026-11-03, https://x.com/TomBradyDaily/status/2117613989740093685 (4.8K likes, 1.1M views): "On this date in 2003, Belichick takes the intentional safety & Brady leads game-winning touchdown drive"
+- Read: these draw far more attention than their rarity suggests (hundreds of replies, millions of views), and nearly all recent examples are college. The plan's "maybe later" list covers exactly these; the audience for them is real.
+
+### 8.3 Clock management and timeouts
+
+- @gbellseattle, 2025-12-14, https://x.com/gbellseattle/status/2000366662361690451 (2K likes, 363K views): "Coach Mike Macdonald’s clock management won this game late. I had him walk us through his thinking. He credits his main-man analyst Brian Eayrs. Gave him game ball in the locker room for convincing him why to use all 3 of the #Seahawks’ time outs on defense to leave :47 left."
+- @ProFootballTalk, 2026-10-12, https://x.com/ProFootballTalk/status/2109690213958144371 (136 replies): "Dysfunctional teams do dysfunctional things -- like not immediately firing the head coach after the worst instance of NFL late-game clock management in years, if not ever." (headline: "Dan Quinn remains employed for now, somehow")
+- @Zirksee, 2026-10-11, https://x.com/Zirksee/status/2109385319313441107: "I’ve said it a million times and I’ll say it again, NFL teams need to hire Madden players for clock management. This is ALL TIME TERRIBLE CLOCK MANAGEMENT."
+- @SethWalder on McVay and the two-minute warning, and @SharpFootball on the Packers failing to run out the clock (sections 3 and 7).
+- Read: a defense spending timeouts to save clock is the mirror image of burning question 1 and uses the same end-game model. The Seahawks and Commanders games are natural worked examples; the plays themselves were not identified in the posts collected.
+
+### 8.4 Referees and penalties
+
+- @SharpFootball, 2026-10-05, https://x.com/SharpFootball/status/2107203117465108740 (1.8K replies, 29K likes, 3.8M views; the most-engaged post in this whole file): "if you watched the NFL and thought something didn't feel right, you're not alone: #1 most flags in over a decade thru 4 weeks, refs are impacting the most CRITICAL moments of games most: #1 most red zone penalties per game by offenses in history #1 most penalties on 3rd/4th" [truncated]
+- @StickToTheModel, 2026-11-14, https://x.com/StickToTheModel/status/2121620921719152671: "Every fanbase swears the refs screw them when it matters. 2026, 4th quarter or OT, one-score game, accepted flags: Packers: 15 on them, 7 on the opp Commanders: 15 on the opp, 9 on them Bengals: 3 on them. Fewest in NFL."
+- @CraigCartonShow, 2026-10-06, https://x.com/CraigCartonShow/status/2107525322379808902: "The NFL has a serious officiating problem. 255 accepted penalties in ONE Sunday. Nearly 18 flags per game. “Nobody is tuning in to watch the refs throw the yellow hanky.”"
+- @nflrefstats1, 2026-10-26, https://x.com/nflrefstats1/status/2114666395791458720 (3.7K likes): "Green Bay Packers 2026 penalty numbers, specifically on all-important THIRD DOWN plays & in the FOURTH QTR of games The #Packers lead the #NFL in 4TH qtr penalty per game avg, recording historically high numbers in this category" [truncated]
+- Read: this is the largest audience of any topic searched, and none of the posts says whether a 15-to-7 split in a handful of games is more than chance. That is a sample-size question the project's game-level bootstrap answers directly. Nothing about individual crews ("best" or "worst" referee) turned up in this search.
+
+### 8.5 Searched and found little
+
+- Overtime under the 2025 rules (receive or kick): one relevant post, about a captain not knowing the coin-toss rule (@ProFootballTalk, 2026-09-21, https://x.com/ProFootballTalk/status/2101976882627420206). No decision debate found.
+- "Prevent defense" and "playing not to lose": no results at the like threshold used.
