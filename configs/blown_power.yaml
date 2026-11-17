@@ -1,0 +1,16 @@
+# Track A1: power of the blown-lead tests. Read by scripts/research/blown_power.py.
+seed: 20261119
+# Simulator settings fitted to real nflfastR paths in M3b
+# (results/m3b_blown_leads.json, discrete_adjusted_reference).
+n_steps: 163
+gap_shape: 1.2
+# Pregame value Phi(Z), Z ~ Normal(0, p0_sd). Assumption: favorites mostly 25% to 75%.
+p0_sd: 0.55
+# Temperature k: 1 calibrated, above 1 overconfident, below 1 underconfident.
+ks: [0.8, 0.9, 1.0, 1.05, 1.1, 1.2, 1.3, 1.5]
+thresholds: [0.60, 0.70, 0.80, 0.90, 0.95]
+# League sizes: 1, 4, 8 and 16 seasons (16 seasons = the 4,350 games tested in M3b).
+league_sizes: [272, 1088, 2176, 4350]
+n_null: 600   # leagues at k = 1 to set the first-crossing critical value
+n_rep: 300    # leagues per size for power (every k applied to the same leagues)
+alpha: 0.05
