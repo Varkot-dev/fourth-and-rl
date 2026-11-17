@@ -73,3 +73,20 @@ def test_split_files_are_separate_on_disk(plays):
     assert splits.seasons_in(test) == set(splits.test_seasons())
     splits.assert_disjoint_games(dev, test, "split files")
     assert dev.height + test.height == plays.height
+
+
+def test_holdout_is_later_than_everything_and_cannot_be_fitted_on():
+    known = set(splits.dev_seasons()) | set(splits.test_seasons())
+    assert min(splits.holdout_seasons()) > max(known)
+    with pytest.raises(splits.LeakageError):
+        splits.assert_no_test_seasons(
+            _frame(list(splits.holdout_seasons())), "toy fit", allow_test_seasons=True,
+            reason="even with a reason the holdout cannot be fitted on",
+        )
+
+
+def test_holdout_needs_acknowledgement_and_purpose():
+    with pytest.raises(splits.LeakageError):
+        splits.load_holdout_plays("final evaluation of the headline model")
+    with pytest.raises(splits.LeakageError):
+        splits.load_holdout_plays("", i_understand_this_is_the_final_holdout=True)

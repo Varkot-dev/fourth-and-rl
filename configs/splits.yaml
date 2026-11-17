@@ -3,3 +3,7 @@
 train_seasons: [2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021]
 calibration_seasons: [2022, 2023]
 test_seasons: [2024, 2025]
+# Final holdout: the season in progress. No model, chart or diagnostic may see it until
+# the end of the project, when it is loaded once for the headline metrics and the
+# case studies. It is never part of plays.parquet.
+holdout_seasons: [2026]

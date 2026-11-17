@@ -38,8 +38,8 @@ class LeakageError(RuntimeError):
 def load_splits(path: Path | None = None) -> dict[str, tuple[int, ...]]:
     with open(path or CONFIGS / "splits.yaml") as f:
         raw = yaml.safe_load(f)
-    splits = {k: tuple(int(s) for s in raw[k]) for k in
-              ("train_seasons", "calibration_seasons", "test_seasons")}
+    splits = {k: tuple(int(s) for s in raw.get(k, ())) for k in
+              ("train_seasons", "calibration_seasons", "test_seasons", "holdout_seasons")}
     seen: set[int] = set()
     for name, seasons in splits.items():
         overlap = seen & set(seasons)
@@ -59,6 +59,10 @@ def calibration_seasons() -> tuple[int, ...]:
 
 def test_seasons() -> tuple[int, ...]:
     return load_splits()["test_seasons"]
+
+
+def holdout_seasons() -> tuple[int, ...]:
+    return load_splits()["holdout_seasons"]
 
 
 def dev_seasons() -> tuple[int, ...]:
@@ -82,6 +86,12 @@ def assert_no_test_seasons(
     the guard is `allow_test_seasons=True` together with a written `reason`, which
     is appended to the access log so every exception is on record.
     """
+    held = seasons_in(df) & set(holdout_seasons())
+    if held:
+        raise LeakageError(
+            f"{what}: received rows from the final holdout seasons {sorted(held)}. "
+            "Nothing may be fitted on them, with no exception."
+        )
     leaked = seasons_in(df) & set(test_seasons())
     if not leaked:
         return
@@ -175,6 +185,50 @@ def load_test_plays(purpose: str) -> pl.DataFrame:
         raise LeakageError("load_test_plays needs a written purpose (15+ characters)")
     _log_access(kind="load_test_plays", what=purpose, reason=purpose, seasons=test_seasons())
     return pl.read_parquet(test_path())
+
+
+def holdout_path() -> Path:
+    return DATA / "holdout" / "plays_holdout.parquet"
+
+
+def build_holdout_file(force: bool = False) -> Path:
+    """Download the holdout seasons and build their state table, without reading it back.
+
+    The file lives in its own directory, apart from the development and test files, and
+    is never included in `plays.parquet`.
+    """
+    from fourth_and_rl import data
+
+    path = holdout_path()
+    if path.exists() and not force:
+        return path
+    raw_dir = DATA / "holdout" / "raw"
+    seasons = list(holdout_seasons())
+    data.download_raw(seasons, raw_dir, force=force)
+    table = data.build_state_table(data.read_raw(raw_dir, seasons))
+    path.parent.mkdir(parents=True, exist_ok=True)
+    table.write_parquet(path)
+    return path
+
+
+def load_holdout_plays(purpose: str, i_understand_this_is_the_final_holdout: bool = False
+                       ) -> pl.DataFrame:
+    """Plays from the final holdout seasons. For the last evaluation only.
+
+    Requires a written purpose and an explicit acknowledgement, and every call is
+    appended to the access log. Looking at these rows and then changing a model
+    spends the holdout.
+    """
+    if not i_understand_this_is_the_final_holdout:
+        raise LeakageError(
+            "load_holdout_plays: pass i_understand_this_is_the_final_holdout=True. "
+            "The holdout is for the final evaluation, after all modelling choices are fixed."
+        )
+    if not purpose or len(purpose.strip()) < 15:
+        raise LeakageError("load_holdout_plays needs a written purpose (15+ characters)")
+    _log_access(kind="load_holdout_plays", what=purpose, reason=purpose,
+                seasons=holdout_seasons())
+    return pl.read_parquet(holdout_path())
 
 
 def _log_access(kind: str, what: str, reason: str, seasons: Iterable[int]) -> None:
