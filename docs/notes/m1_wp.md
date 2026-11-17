@@ -1,8 +1,15 @@
 # M1 notes: the win-probability model
 
 Code: `src/fourth_and_rl/wp.py`. Config: `configs/wp.yaml`. Script: `scripts/fit_wp.py`.
-Every number below is from `results/m1_wp_metrics.json` or `results/m1_wp_tuning.json`,
-both written by that script. Worked examples marked "by hand" are arithmetic, not results.
+Worked examples marked "by hand" are arithmetic, not results.
+
+**There are two versions.** Sections 1 to 5 describe version 1, the model as first
+shipped; their numbers are from `results/m1_wp_metrics_v1.json` (a copy of the original
+results file) and `results/m1_wp_tuning_v1.json`. Version 1 was badly wrong late in
+close games. Section 6 describes version 2, which is now the headline model, how the
+problem was diagnosed on development seasons only, and what changed. Its numbers are
+from `results/m1_wp_v2_dev_study.json`, `results/m1_wp_dev.json`,
+`results/m1_wp_v2_preregistration.json` and `results/m1_wp_metrics.json`.
 
 ## 1. Concepts
 
@@ -308,3 +315,336 @@ nflfastR number is in-sample and ours is not. We could not verify this either wa
 7. Compute by hand the log loss of predicting 0.8 for a team that lost.
 8. Why can the blown-lead analysis not use predictions from a model that trained on those games?
 9. The kickoff mirror sums to 0.974, not 1. Is that a bug?
+
+## 6. Version 2: fixing the end game
+
+### 6.1 What was wrong
+
+Using the model in the decision engine (M2) exposed a fault. On first downs of the 2024
+and 2025 seasons, teams leading by 1 to 3 with 41 to 120 seconds left won 95.9% of the
+time and version 1 said 86.2%. Teams trailing by 4 to 8 with 40 seconds or less won 8.1%
+and it said 16.6%. Up 1 with the ball at the own 25 and 13 seconds left, it said 0.72.
+Anyone who has watched football knows that last team has all but won: it kneels.
+
+Four suspects were named in advance: the 10,000-play minimum leaf, the Platt map fitted
+on two seasons (slope 0.867, which shrinks everything toward 50%), a 30-second floor in
+`margin_per_sqrt_time`, and timeouts that the trees almost never used (25 of about
+4,150 splits). A fifth was a side issue: `is_home` gave the two teams of an even game
+different win probabilities at the opening kickoff.
+
+### 6.2 The honesty problem, and how it was handled
+
+The 2024 and 2025 seasons had now been looked at several times, and they are where the
+fault was seen. Any fix tuned until it looks good on those seasons would be tuned on the
+test set. So the rule for version 2 was:
+
+1. Every choice is made on the development seasons (2010 to 2023) only, loaded through
+   `splits.load_dev_plays()`, with season-blocked cross-validation: seven folds of two
+   consecutive seasons, each predicted by a model fitted on the other twelve. A season
+   is never split, so a game is never on both sides.
+2. The diagnosis is redone on development seasons first. If the fault did not show
+   there, there would be nothing to fix without peeking.
+3. The chosen configuration, the development evidence for each choice and the
+   evaluation plan are written to `results/m1_wp_v2_preregistration.json` before any
+   2024 to 2025 number for version 2 exists. The test seasons are then scored once
+   (`scripts/fit_wp.py --evaluate`, which refuses to run if the configuration or the
+   saved model differ from what was preregistered), and the result is reported as it
+   came out.
+4. The 2026 season is the final holdout and was not touched.
+
+The 2024 to 2025 numbers below are still not those of an untouched test set: those
+seasons informed the diagnosis. They are reported, labelled that way, next to version 1.
+
+### 6.3 The diagnosis on development seasons
+
+Version 1, refitted exactly as designed inside each fold, shows the same fault on
+development seasons (study candidate `v1`, first downs, last 5:00):
+
+| situation | plays | won | version 1 says |
+|---|---|---|---|
+| lead 1 to 3, 0:41 to 2:00 | 367 | 95.4% | 87.4% |
+| lead 1 to 3, 0:40 or less | 189 | 100.0% | 89.3% |
+| trail 9 or more, 0:40 or less | 830 | 0.0% | 2.5% |
+| trail 4 to 8, 0:40 or less | 736 | 16.8% | 15.4% |
+
+The first three are clear misses with intervals far from zero. The fourth, which was
+the second headline symptom on the test seasons, is fine on development seasons. That
+matters later.
+
+Taking version 1 apart one piece at a time:
+- Removing the Platt map helped everywhere: overall log loss 0.45104 to 0.44973, last
+  two minutes 0.2480 to 0.2419. The two-season map is simply worse than no map.
+- Smaller leaves helped the end game most: 2,000-play leaves cut the average end-game
+  miss from 1.4 to 0.9 points.
+- The memorization gap (held-out log loss minus in-sample log loss) of version 1 is
+  0.0126, of which about 0.005 is the calibration map; with smaller leaves it rose only
+  slightly. So the 10,000-play leaf was buying less protection than it cost.
+
+### 6.4 What was tried
+
+Every candidate is in `results/m1_wp_v2_dev_study.json`, with why it was tried. Nothing
+was removed. Numbers are season-blocked cross-validation on 2010 to 2023 (622,907 plays).
+"End-game miss" is the play-weighted average of |predicted minus observed| over 21
+cells: three time bins under 5:00 (0:00 to 0:40, 0:41 to 2:00, 2:01 to 5:00) by seven
+score bins for the team with the ball (trail 9+, 4 to 8, 1 to 3, tied, lead 1 to 3, 4 to
+8, 9+), scrimmage downs.
+
+| candidate | log loss | last 2:00 | end-game miss | memorization gap |
+|---|---|---|---|---|
+| v1 (as shipped) | 0.45104 | 0.2480 | 1.62 pts | 0.0126 |
+| v1 without Platt | 0.44973 | 0.2419 | 1.38 | 0.0075 |
+| v1, 2,000-play leaves | 0.44965 | 0.2370 | 0.87 | 0.0093 |
+| baseline + v1 trees | 0.44913 | 0.2482 | 1.58 | 0.0051 |
+| baseline, no is_home | 0.44930 | 0.2480 | 1.59 | 0.0044 |
+| + kneel_slack | 0.44932 | 0.2468 | 1.89 | 0.0043 |
+| + kneel_slack, 2,000-play leaves | 0.44877 | 0.2348 | 0.79 | 0.0057 |
+| + possessions, 2,000 | 0.44863 | 0.2341 | 0.51 | 0.0057 |
+| + timeout shares, 2,000 | 0.44888 | 0.2350 | 0.77 | 0.0058 |
+| two-stage (end-game trees, last 10:00) | 0.44869 | 0.2333 | 0.51 | 0.0065 |
+| **chosen: + kneel rule in the baseline** | **0.44863** | **0.2338** | **0.48** | **0.0057** |
+
+Leaf sizes 5,000, 1,000, 500 and 200, a 5-second time floor, keeping `is_home`, a fitted
+value of possession in the baseline, and a baseline with its clock offset fixed at 60,
+120 or 240 seconds were also tried; see the study file and `configs/wp.yaml`
+(`provenance` and `decisions`), which give the comparison behind every choice.
+
+### 6.5 The chosen design, piece by piece
+
+**1. A structural baseline.** Before any tree, the model starts from the classic normal
+approximation. Treat the rest of the game as a random walk in the score. If the
+expected final margin is m and the remaining randomness has standard deviation s, the
+chance of finishing ahead is Phi(m / s), where Phi is the standard normal cumulative
+distribution. Randomness grows with the square root of time, so
+
+    WP_baseline = Phi( expected_margin / (sigma * sqrt((seconds_left + tau) / 3600)) )
+
+`expected_margin` is the lead plus the share of the spread still to be earned (section
+2). Two numbers are fitted by maximum likelihood on the training rows: sigma, the
+standard deviation of the margin over a full game, and tau, seconds added to the clock.
+For the headline model sigma = 13.8 points and tau = 518 seconds.
+
+The baseline goes to LightGBM as `init_score`: the trees start from its log-odds and
+learn corrections to it, on the log-odds scale. Think of it as boosting with the first
+"tree" replaced by a two-parameter formula. Why it helps: a tree has to learn a smooth
+curve as a staircase, and it needs many rows on each step. The formula already has the
+right shape in the score, the spread and the clock, so the trees only learn what the
+formula misses (field position, down and distance, timeouts, the end game). The model
+is now smooth in the spread (no flat steps in a sweep from -14 to +14, against 36% flat
+steps for version 1) and in the clock (2% flat steps in the last 5:00 up 3, against
+84%). Removing the baseline from the design one step before the final one
+(`scores_leaf2000` against `scores_no_base_leaf2000`) costs 0.0008 of log loss, with a
+game-bootstrap interval from -0.0015 to -0.0002 that excludes zero.
+
+Worked example (by hand). Tied, favored by 3, kickoff: expected margin 3, s = 13.8 *
+sqrt((3600 + 518) / 3600) = 14.8, z = 0.20, WP = 0.58. Up 7 with 5:00 left and an even
+spread: s = 13.8 * sqrt(818 / 3600) = 6.6, z = 1.06, WP = 0.86.
+
+**Why tau is so large, and what that costs.** At 0:00 the baseline still has 13.8 *
+sqrt(518 / 3600) = 5.2 points of uncertainty. That sounds wrong, but the rows decide
+it: in the last seconds the team with the ball can still score, and those rows are the
+most common late rows (trailing teams run many plays). The formula has no notion of
+possession, so a single tau has to serve both the leader with the ball (nearly certain)
+and the trailer with the ball (about 35% when down 1 to 3). Maximum likelihood picks the
+compromise that the plentiful trailing rows want. Fixing tau smaller made things worse
+(the trees then over-corrected the leader states), and a fitted value of possession did
+not help once the trees were there.
+
+**2. A rule of the game in the baseline: the kneel-down.** A kneel takes about 2
+seconds and lets the clock run, so the next snap can wait 40 more unless the defense
+calls timeout. With k kneels available (3 on first down, 2 on second, 1 on third) and
+the defense holding n timeouts, the leader can burn T = 40 * max(k - n, 0) + 2 * k
+seconds, at most 120 because the two-minute warning stops the clock once
+(`docs/research/endgame_clock.md`). On first down that is 120, 86, 46 and 6 seconds for
+0 to 3 defensive timeouts.
+
+`kneel_slack` = T minus the seconds left, for the team with the ball and a lead, on a
+scrimmage down in regulation (a floor value of -600 everywhere else). Zero or more means
+the game can be ended by kneeling. On development seasons those rows were won 3,313
+times out of 3,314. So where `kneel_slack` is zero or more, the baseline says the game
+is won (log-odds 9, about 1 in 8,000). This is a fact about the rules, applied before
+any fitting, not a pattern learned from outcomes. It also makes the defense's timeouts
+matter: they change T.
+
+Worked example (by hand). Up 2, first down, 70 seconds left. The defense has 1 timeout:
+T = 40 * 2 + 6 = 86, slack = 16, game over. The defense has 2: T = 40 + 6 = 46, slack =
+-24; the leader must still run real plays or punt.
+
+**3. Two more end-game features.**
+- `possessions` = the deficit or lead in scores of up to 8 points, signed: down 9 is -2
+  because one touchdown and conversion cannot catch up.
+- `possessions_per_minute` = possessions / ((seconds left + 30) / 60). Down two scores
+  with a minute left is very different from down two scores with ten.
+
+Timeout shares (the share of the half's clock each side's timeouts could stop) were
+tried and not kept: no gain and a fit three times slower.
+
+**4. `is_home` dropped.** Home-field advantage is already in the point spread. Keeping
+`is_home` is worth 0.00014 of log loss on development seasons, with an interval from
+-0.0008 to +0.0010, so the data cannot see it. Dropping it makes the two sides of a game
+symmetric by construction: at an even spread the receiving team now has 0.501 whether
+it is home or away (version 1: 0.499 and 0.545).
+
+**5. Leaves of at least 2,000 plays, 15 leaves, 300 trees at 0.06.** From the leaf sweep
+and the tuning grid (`results/m1_wp_tuning.json`). 2,000 is not the overall winner of
+the grid: 5,000 scored 0.44852 against 0.44863, a difference of 0.0001, but its last
+two minutes are clearly worse (0.2362 against 0.2338). Version 2 exists for the end
+game, so 2,000 was chosen and the reason is recorded in `configs/wp.yaml`. The
+memorization gap is 0.0057, less than half of version 1's 0.0126: the baseline does the
+work that large leaves used to do, so smaller leaves no longer memorize games.
+
+**6. No calibration map.** Every development season was predicted by a model that did
+not see it, then a Platt map was fitted to those predictions, and each season was mapped
+by a map fitted on the other seasons only. The pooled slope is 0.934 (single seasons
+range from 0.75 to 1.20), so the raw model is slightly overconfident in the middle. The
+map would gain 0.0003 of overall log loss (0.44863 to 0.44833) and cut ECE from 0.008 to
+0.003, but it makes the end game worse (last two minutes 0.2338 to 0.2344, end-game miss
+0.48 to 0.57 points). The end game is what version 2 is for, so there is no map, and the
+mild mid-range overconfidence is a recorded weakness. A side benefit: the model is one
+fit, with no calibration seasons, which simplifies the M3 bootstrap.
+
+**7. No separate end-game model.** A second stage of small-leaf trees on the last 5 to
+15 minutes improved the last two minutes by about 0.001 but did not improve the
+end-game cells, and it is a second model to explain.
+
+**Hyperparameters and constants.** Every value and how it was chosen (a comparison, or a
+stated reason when it was not tuned) is in `configs/wp.yaml` under `provenance`, and is
+copied into the preregistration and the metrics file. This answers audit finding M4.
+`SPREAD_DECAY = 4` is one value that was never compared with anything, in either
+version; it is stated as such.
+
+**Fit time.** 10.6 seconds on 2 threads for the headline fit (622,907 plays), 6.1 seconds
+with 100 trees, so the 101 bootstrap refits stay feasible.
+
+### 6.6 Results on development seasons (cross-fitted)
+
+| | plays | version 2 | version 1 | difference (95% interval, games resampled) |
+|---|---|---|---|---|
+| log loss, all plays | 622,907 | 0.4486 | 0.4510 | -0.0024 (-0.0044 to -0.0005) |
+| log loss, last 5:00 | 63,102 | 0.2454 | 0.2550 | -0.0096 (-0.0113 to -0.0077) |
+| log loss, last 2:00 | 28,918 | 0.2338 | 0.2480 | -0.0142 (-0.0170 to -0.0114) |
+| ECE, all plays | | 0.0080 | 0.0083 | |
+| end-game miss (21 cells) | | 0.48 pts | 1.62 pts | |
+
+The diagnosis cells: lead 1 to 3 with 0:41 to 2:00, 95.4% won, version 2 says 96.1%;
+lead 1 to 3 with 0:40 or less, 100% won, version 2 says 99.8%. Trailing by 4 to 8 with
+0:40 or less, 16.8% won, version 2 says 15.4%, the same as version 1.
+
+### 6.7 Results on the test seasons, scored once
+
+Preregistered at 2026-11-17 07:25 UTC; evaluated at 07:33 UTC, one load of the test
+plays, recorded in the access log. Version 1 was refitted by the new code and reproduced
+its shipped numbers exactly. Same 90,931 plays in 569 games for every model.
+
+| model | log loss | Brier | ECE |
+|---|---|---|---|
+| Ours, version 2 | 0.4450 | 0.1476 | 0.0085 |
+| Ours, version 1 | 0.4490 | 0.1484 | 0.0217 |
+| nflfastR `vegas_wp` (with spread) | 0.4466 | 0.1478 | 0.0095 |
+| nflfastR `wp` (no spread) | 0.4845 | 0.1642 | 0.0123 |
+
+- Version 2 minus version 1: -0.0041 log loss, interval -0.0080 to +0.0001. Better, but
+  the interval just touches zero, so on all plays the improvement is not established by
+  these two seasons alone. About half of the overall gain is the two-season Platt map
+  going away: version 1's own trees without the map scored 0.4469 on the same rows
+  (`results/m1_wp_metrics_v1.json`, `ours_uncalibrated`).
+- Version 2 minus `vegas_wp`: -0.0016, interval -0.0051 to +0.0019. Tied, now slightly
+  ahead rather than slightly behind.
+- Last 5:00: 0.2463 against 0.2571 for version 1 and 0.2477 for `vegas_wp`. Last 2:00:
+  0.2372 against 0.2523 and 0.2386.
+- End-game miss over the 21 cells: 2.7 points against 3.2 for version 1. The test cells
+  are small (65 to 1,689 plays), so most intervals are wide.
+
+The three cells that exposed version 1 (first downs):
+
+| situation | plays | won | version 1 | version 2 |
+|---|---|---|---|---|
+| lead 1 to 3, 0:41 to 2:00 | 73 | 95.9% | 86.2% | 94.9% |
+| lead 1 to 3, 0:40 or less | 18 | 100.0% | 89.0% | 100.0% |
+| trail 4 to 8, 0:40 or less | 74 | 8.1% | 16.6% | 16.6% |
+
+The leader's side is fixed. The trailing-by-4-to-8 cell is not: version 2 says the same
+as version 1. On development seasons that cell was well calibrated (16.8% won, 15.4%
+predicted), so either 2024 and 2025 differ there (74 plays in a few dozen games) or the
+model misses something those seasons have. Nothing was changed after seeing it. One new
+miss appears: trailing by 1 to 3 with 0:40 or less, all downs, 44.1% won and version 2
+says 33.1% (interval excludes zero; version 1 said 39.7%). The figure
+`assets/m1_wp_endgame.png` shows every cell for both versions, development seasons on
+the left and test seasons on the right.
+
+### 6.8 Sanity checks
+
+The five original checks pass (monotone in score and spread, field position, blowout,
+kickoff mirror, now with a worst deviation of 0.041 against 0.063), and so does
+calibration by side on cross-fitted development seasons. Four end-game checks were
+added, with thresholds set before version 2 was chosen:
+
+| check | bar | version 1 | version 2 |
+|---|---|---|---|
+| lead 1 to 3, first down, defense out of timeouts, under 1:00 (worst state) | above 0.95 | 0.669 | 1.000, passes |
+| down 9 or more, under 0:30 (worst state) | below 0.02 | 0.113 | 0.063, fails |
+| up 3, own 40, 1:20, defense timeouts 0 against 3 | WP falls by more than 0.01 | 0.002, fails | 0.069, passes |
+| up 1, own 25, 13 seconds, all timeouts | above 0.90 | 0.717 | 0.876, fails |
+
+Two still fail and are reported as failing; their thresholds are not changed, and the
+tests mark them as strict expected failures, so a future fix has to remove the mark.
+Both failures come from the soft baseline at 0:00 (tau, section 6.5): the 13-second state
+is not a kneel-out (three defensive timeouts leave 7 seconds), and down 9 at the
+opponent's 20 with 29 seconds is not covered by any rule, so the trees must correct a
+starting point of about 0.04 from rare rows. In a fit on 2010 to 2021 only (used in a
+dry run of the pipeline), the field-position check also failed narrowly, so that check
+is close to its limit.
+
+Timeouts are used more: 53 and 29 splits for the two timeout counts and 58 for
+`kneel_slack`, out of 4,184 (version 1: 25 in all).
+
+### 6.9 Leakage guards added
+
+- `WPModel.fit` and `NNWPModel.fit` call `splits.assert_no_test_seasons` on the training
+  and calibration frames and refuse frames without `season` and `game_id`. The only way
+  past is `allow_test_seasons=True` with a written `reason`, which is logged. The
+  out-of-fold predictions no longer need it: test seasons are in no fold's training set
+  (they are predicted by the model fitted on all development seasons, which is the
+  headline model itself).
+- Every fit stores `splits.fit_stamp(...)` as `model.stamp` (seasons, games, rows, which
+  seasons trained and which calibrated, and whether an exception was used), and `save`
+  and `load` keep it. `splits.assert_can_score(model.stamp, rows, what)` is called before
+  every out-of-sample number: each cross-fitted fold, the development CV, the test
+  evaluation, and the neural model script.
+- `scripts/fit_wp.py --tune` reads only development plays and exits. The development
+  step and `--preregister` read no test row. `--evaluate` is the only step that loads
+  the test seasons, through `splits.load_test_plays(purpose=...)`.
+- `results/m1_wp_metrics.json` records the fold plan of the out-of-fold predictions:
+  which seasons trained the model that predicted each season.
+
+### 6.10 Known weaknesses of version 2
+
+- **The baseline is soft at 0:00** (tau = 518 seconds), so states that no rule covers
+  and the data rarely show (a big deficit near the opponent's goal with seconds left; a
+  narrow lead the defense can still stop the clock against) are corrected only partly by
+  the trees. Two sanity checks fail because of this.
+- **Mild mid-range overconfidence** (pooled slope 0.934 on cross-fitted development
+  seasons), left in on purpose, see 6.5.
+- **The trailing-by-4-to-8 cell in the last 40 seconds** is still 8 points high on the
+  test seasons.
+- **Steps along the field.** Field position still comes only from the trees: 21% of
+  one-yard steps are flat, with a largest single step of 3.2 points.
+- **The kneel rule is a step.** WP jumps where `kneel_slack` crosses zero. That is real
+  (one second can decide whether the defense gets the ball back), but the decision
+  engine subtracts nearby states, so differences near the threshold should be read with
+  that in mind.
+
+### 6.11 Questions on version 2
+
+1. Why could the test seasons not be used to choose between candidate fixes, and what
+   did we do instead?
+2. What does `init_score` do in LightGBM, and why does a structural baseline let us use
+   smaller leaves without memorizing games?
+3. Up 3, first down, 1:00 left, defense with 2 timeouts. Compute T and `kneel_slack`. Is
+   the baseline certain?
+4. Why is the fitted tau about 500 seconds, and what goes wrong at the end of a game
+   because of it?
+5. The pooled Platt map improves overall log loss. Why was it not used?
+6. Version 2 minus version 1 on the test seasons is -0.0041 with an interval from
+   -0.0080 to +0.0001. What can and cannot be claimed?
+7. Why was `is_home` dropped although keeping it scored slightly better?
+8. Two sanity checks fail. Why not lower their thresholds?
