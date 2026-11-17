@@ -551,3 +551,22 @@ Q-learning, 3 seeds, 3M decisions (final regret, points):
   a second backward pass with the opponent's policy fixed).
 - All numbers are about the model, not about the NFL. The model's caveats (M4 notes)
   carry over unchanged.
+
+## Final rerun on the hardened solution
+
+The results above were produced on the solved model from before the leakage hardening. The whole milestone was rerun on the final solved model (development-only tables, the corrected coach two-point rule). Numbers from `results/m5_rl_tabular.json` and `results/m5_rl_deep.json`:
+
+| Agent | Single drive, regret (points per drive) | Last five minutes, regret (win-probability points per game) |
+|---|---|---|
+| REINFORCE with baseline (tabular) | 0.0064 (greedy 0.0041) | |
+| Q-learning (tabular) | 0.014 | |
+| SARSA / Expected SARSA | 0.017 / 0.017 | |
+| REINFORCE network | 0.030 (one seed stuck at 0.067) | |
+| PPO | 0.094 | 4.41, still improving |
+| DQN | 0.17 | 2.08 (range 1.52 to 2.55) |
+| Coach-like policy | 0.224 | 2.34 (win-rate gap, standard error about 0.75) |
+| Never go for it | 0.357 | 3.50 (win-rate gap) |
+| Network fitted to the exact optimum | | 1.67 (win-rate gap) |
+
+What changed: the tabular results are within a few thousandths of the earlier run. In the end game DQN is somewhat weaker than before (2.08 against 1.73) and is now roughly level with the coach-like policy within noise, while PPO is still improving at the end of its budget. The lessons of this note are unchanged: dynamic programming gets regret 0 by using the model, the learners need millions of decisions to approach it, close calls are learned last, and in the end game most of the remaining gap is function approximation.
+
