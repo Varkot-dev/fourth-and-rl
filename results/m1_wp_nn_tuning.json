@@ -1,0 +1,2125 @@
+{
+  "fit_seasons": [
+    2010,
+    2018
+  ],
+  "validation_seasons": [
+    2019,
+    2021
+  ],
+  "fit_games": 2163,
+  "early_stop_games": 240,
+  "validation_rows": 134072,
+  "validation_games": 818,
+  "seeds": [
+    20261117,
+    20261118,
+    20261119
+  ],
+  "note": "No calibration map. Calibration and test seasons are not used here. log_loss_after_platt applies a Platt map fitted on the early-stopping games.",
+  "adoption_rule": "A variant replaces the starting point of its round only if its worst seed has a lower validation log loss than the starting point's best seed.",
+  "rounds": {
+    "round_1": {
+      "start": {
+        "hidden": [
+          64,
+          64
+        ],
+        "dropout": 0.0,
+        "weight_decay": 0.0001,
+        "lr": 0.002,
+        "batch_size": 4096,
+        "max_epochs": 40,
+        "patience": 6,
+        "early_stopping": true,
+        "holdout_game_fraction": 0.1,
+        "label_noise": 0.0,
+        "one_hot_down": true,
+        "squash_margin": true,
+        "calibration": "none"
+      },
+      "rows": [
+        {
+          "name": "start",
+          "overrides": {
+            "hidden": [
+              64,
+              64
+            ]
+          },
+          "log_loss_mean": 0.42855685129639204,
+          "log_loss_min": 0.4280929123914207,
+          "log_loss_max": 0.42892657711066934,
+          "log_loss_after_platt_mean": 0.4292443394983132,
+          "ece_mean": 0.008431746095267168,
+          "epoch_kept_mean": 4.333333333333333,
+          "fit_seconds_mean": 5.0,
+          "per_seed": [
+            {
+              "seed": 20261117,
+              "log_loss": 0.42892657711066934,
+              "brier": 0.14182453891884414,
+              "ece": 0.009525861778271603,
+              "log_loss_after_platt": 0.42916821412981637,
+              "platt_slope": 0.9739855756567695,
+              "epochs_run": 12,
+              "epoch_kept": 6,
+              "best_heldout_loss": 0.4681006669998169,
+              "last_epoch_train_loss": 0.43826499581336975,
+              "last_epoch_heldout_loss": 0.47023314237594604,
+              "fit_seconds": 6.6
+            },
+            {
+              "seed": 20261118,
+              "log_loss": 0.4286510643870861,
+              "brier": 0.1414632650574807,
+              "ece": 0.009754883141550373,
+              "log_loss_after_platt": 0.4295402433142398,
+              "platt_slope": 0.9317702963537977,
+              "epochs_run": 9,
+              "epoch_kept": 3,
+              "best_heldout_loss": 0.46941661834716797,
+              "last_epoch_train_loss": 0.440813273191452,
+              "last_epoch_heldout_loss": 0.4719776511192322,
+              "fit_seconds": 4.0
+            },
+            {
+              "seed": 20261119,
+              "log_loss": 0.4280929123914207,
+              "brier": 0.14147530515781243,
+              "ece": 0.006014493365979527,
+              "log_loss_after_platt": 0.4290245610508833,
+              "platt_slope": 0.9287869473073368,
+              "epochs_run": 10,
+              "epoch_kept": 4,
+              "best_heldout_loss": 0.46900761127471924,
+              "last_epoch_train_loss": 0.43987762928009033,
+              "last_epoch_heldout_loss": 0.471511572599411,
+              "fit_seconds": 4.4
+            }
+          ],
+          "log_loss_mean_minus_start": 0.0,
+          "clears_start_seed_range": false
+        },
+        {
+          "name": "hidden=[32]",
+          "overrides": {
+            "hidden": [
+              32
+            ]
+          },
+          "log_loss_mean": 0.42793198277029704,
+          "log_loss_min": 0.4277487292273543,
+          "log_loss_max": 0.4280252492129806,
+          "log_loss_after_platt_mean": 0.42875941427668335,
+          "ece_mean": 0.0071727621347217885,
+          "epoch_kept_mean": 16.0,
+          "fit_seconds_mean": 4.466666666666667,
+          "per_seed": [
+            {
+              "seed": 20261117,
+              "log_loss": 0.4280219698705563,
+              "brier": 0.14143076345896508,
+              "ece": 0.006104618809591045,
+              "log_loss_after_platt": 0.42882796682657975,
+              "platt_slope": 0.9380455518040852,
+              "epochs_run": 27,
+              "epoch_kept": 21,
+              "best_heldout_loss": 0.46788838505744934,
+              "last_epoch_train_loss": 0.44096338748931885,
+              "last_epoch_heldout_loss": 0.4692668914794922,
+              "fit_seconds": 5.4
+            },
+            {
+              "seed": 20261118,
+              "log_loss": 0.4277487292273543,
+              "brier": 0.1411093174039051,
+              "ece": 0.008095005601180616,
+              "log_loss_after_platt": 0.42854023568824995,
+              "platt_slope": 0.9413195187950929,
+              "epochs_run": 19,
+              "epoch_kept": 13,
+              "best_heldout_loss": 0.46744003891944885,
+              "last_epoch_train_loss": 0.44277381896972656,
+              "last_epoch_heldout_loss": 0.46803775429725647,
+              "fit_seconds": 4.0
+            },
+            {
+              "seed": 20261119,
+              "log_loss": 0.4280252492129806,
+              "brier": 0.14122012688070215,
+              "ece": 0.007318661993393704,
+              "log_loss_after_platt": 0.42891004031522034,
+              "platt_slope": 0.9461705601859016,
+              "epochs_run": 20,
+              "epoch_kept": 14,
+              "best_heldout_loss": 0.46867480874061584,
+              "last_epoch_train_loss": 0.44236743450164795,
+              "last_epoch_heldout_loss": 0.4694209098815918,
+              "fit_seconds": 4.0
+            }
+          ],
+          "log_loss_mean_minus_start": -0.0006248685260950015,
+          "clears_start_seed_range": true
+        },
+        {
+          "name": "hidden=[128, 128]",
+          "overrides": {
+            "hidden": [
+              128,
+              128
+            ]
+          },
+          "log_loss_mean": 0.4291095867333401,
+          "log_loss_min": 0.42878715074722706,
+          "log_loss_max": 0.42943093451428976,
+          "log_loss_after_platt_mean": 0.4295790850909848,
+          "ece_mean": 0.009934937414892524,
+          "epoch_kept_mean": 2.6666666666666665,
+          "fit_seconds_mean": 6.933333333333334,
+          "per_seed": [
+            {
+              "seed": 20261117,
+              "log_loss": 0.42943093451428976,
+              "brier": 0.14205028161576122,
+              "ece": 0.009756074643745925,
+              "log_loss_after_platt": 0.4295641963358033,
+              "platt_slope": 0.9808123879746646,
+              "epochs_run": 12,
+              "epoch_kept": 6,
+              "best_heldout_loss": 0.46820148825645447,
+              "last_epoch_train_loss": 0.4348803460597992,
+              "last_epoch_heldout_loss": 0.4730874001979828,
+              "fit_seconds": 9.1
+            },
+            {
+              "seed": 20261118,
+              "log_loss": 0.42878715074722706,
+              "brier": 0.1413646020730454,
+              "ece": 0.010213275808231573,
+              "log_loss_after_platt": 0.4294634209429958,
+              "platt_slope": 0.9598184941686057,
+              "epochs_run": 7,
+              "epoch_kept": 1,
+              "best_heldout_loss": 0.46883153915405273,
+              "last_epoch_train_loss": 0.44046881794929504,
+              "last_epoch_heldout_loss": 0.4713084101676941,
+              "fit_seconds": 5.9
+            },
+            {
+              "seed": 20261119,
+              "log_loss": 0.4291106749385034,
+              "brier": 0.14136095492181672,
+              "ece": 0.009835461792700076,
+              "log_loss_after_platt": 0.42970963799415535,
+              "platt_slope": 0.9666648457292093,
+              "epochs_run": 7,
+              "epoch_kept": 1,
+              "best_heldout_loss": 0.46868574619293213,
+              "last_epoch_train_loss": 0.43857645988464355,
+              "last_epoch_heldout_loss": 0.47089892625808716,
+              "fit_seconds": 5.8
+            }
+          ],
+          "log_loss_mean_minus_start": 0.0005527354369480597,
+          "clears_start_seed_range": false
+        },
+        {
+          "name": "hidden=[128, 128, 128]",
+          "overrides": {
+            "hidden": [
+              128,
+              128,
+              128
+            ]
+          },
+          "log_loss_mean": 0.42896213353134915,
+          "log_loss_min": 0.4286187921107796,
+          "log_loss_max": 0.42940982430801217,
+          "log_loss_after_platt_mean": 0.4292620165144596,
+          "ece_mean": 0.011770989777096138,
+          "epoch_kept_mean": 2.0,
+          "fit_seconds_mean": 10.033333333333333,
+          "per_seed": [
+            {
+              "seed": 20261117,
+              "log_loss": 0.4288577841752557,
+              "brier": 0.14199301584090487,
+              "ece": 0.009373347581034315,
+              "log_loss_after_platt": 0.42930083899267163,
+              "platt_slope": 0.9529052538938952,
+              "epochs_run": 9,
+              "epoch_kept": 3,
+              "best_heldout_loss": 0.4694456458091736,
+              "last_epoch_train_loss": 0.43530210852622986,
+              "last_epoch_heldout_loss": 0.47454389929771423,
+              "fit_seconds": 10.8
+            },
+            {
+              "seed": 20261118,
+              "log_loss": 0.4286187921107796,
+              "brier": 0.14169723772885723,
+              "ece": 0.009172585982210449,
+              "log_loss_after_platt": 0.4289964911280497,
+              "platt_slope": 0.9618339606413323,
+              "epochs_run": 8,
+              "epoch_kept": 2,
+              "best_heldout_loss": 0.46943312883377075,
+              "last_epoch_train_loss": 0.4371965527534485,
+              "last_epoch_heldout_loss": 0.479074627161026,
+              "fit_seconds": 10.0
+            },
+            {
+              "seed": 20261119,
+              "log_loss": 0.42940982430801217,
+              "brier": 0.14172713736244,
+              "ece": 0.01676703576804365,
+              "log_loss_after_platt": 0.42948871942265754,
+              "platt_slope": 0.9535165783338598,
+              "epochs_run": 7,
+              "epoch_kept": 1,
+              "best_heldout_loss": 0.4690941274166107,
+              "last_epoch_train_loss": 0.43635889887809753,
+              "last_epoch_heldout_loss": 0.4738638699054718,
+              "fit_seconds": 9.3
+            }
+          ],
+          "log_loss_mean_minus_start": 0.00040528223495711613,
+          "clears_start_seed_range": false
+        },
+        {
+          "name": "hidden=[256, 256]",
+          "overrides": {
+            "hidden": [
+              256,
+              256
+            ]
+          },
+          "log_loss_mean": 0.42851856457298765,
+          "log_loss_min": 0.42806844334779937,
+          "log_loss_max": 0.4290189427347981,
+          "log_loss_after_platt_mean": 0.42925261568741596,
+          "ece_mean": 0.010213395571030843,
+          "epoch_kept_mean": 1.0,
+          "fit_seconds_mean": 14.1,
+          "per_seed": [
+            {
+              "seed": 20261117,
+              "log_loss": 0.4290189427347981,
+              "brier": 0.14177510458804155,
+              "ece": 0.011129555989406618,
+              "log_loss_after_platt": 0.4296565374935146,
+              "platt_slope": 0.9148292820365495,
+              "epochs_run": 7,
+              "epoch_kept": 1,
+              "best_heldout_loss": 0.46998676657676697,
+              "last_epoch_train_loss": 0.43655258417129517,
+              "last_epoch_heldout_loss": 0.47081291675567627,
+              "fit_seconds": 14.5
+            },
+            {
+              "seed": 20261118,
+              "log_loss": 0.42806844334779937,
+              "brier": 0.14150589235734148,
+              "ece": 0.011198983507185484,
+              "log_loss_after_platt": 0.4288007691891448,
+              "platt_slope": 0.9355092530514811,
+              "epochs_run": 7,
+              "epoch_kept": 1,
+              "best_heldout_loss": 0.4689740836620331,
+              "last_epoch_train_loss": 0.43707147240638733,
+              "last_epoch_heldout_loss": 0.47353222966194153,
+              "fit_seconds": 14.0
+            },
+            {
+              "seed": 20261119,
+              "log_loss": 0.42846830763636545,
+              "brier": 0.1413896534019686,
+              "ece": 0.008311647216500429,
+              "log_loss_after_platt": 0.42930054037958854,
+              "platt_slope": 0.9452504949105609,
+              "epochs_run": 7,
+              "epoch_kept": 1,
+              "best_heldout_loss": 0.46865057945251465,
+              "last_epoch_train_loss": 0.4358537495136261,
+              "last_epoch_heldout_loss": 0.47475704550743103,
+              "fit_seconds": 13.8
+            }
+          ],
+          "log_loss_mean_minus_start": -3.828672340439043e-05,
+          "clears_start_seed_range": false
+        },
+        {
+          "name": "weight_decay=0.0",
+          "overrides": {
+            "hidden": [
+              64,
+              64
+            ],
+            "weight_decay": 0.0
+          },
+          "log_loss_mean": 0.4285535027954615,
+          "log_loss_min": 0.4281120151653752,
+          "log_loss_max": 0.4288820635283254,
+          "log_loss_after_platt_mean": 0.42924970195178863,
+          "ece_mean": 0.008481979257608236,
+          "epoch_kept_mean": 4.333333333333333,
+          "fit_seconds_mean": 4.533333333333333,
+          "per_seed": [
+            {
+              "seed": 20261117,
+              "log_loss": 0.4288820635283254,
+              "brier": 0.14181700219595847,
+              "ece": 0.00947981139549616,
+              "log_loss_after_platt": 0.42915309105889893,
+              "platt_slope": 0.9721580405101865,
+              "epochs_run": 12,
+              "epoch_kept": 6,
+              "best_heldout_loss": 0.46811041235923767,
+              "last_epoch_train_loss": 0.43832045793533325,
+              "last_epoch_heldout_loss": 0.47040244936943054,
+              "fit_seconds": 5.3
+            },
+            {
+              "seed": 20261118,
+              "log_loss": 0.42866642969268404,
+              "brier": 0.14146762068998428,
+              "ece": 0.00979047013816347,
+              "log_loss_after_platt": 0.42955185711013877,
+              "platt_slope": 0.9323182928853011,
+              "epochs_run": 9,
+              "epoch_kept": 3,
+              "best_heldout_loss": 0.4693899154663086,
+              "last_epoch_train_loss": 0.4408259391784668,
+              "last_epoch_heldout_loss": 0.4719868004322052,
+              "fit_seconds": 3.8
+            },
+            {
+              "seed": 20261119,
+              "log_loss": 0.4281120151653752,
+              "brier": 0.1414848755714838,
+              "ece": 0.006175656239165074,
+              "log_loss_after_platt": 0.42904415768632814,
+              "platt_slope": 0.9281114559774533,
+              "epochs_run": 10,
+              "epoch_kept": 4,
+              "best_heldout_loss": 0.46904435753822327,
+              "last_epoch_train_loss": 0.43983715772628784,
+              "last_epoch_heldout_loss": 0.4714074432849884,
+              "fit_seconds": 4.5
+            }
+          ],
+          "log_loss_mean_minus_start": -3.3485009305334046e-06,
+          "clears_start_seed_range": false
+        },
+        {
+          "name": "weight_decay=0.01",
+          "overrides": {
+            "hidden": [
+              64,
+              64
+            ],
+            "weight_decay": 0.01
+          },
+          "log_loss_mean": 0.4285348420720703,
+          "log_loss_min": 0.42808147570674626,
+          "log_loss_max": 0.4288602614260249,
+          "log_loss_after_platt_mean": 0.42923401501836117,
+          "ece_mean": 0.008426830597047645,
+          "epoch_kept_mean": 4.333333333333333,
+          "fit_seconds_mean": 4.333333333333333,
+          "per_seed": [
+            {
+              "seed": 20261117,
+              "log_loss": 0.4288602614260249,
+              "brier": 0.14181345092576553,
+              "ece": 0.009467340910345502,
+              "log_loss_after_platt": 0.4291333061374159,
+              "platt_slope": 0.9735874514084047,
+              "epochs_run": 12,
+              "epoch_kept": 6,
+              "best_heldout_loss": 0.46806800365448,
+              "last_epoch_train_loss": 0.4381728768348694,
+              "last_epoch_heldout_loss": 0.4704662561416626,
+              "fit_seconds": 5.2
+            },
+            {
+              "seed": 20261118,
+              "log_loss": 0.42866278908343985,
+              "brier": 0.14146432124416214,
+              "ece": 0.009778938960780314,
+              "log_loss_after_platt": 0.42955170256678343,
+              "platt_slope": 0.9321344927297804,
+              "epochs_run": 9,
+              "epoch_kept": 3,
+              "best_heldout_loss": 0.4693979024887085,
+              "last_epoch_train_loss": 0.44085773825645447,
+              "last_epoch_heldout_loss": 0.4719649851322174,
+              "fit_seconds": 3.8
+            },
+            {
+              "seed": 20261119,
+              "log_loss": 0.42808147570674626,
+              "brier": 0.14147172519775075,
+              "ece": 0.006034211920017122,
+              "log_loss_after_platt": 0.4290170363508842,
+              "platt_slope": 0.9281758513059044,
+              "epochs_run": 10,
+              "epoch_kept": 4,
+              "best_heldout_loss": 0.46902045607566833,
+              "last_epoch_train_loss": 0.4398372769355774,
+              "last_epoch_heldout_loss": 0.47154492139816284,
+              "fit_seconds": 4.0
+            }
+          ],
+          "log_loss_mean_minus_start": -2.200922432171737e-05,
+          "clears_start_seed_range": false
+        },
+        {
+          "name": "weight_decay=0.1",
+          "overrides": {
+            "hidden": [
+              64,
+              64
+            ],
+            "weight_decay": 0.1
+          },
+          "log_loss_mean": 0.4285516098977082,
+          "log_loss_min": 0.42805827919531436,
+          "log_loss_max": 0.42891238492657796,
+          "log_loss_after_platt_mean": 0.4292675594343094,
+          "ece_mean": 0.008046561411452503,
+          "epoch_kept_mean": 4.333333333333333,
+          "fit_seconds_mean": 4.3,
+          "per_seed": [
+            {
+              "seed": 20261117,
+              "log_loss": 0.42891238492657796,
+              "brier": 0.14180721668991872,
+              "ece": 0.008323590727582836,
+              "log_loss_after_platt": 0.4292231659889174,
+              "platt_slope": 0.9769042885222367,
+              "epochs_run": 12,
+              "epoch_kept": 6,
+              "best_heldout_loss": 0.46803030371665955,
+              "last_epoch_train_loss": 0.43827852606773376,
+              "last_epoch_heldout_loss": 0.4697445034980774,
+              "fit_seconds": 5.2
+            },
+            {
+              "seed": 20261118,
+              "log_loss": 0.4286841655712323,
+              "brier": 0.14146387538256142,
+              "ece": 0.00974029899304503,
+              "log_loss_after_platt": 0.4295921970521469,
+              "platt_slope": 0.931077819571882,
+              "epochs_run": 9,
+              "epoch_kept": 3,
+              "best_heldout_loss": 0.4694869816303253,
+              "last_epoch_train_loss": 0.440902978181839,
+              "last_epoch_heldout_loss": 0.47149112820625305,
+              "fit_seconds": 3.7
+            },
+            {
+              "seed": 20261119,
+              "log_loss": 0.42805827919531436,
+              "brier": 0.1414470811016603,
+              "ece": 0.006075794513729639,
+              "log_loss_after_platt": 0.42898731526186373,
+              "platt_slope": 0.931471305341965,
+              "epochs_run": 10,
+              "epoch_kept": 4,
+              "best_heldout_loss": 0.46891772747039795,
+              "last_epoch_train_loss": 0.44000008702278137,
+              "last_epoch_heldout_loss": 0.4710980951786041,
+              "fit_seconds": 4.0
+            }
+          ],
+          "log_loss_mean_minus_start": -5.2413986838528714e-06,
+          "clears_start_seed_range": false
+        },
+        {
+          "name": "dropout=0.1",
+          "overrides": {
+            "hidden": [
+              64,
+              64
+            ],
+            "dropout": 0.1
+          },
+          "log_loss_mean": 0.4287447483763545,
+          "log_loss_min": 0.4276722589986947,
+          "log_loss_max": 0.4297931885618055,
+          "log_loss_after_platt_mean": 0.42949010454038344,
+          "ece_mean": 0.00765241217181601,
+          "epoch_kept_mean": 5.0,
+          "fit_seconds_mean": 8.666666666666666,
+          "per_seed": [
+            {
+              "seed": 20261117,
+              "log_loss": 0.4297931885618055,
+              "brier": 0.14240716041104176,
+              "ece": 0.007802230508456097,
+              "log_loss_after_platt": 0.4302414945975533,
+              "platt_slope": 0.9474773734828552,
+              "epochs_run": 16,
+              "epoch_kept": 10,
+              "best_heldout_loss": 0.4682402014732361,
+              "last_epoch_train_loss": 0.43733683228492737,
+              "last_epoch_heldout_loss": 0.4705366790294647,
+              "fit_seconds": 12.2
+            },
+            {
+              "seed": 20261118,
+              "log_loss": 0.4287687975685633,
+              "brier": 0.14137281314294456,
+              "ece": 0.009358811007453076,
+              "log_loss_after_platt": 0.42971205939909013,
+              "platt_slope": 0.9376794382449053,
+              "epochs_run": 8,
+              "epoch_kept": 2,
+              "best_heldout_loss": 0.46983039379119873,
+              "last_epoch_train_loss": 0.4411359429359436,
+              "last_epoch_heldout_loss": 0.46984022855758667,
+              "fit_seconds": 6.4
+            },
+            {
+              "seed": 20261119,
+              "log_loss": 0.4276722589986947,
+              "brier": 0.14116790443334334,
+              "ece": 0.005796194999538859,
+              "log_loss_after_platt": 0.42851675962450697,
+              "platt_slope": 0.945252551450793,
+              "epochs_run": 9,
+              "epoch_kept": 3,
+              "best_heldout_loss": 0.4685406982898712,
+              "last_epoch_train_loss": 0.4405800402164459,
+              "last_epoch_heldout_loss": 0.469827264547348,
+              "fit_seconds": 7.4
+            }
+          ],
+          "log_loss_mean_minus_start": 0.0001878970799624735,
+          "clears_start_seed_range": false
+        },
+        {
+          "name": "dropout=0.3",
+          "overrides": {
+            "hidden": [
+              64,
+              64
+            ],
+            "dropout": 0.3
+          },
+          "log_loss_mean": 0.4286088151404042,
+          "log_loss_min": 0.4282638531874787,
+          "log_loss_max": 0.42894590072132177,
+          "log_loss_after_platt_mean": 0.4293059196759865,
+          "ece_mean": 0.007496773657750794,
+          "epoch_kept_mean": 6.333333333333333,
+          "fit_seconds_mean": 11.4,
+          "per_seed": [
+            {
+              "seed": 20261117,
+              "log_loss": 0.42861669151241216,
+              "brier": 0.14190220118927643,
+              "ece": 0.006404000162817597,
+              "log_loss_after_platt": 0.4291599688625819,
+              "platt_slope": 0.9588162603371414,
+              "epochs_run": 21,
+              "epoch_kept": 15,
+              "best_heldout_loss": 0.468435138463974,
+              "last_epoch_train_loss": 0.43827104568481445,
+              "last_epoch_heldout_loss": 0.4701070189476013,
+              "fit_seconds": 19.1
+            },
+            {
+              "seed": 20261118,
+              "log_loss": 0.42894590072132177,
+              "brier": 0.14138718067804026,
+              "ece": 0.007492110949489645,
+              "log_loss_after_platt": 0.42969824965542797,
+              "platt_slope": 0.9548575736820768,
+              "epochs_run": 8,
+              "epoch_kept": 2,
+              "best_heldout_loss": 0.46935656666755676,
+              "last_epoch_train_loss": 0.44205015897750854,
+              "last_epoch_heldout_loss": 0.46952489018440247,
+              "fit_seconds": 7.4
+            },
+            {
+              "seed": 20261119,
+              "log_loss": 0.4282638531874787,
+              "brier": 0.1411972769890383,
+              "ece": 0.008594209860945142,
+              "log_loss_after_platt": 0.4290595405099498,
+              "platt_slope": 0.946541135362233,
+              "epochs_run": 8,
+              "epoch_kept": 2,
+              "best_heldout_loss": 0.4693466126918793,
+              "last_epoch_train_loss": 0.44159090518951416,
+              "last_epoch_heldout_loss": 0.4697065055370331,
+              "fit_seconds": 7.7
+            }
+          ],
+          "log_loss_mean_minus_start": 5.196384401218168e-05,
+          "clears_start_seed_range": false
+        },
+        {
+          "name": "batch_size=512",
+          "overrides": {
+            "hidden": [
+              64,
+              64
+            ],
+            "batch_size": 512
+          },
+          "log_loss_mean": 0.42871641147459344,
+          "log_loss_min": 0.42796602085417546,
+          "log_loss_max": 0.4298397733155037,
+          "log_loss_after_platt_mean": 0.42924746303618405,
+          "ece_mean": 0.008902243305560718,
+          "epoch_kept_mean": 2.0,
+          "fit_seconds_mean": 7.133333333333333,
+          "per_seed": [
+            {
+              "seed": 20261117,
+              "log_loss": 0.42796602085417546,
+              "brier": 0.1413678877266901,
+              "ece": 0.009308578883937057,
+              "log_loss_after_platt": 0.42844148779916297,
+              "platt_slope": 0.973055041273881,
+              "epochs_run": 7,
+              "epoch_kept": 1,
+              "best_heldout_loss": 0.46914833784103394,
+              "last_epoch_train_loss": 0.43574056029319763,
+              "last_epoch_heldout_loss": 0.47347721457481384,
+              "fit_seconds": 6.1
+            },
+            {
+              "seed": 20261118,
+              "log_loss": 0.4298397733155037,
+              "brier": 0.14256879349034496,
+              "ece": 0.0074719051117846545,
+              "log_loss_after_platt": 0.4306456112947074,
+              "platt_slope": 0.9158684632727678,
+              "epochs_run": 9,
+              "epoch_kept": 3,
+              "best_heldout_loss": 0.47001007199287415,
+              "last_epoch_train_loss": 0.43474143743515015,
+              "last_epoch_heldout_loss": 0.4806689918041229,
+              "fit_seconds": 8.1
+            },
+            {
+              "seed": 20261119,
+              "log_loss": 0.4283434402541011,
+              "brier": 0.14184399376235202,
+              "ece": 0.009926245920960444,
+              "log_loss_after_platt": 0.4286552900146817,
+              "platt_slope": 0.9630538798572429,
+              "epochs_run": 8,
+              "epoch_kept": 2,
+              "best_heldout_loss": 0.4678190052509308,
+              "last_epoch_train_loss": 0.43405184149742126,
+              "last_epoch_heldout_loss": 0.4770581126213074,
+              "fit_seconds": 7.2
+            }
+          ],
+          "log_loss_mean_minus_start": 0.00015956017820140111,
+          "clears_start_seed_range": false
+        },
+        {
+          "name": "batch_size=16384",
+          "overrides": {
+            "hidden": [
+              64,
+              64
+            ],
+            "batch_size": 16384
+          },
+          "log_loss_mean": 0.42916997838178567,
+          "log_loss_min": 0.4278431466849477,
+          "log_loss_max": 0.430920509310253,
+          "log_loss_after_platt_mean": 0.42991246743107575,
+          "ece_mean": 0.009104754265424826,
+          "epoch_kept_mean": 5.333333333333333,
+          "fit_seconds_mean": 4.1000000000000005,
+          "per_seed": [
+            {
+              "seed": 20261117,
+              "log_loss": 0.430920509310253,
+              "brier": 0.14163366339381178,
+              "ece": 0.009395822765454642,
+              "log_loss_after_platt": 0.4313673699116305,
+              "platt_slope": 0.9762115529218313,
+              "epochs_run": 8,
+              "epoch_kept": 2,
+              "best_heldout_loss": 0.4690697491168976,
+              "last_epoch_train_loss": 0.4434724748134613,
+              "last_epoch_heldout_loss": 0.46936798095703125,
+              "fit_seconds": 3.2
+            },
+            {
+              "seed": 20261118,
+              "log_loss": 0.4287462791501562,
+              "brier": 0.1413101613877653,
+              "ece": 0.009962093466542529,
+              "log_loss_after_platt": 0.4295912068631642,
+              "platt_slope": 0.9474531026233571,
+              "epochs_run": 12,
+              "epoch_kept": 6,
+              "best_heldout_loss": 0.469176709651947,
+              "last_epoch_train_loss": 0.44363492727279663,
+              "last_epoch_heldout_loss": 0.4702122211456299,
+              "fit_seconds": 4.1
+            },
+            {
+              "seed": 20261119,
+              "log_loss": 0.4278431466849477,
+              "brier": 0.1411147092537833,
+              "ece": 0.007956346564277307,
+              "log_loss_after_platt": 0.42877882551843266,
+              "platt_slope": 0.9318505121808366,
+              "epochs_run": 14,
+              "epoch_kept": 8,
+              "best_heldout_loss": 0.4687514305114746,
+              "last_epoch_train_loss": 0.4422903060913086,
+              "last_epoch_heldout_loss": 0.46918514370918274,
+              "fit_seconds": 5.0
+            }
+          ],
+          "log_loss_mean_minus_start": 0.0006131270853936277,
+          "clears_start_seed_range": false
+        },
+        {
+          "name": "lr=0.0005",
+          "overrides": {
+            "hidden": [
+              64,
+              64
+            ],
+            "lr": 0.0005
+          },
+          "log_loss_mean": 0.42819422492725817,
+          "log_loss_min": 0.4276745415850659,
+          "log_loss_max": 0.4291827618296197,
+          "log_loss_after_platt_mean": 0.4289642511556127,
+          "ece_mean": 0.008469603659694458,
+          "epoch_kept_mean": 10.666666666666666,
+          "fit_seconds_mean": 6.633333333333333,
+          "per_seed": [
+            {
+              "seed": 20261117,
+              "log_loss": 0.4291827618296197,
+              "brier": 0.1413732603667516,
+              "ece": 0.010519023099352145,
+              "log_loss_after_platt": 0.42983933367858795,
+              "platt_slope": 0.9608818373799762,
+              "epochs_run": 11,
+              "epoch_kept": 5,
+              "best_heldout_loss": 0.46881622076034546,
+              "last_epoch_train_loss": 0.44319167733192444,
+              "last_epoch_heldout_loss": 0.46889397501945496,
+              "fit_seconds": 4.6
+            },
+            {
+              "seed": 20261118,
+              "log_loss": 0.4276745415850659,
+              "brier": 0.14115248599401378,
+              "ece": 0.007072588500358891,
+              "log_loss_after_platt": 0.4286189040845788,
+              "platt_slope": 0.935797908068739,
+              "epochs_run": 19,
+              "epoch_kept": 13,
+              "best_heldout_loss": 0.46845701336860657,
+              "last_epoch_train_loss": 0.4421982765197754,
+              "last_epoch_heldout_loss": 0.4687952697277069,
+              "fit_seconds": 7.2
+            },
+            {
+              "seed": 20261119,
+              "log_loss": 0.42772537136708894,
+              "brier": 0.14114201154907816,
+              "ece": 0.007817199379372336,
+              "log_loss_after_platt": 0.4284345157036713,
+              "platt_slope": 0.9511835295535109,
+              "epochs_run": 20,
+              "epoch_kept": 14,
+              "best_heldout_loss": 0.4679432809352875,
+              "last_epoch_train_loss": 0.4421423077583313,
+              "last_epoch_heldout_loss": 0.46848589181900024,
+              "fit_seconds": 8.1
+            }
+          ],
+          "log_loss_mean_minus_start": -0.00036262636913386714,
+          "clears_start_seed_range": false
+        },
+        {
+          "name": "label_noise=0.02",
+          "overrides": {
+            "hidden": [
+              64,
+              64
+            ],
+            "label_noise": 0.02
+          },
+          "log_loss_mean": 0.4307838631584276,
+          "log_loss_min": 0.429548827915354,
+          "log_loss_max": 0.4317267254404609,
+          "log_loss_after_platt_mean": 0.4305031473104108,
+          "ece_mean": 0.013624512897372903,
+          "epoch_kept_mean": 2.0,
+          "fit_seconds_mean": 3.5666666666666664,
+          "per_seed": [
+            {
+              "seed": 20261117,
+              "log_loss": 0.4317267254404609,
+              "brier": 0.14168869519201882,
+              "ece": 0.016701747091689298,
+              "log_loss_after_platt": 0.4311367072867142,
+              "platt_slope": 1.015749608555082,
+              "epochs_run": 7,
+              "epoch_kept": 1,
+              "best_heldout_loss": 0.4693276286125183,
+              "last_epoch_train_loss": 0.4435771107673645,
+              "last_epoch_heldout_loss": 0.47088316082954407,
+              "fit_seconds": 3.3
+            },
+            {
+              "seed": 20261118,
+              "log_loss": 0.43107603611946804,
+              "brier": 0.1416509710693228,
+              "ece": 0.013785252968632377,
+              "log_loss_after_platt": 0.43103024894968167,
+              "platt_slope": 0.9988217746447823,
+              "epochs_run": 7,
+              "epoch_kept": 1,
+              "best_heldout_loss": 0.46927645802497864,
+              "last_epoch_train_loss": 0.4453412890434265,
+              "last_epoch_heldout_loss": 0.47288838028907776,
+              "fit_seconds": 3.1
+            },
+            {
+              "seed": 20261119,
+              "log_loss": 0.429548827915354,
+              "brier": 0.14134731011706175,
+              "ece": 0.010386538631797034,
+              "log_loss_after_platt": 0.42934248569483646,
+              "platt_slope": 1.009578446934127,
+              "epochs_run": 10,
+              "epoch_kept": 4,
+              "best_heldout_loss": 0.46729621291160583,
+              "last_epoch_train_loss": 0.4435846209526062,
+              "last_epoch_heldout_loss": 0.46941447257995605,
+              "fit_seconds": 4.3
+            }
+          ],
+          "log_loss_mean_minus_start": 0.002227011862035555,
+          "clears_start_seed_range": false
+        },
+        {
+          "name": "label_noise=0.05",
+          "overrides": {
+            "hidden": [
+              64,
+              64
+            ],
+            "label_noise": 0.05
+          },
+          "log_loss_mean": 0.4373225210791411,
+          "log_loss_min": 0.43500853421905944,
+          "log_loss_max": 0.4386986663155996,
+          "log_loss_after_platt_mean": 0.4322595655309005,
+          "ece_mean": 0.026952897583343422,
+          "epoch_kept_mean": 2.0,
+          "fit_seconds_mean": 3.4,
+          "per_seed": [
+            {
+              "seed": 20261117,
+              "log_loss": 0.4382603627027641,
+              "brier": 0.14273644836213267,
+              "ece": 0.029057212509288076,
+              "log_loss_after_platt": 0.4330779858394643,
+              "platt_slope": 1.1448080230939297,
+              "epochs_run": 7,
+              "epoch_kept": 1,
+              "best_heldout_loss": 0.4728233814239502,
+              "last_epoch_train_loss": 0.4515235424041748,
+              "last_epoch_heldout_loss": 0.4761626422405243,
+              "fit_seconds": 2.9
+            },
+            {
+              "seed": 20261118,
+              "log_loss": 0.4386986663155996,
+              "brier": 0.14270318237672783,
+              "ece": 0.02790135959254961,
+              "log_loss_after_platt": 0.43269115369444733,
+              "platt_slope": 1.1667339379282282,
+              "epochs_run": 7,
+              "epoch_kept": 1,
+              "best_heldout_loss": 0.4733792841434479,
+              "last_epoch_train_loss": 0.4537598192691803,
+              "last_epoch_heldout_loss": 0.47766008973121643,
+              "fit_seconds": 3.2
+            },
+            {
+              "seed": 20261119,
+              "log_loss": 0.43500853421905944,
+              "brier": 0.1420490021675508,
+              "ece": 0.023900120648192587,
+              "log_loss_after_platt": 0.43100955705879,
+              "platt_slope": 1.122632176186191,
+              "epochs_run": 10,
+              "epoch_kept": 4,
+              "best_heldout_loss": 0.47053471207618713,
+              "last_epoch_train_loss": 0.4507375657558441,
+              "last_epoch_heldout_loss": 0.4739895164966583,
+              "fit_seconds": 4.1
+            }
+          ],
+          "log_loss_mean_minus_start": 0.008765669782749064,
+          "clears_start_seed_range": false
+        },
+        {
+          "name": "label_noise=0.1",
+          "overrides": {
+            "hidden": [
+              64,
+              64
+            ],
+            "label_noise": 0.1
+          },
+          "log_loss_mean": 0.4512234155903214,
+          "log_loss_min": 0.44878908076360957,
+          "log_loss_max": 0.4548737394106897,
+          "log_loss_after_platt_mean": 0.43653878606222474,
+          "ece_mean": 0.048203725776430284,
+          "epoch_kept_mean": 7.666666666666667,
+          "fit_seconds_mean": 5.6000000000000005,
+          "per_seed": [
+            {
+              "seed": 20261117,
+              "log_loss": 0.4548737394106897,
+              "brier": 0.14693530779459554,
+              "ece": 0.046038111351713006,
+              "log_loss_after_platt": 0.44131219721531134,
+              "platt_slope": 1.2910599479196267,
+              "epochs_run": 18,
+              "epoch_kept": 12,
+              "best_heldout_loss": 0.48209771513938904,
+              "last_epoch_train_loss": 0.4684310853481293,
+              "last_epoch_heldout_loss": 0.4891282320022583,
+              "fit_seconds": 7.5
+            },
+            {
+              "seed": 20261118,
+              "log_loss": 0.44878908076360957,
+              "brier": 0.14482666042117054,
+              "ece": 0.049518608068231086,
+              "log_loss_after_platt": 0.4342055390395911,
+              "platt_slope": 1.3289110976117668,
+              "epochs_run": 14,
+              "epoch_kept": 8,
+              "best_heldout_loss": 0.48062825202941895,
+              "last_epoch_train_loss": 0.4626105725765228,
+              "last_epoch_heldout_loss": 0.4898086488246918,
+              "fit_seconds": 5.6
+            },
+            {
+              "seed": 20261119,
+              "log_loss": 0.4500074265966648,
+              "brier": 0.1449707203376332,
+              "ece": 0.04905445790934675,
+              "log_loss_after_platt": 0.43409862193177173,
+              "platt_slope": 1.3537390849897015,
+              "epochs_run": 9,
+              "epoch_kept": 3,
+              "best_heldout_loss": 0.4803198575973511,
+              "last_epoch_train_loss": 0.468355268239975,
+              "last_epoch_heldout_loss": 0.49025532603263855,
+              "fit_seconds": 3.7
+            }
+          ],
+          "log_loss_mean_minus_start": 0.02266656429392938,
+          "clears_start_seed_range": false
+        },
+        {
+          "name": "raw inputs (no one-hot, no asinh)",
+          "overrides": {
+            "hidden": [
+              64,
+              64
+            ],
+            "one_hot_down": false,
+            "squash_margin": false
+          },
+          "log_loss_mean": 0.42908637931752924,
+          "log_loss_min": 0.42846927783068783,
+          "log_loss_max": 0.42939533548907655,
+          "log_loss_after_platt_mean": 0.42961553136558006,
+          "ece_mean": 0.01064081932797517,
+          "epoch_kept_mean": 2.6666666666666665,
+          "fit_seconds_mean": 3.4666666666666663,
+          "per_seed": [
+            {
+              "seed": 20261117,
+              "log_loss": 0.42846927783068783,
+              "brier": 0.1417046143159734,
+              "ece": 0.012308408706406197,
+              "log_loss_after_platt": 0.4287966449305573,
+              "platt_slope": 0.9450843868243508,
+              "epochs_run": 12,
+              "epoch_kept": 6,
+              "best_heldout_loss": 0.4699578583240509,
+              "last_epoch_train_loss": 0.4365890622138977,
+              "last_epoch_heldout_loss": 0.4747040867805481,
+              "fit_seconds": 4.6
+            },
+            {
+              "seed": 20261118,
+              "log_loss": 0.42939533548907655,
+              "brier": 0.14170833041808958,
+              "ece": 0.011845100373764884,
+              "log_loss_after_platt": 0.42983383540882075,
+              "platt_slope": 0.9546446993161095,
+              "epochs_run": 7,
+              "epoch_kept": 1,
+              "best_heldout_loss": 0.4687270522117615,
+              "last_epoch_train_loss": 0.4391748011112213,
+              "last_epoch_heldout_loss": 0.47268590331077576,
+              "fit_seconds": 3.0
+            },
+            {
+              "seed": 20261119,
+              "log_loss": 0.4293945246328233,
+              "brier": 0.14181753022668064,
+              "ece": 0.007768948903754432,
+              "log_loss_after_platt": 0.43021611375736213,
+              "platt_slope": 0.9458185198497847,
+              "epochs_run": 7,
+              "epoch_kept": 1,
+              "best_heldout_loss": 0.4683767557144165,
+              "last_epoch_train_loss": 0.4404422342777252,
+              "last_epoch_heldout_loss": 0.4704902470111847,
+              "fit_seconds": 2.8
+            }
+          ],
+          "log_loss_mean_minus_start": 0.0005295280211372044,
+          "clears_start_seed_range": false
+        },
+        {
+          "name": "no early stopping",
+          "overrides": {
+            "hidden": [
+              64,
+              64
+            ],
+            "early_stopping": false
+          },
+          "log_loss_mean": 0.44084427921547276,
+          "log_loss_min": 0.4380175115135659,
+          "log_loss_max": 0.4430713444599061,
+          "log_loss_after_platt_mean": 0.4403461427021811,
+          "ece_mean": 0.014922689382137408,
+          "epoch_kept_mean": 40.0,
+          "fit_seconds_mean": 15.6,
+          "per_seed": [
+            {
+              "seed": 20261117,
+              "log_loss": 0.4430713444599061,
+              "brier": 0.1470826401914804,
+              "ece": 0.014285319600983589,
+              "log_loss_after_platt": 0.4424369353367736,
+              "platt_slope": 0.8268467430599635,
+              "epochs_run": 40,
+              "epoch_kept": 40,
+              "best_heldout_loss": 0.4681006669998169,
+              "last_epoch_train_loss": 0.42596280574798584,
+              "last_epoch_heldout_loss": 0.48221275210380554,
+              "fit_seconds": 15.5
+            },
+            {
+              "seed": 20261118,
+              "log_loss": 0.4380175115135659,
+              "brier": 0.1452342906478178,
+              "ece": 0.012559615194699215,
+              "log_loss_after_platt": 0.4382464390189981,
+              "platt_slope": 0.8590732525154261,
+              "epochs_run": 40,
+              "epoch_kept": 40,
+              "best_heldout_loss": 0.46941661834716797,
+              "last_epoch_train_loss": 0.43057116866111755,
+              "last_epoch_heldout_loss": 0.48108550906181335,
+              "fit_seconds": 15.0
+            },
+            {
+              "seed": 20261119,
+              "log_loss": 0.4414439816729462,
+              "brier": 0.14661347112918702,
+              "ece": 0.017923133350729422,
+              "log_loss_after_platt": 0.44035505375077144,
+              "platt_slope": 0.812875940338015,
+              "epochs_run": 40,
+              "epoch_kept": 40,
+              "best_heldout_loss": 0.46900761127471924,
+              "last_epoch_train_loss": 0.4286980926990509,
+              "last_epoch_heldout_loss": 0.4808165729045868,
+              "fit_seconds": 16.3
+            }
+          ],
+          "log_loss_mean_minus_start": 0.012287427919080718,
+          "clears_start_seed_range": false
+        }
+      ],
+      "start_seed_range": 0.0008336647192486168,
+      "adopted": [
+        "hidden=[32]"
+      ]
+    },
+    "round_2": {
+      "start": {
+        "hidden": [
+          32
+        ],
+        "dropout": 0.0,
+        "weight_decay": 0.0001,
+        "lr": 0.002,
+        "batch_size": 4096,
+        "max_epochs": 40,
+        "patience": 6,
+        "early_stopping": true,
+        "holdout_game_fraction": 0.1,
+        "label_noise": 0.0,
+        "one_hot_down": true,
+        "squash_margin": true,
+        "calibration": "none"
+      },
+      "rows": [
+        {
+          "name": "start",
+          "overrides": {
+            "hidden": [
+              32
+            ]
+          },
+          "log_loss_mean": 0.42793198277029704,
+          "log_loss_min": 0.4277487292273543,
+          "log_loss_max": 0.4280252492129806,
+          "log_loss_after_platt_mean": 0.42875941427668335,
+          "ece_mean": 0.0071727621347217885,
+          "epoch_kept_mean": 16.0,
+          "fit_seconds_mean": 4.566666666666666,
+          "per_seed": [
+            {
+              "seed": 20261117,
+              "log_loss": 0.4280219698705563,
+              "brier": 0.14143076345896508,
+              "ece": 0.006104618809591045,
+              "log_loss_after_platt": 0.42882796682657975,
+              "platt_slope": 0.9380455518040852,
+              "epochs_run": 27,
+              "epoch_kept": 21,
+              "best_heldout_loss": 0.46788838505744934,
+              "last_epoch_train_loss": 0.44096338748931885,
+              "last_epoch_heldout_loss": 0.4692668914794922,
+              "fit_seconds": 5.1
+            },
+            {
+              "seed": 20261118,
+              "log_loss": 0.4277487292273543,
+              "brier": 0.1411093174039051,
+              "ece": 0.008095005601180616,
+              "log_loss_after_platt": 0.42854023568824995,
+              "platt_slope": 0.9413195187950929,
+              "epochs_run": 19,
+              "epoch_kept": 13,
+              "best_heldout_loss": 0.46744003891944885,
+              "last_epoch_train_loss": 0.44277381896972656,
+              "last_epoch_heldout_loss": 0.46803775429725647,
+              "fit_seconds": 4.1
+            },
+            {
+              "seed": 20261119,
+              "log_loss": 0.4280252492129806,
+              "brier": 0.14122012688070215,
+              "ece": 0.007318661993393704,
+              "log_loss_after_platt": 0.42891004031522034,
+              "platt_slope": 0.9461705601859016,
+              "epochs_run": 20,
+              "epoch_kept": 14,
+              "best_heldout_loss": 0.46867480874061584,
+              "last_epoch_train_loss": 0.44236743450164795,
+              "last_epoch_heldout_loss": 0.4694209098815918,
+              "fit_seconds": 4.5
+            }
+          ],
+          "log_loss_mean_minus_start": 0.0,
+          "clears_start_seed_range": false
+        },
+        {
+          "name": "hidden=[8]",
+          "overrides": {
+            "hidden": [
+              8
+            ]
+          },
+          "log_loss_mean": 0.42864271375420454,
+          "log_loss_min": 0.42850047656308643,
+          "log_loss_max": 0.42889695193485355,
+          "log_loss_after_platt_mean": 0.4294362020377969,
+          "ece_mean": 0.00814937378286725,
+          "epoch_kept_mean": 25.0,
+          "fit_seconds_mean": 5.0,
+          "per_seed": [
+            {
+              "seed": 20261117,
+              "log_loss": 0.4285307127646736,
+              "brier": 0.1415215641304286,
+              "ece": 0.007240723101444673,
+              "log_loss_after_platt": 0.42942325694679767,
+              "platt_slope": 0.9377732204368433,
+              "epochs_run": 34,
+              "epoch_kept": 28,
+              "best_heldout_loss": 0.4688267707824707,
+              "last_epoch_train_loss": 0.4434761703014374,
+              "last_epoch_heldout_loss": 0.46925485134124756,
+              "fit_seconds": 5.3
+            },
+            {
+              "seed": 20261118,
+              "log_loss": 0.42889695193485355,
+              "brier": 0.14152543130475115,
+              "ece": 0.008105281660636727,
+              "log_loss_after_platt": 0.4296156624242431,
+              "platt_slope": 0.9506532239469339,
+              "epochs_run": 36,
+              "epoch_kept": 30,
+              "best_heldout_loss": 0.4682088792324066,
+              "last_epoch_train_loss": 0.44521209597587585,
+              "last_epoch_heldout_loss": 0.46867993474006653,
+              "fit_seconds": 6.0
+            },
+            {
+              "seed": 20261119,
+              "log_loss": 0.42850047656308643,
+              "brier": 0.14134116010433068,
+              "ece": 0.009102116586520347,
+              "log_loss_after_platt": 0.42926968674234994,
+              "platt_slope": 0.9499098192705331,
+              "epochs_run": 23,
+              "epoch_kept": 17,
+              "best_heldout_loss": 0.46888792514801025,
+              "last_epoch_train_loss": 0.44405579566955566,
+              "last_epoch_heldout_loss": 0.469455748796463,
+              "fit_seconds": 3.7
+            }
+          ],
+          "log_loss_mean_minus_start": 0.0007107309839075038,
+          "clears_start_seed_range": false
+        },
+        {
+          "name": "hidden=[16]",
+          "overrides": {
+            "hidden": [
+              16
+            ]
+          },
+          "log_loss_mean": 0.42837955780866926,
+          "log_loss_min": 0.4281102998341813,
+          "log_loss_max": 0.42860942260341034,
+          "log_loss_after_platt_mean": 0.4293159456815973,
+          "ece_mean": 0.008934130147792032,
+          "epoch_kept_mean": 11.333333333333334,
+          "fit_seconds_mean": 3.866666666666667,
+          "per_seed": [
+            {
+              "seed": 20261117,
+              "log_loss": 0.42860942260341034,
+              "brier": 0.14118186667352767,
+              "ece": 0.011441922103477314,
+              "log_loss_after_platt": 0.4295005713785587,
+              "platt_slope": 0.9471195908565054,
+              "epochs_run": 13,
+              "epoch_kept": 7,
+              "best_heldout_loss": 0.4690512716770172,
+              "last_epoch_train_loss": 0.44455569982528687,
+              "last_epoch_heldout_loss": 0.4701295793056488,
+              "fit_seconds": 3.2
+            },
+            {
+              "seed": 20261118,
+              "log_loss": 0.4281102998341813,
+              "brier": 0.14119562974774463,
+              "ece": 0.00793215018597906,
+              "log_loss_after_platt": 0.4290264497646269,
+              "platt_slope": 0.9380238348122886,
+              "epochs_run": 19,
+              "epoch_kept": 13,
+              "best_heldout_loss": 0.46899229288101196,
+              "last_epoch_train_loss": 0.443713903427124,
+              "last_epoch_heldout_loss": 0.46943068504333496,
+              "fit_seconds": 4.0
+            },
+            {
+              "seed": 20261119,
+              "log_loss": 0.4284189509884161,
+              "brier": 0.14132109317577907,
+              "ece": 0.007428318153919724,
+              "log_loss_after_platt": 0.4294208159016063,
+              "platt_slope": 0.9402096666263362,
+              "epochs_run": 20,
+              "epoch_kept": 14,
+              "best_heldout_loss": 0.4696347713470459,
+              "last_epoch_train_loss": 0.4435115158557892,
+              "last_epoch_heldout_loss": 0.4698638916015625,
+              "fit_seconds": 4.4
+            }
+          ],
+          "log_loss_mean_minus_start": 0.0004475750383722277,
+          "clears_start_seed_range": false
+        },
+        {
+          "name": "hidden=[64]",
+          "overrides": {
+            "hidden": [
+              64
+            ]
+          },
+          "log_loss_mean": 0.42776739953304127,
+          "log_loss_min": 0.4274521621963205,
+          "log_loss_max": 0.428386092141247,
+          "log_loss_after_platt_mean": 0.4285339069430094,
+          "ece_mean": 0.008472953942335227,
+          "epoch_kept_mean": 9.666666666666666,
+          "fit_seconds_mean": 4.2,
+          "per_seed": [
+            {
+              "seed": 20261117,
+              "log_loss": 0.4274521621963205,
+              "brier": 0.14104211598074232,
+              "ece": 0.00969611213426886,
+              "log_loss_after_platt": 0.42813233891838287,
+              "platt_slope": 0.9475404792486477,
+              "epochs_run": 17,
+              "epoch_kept": 11,
+              "best_heldout_loss": 0.4683557450771332,
+              "last_epoch_train_loss": 0.4401983618736267,
+              "last_epoch_heldout_loss": 0.4705547094345093,
+              "fit_seconds": 4.5
+            },
+            {
+              "seed": 20261118,
+              "log_loss": 0.42746394426155615,
+              "brier": 0.14109491404372548,
+              "ece": 0.007351557631205486,
+              "log_loss_after_platt": 0.4283572594099526,
+              "platt_slope": 0.9330463012271295,
+              "epochs_run": 19,
+              "epoch_kept": 13,
+              "best_heldout_loss": 0.4680420756340027,
+              "last_epoch_train_loss": 0.44108039140701294,
+              "last_epoch_heldout_loss": 0.4685208797454834,
+              "fit_seconds": 5.1
+            },
+            {
+              "seed": 20261119,
+              "log_loss": 0.428386092141247,
+              "brier": 0.14122148220311165,
+              "ece": 0.008371192061531339,
+              "log_loss_after_platt": 0.4291121225006927,
+              "platt_slope": 0.9565432077568959,
+              "epochs_run": 11,
+              "epoch_kept": 5,
+              "best_heldout_loss": 0.4678860306739807,
+              "last_epoch_train_loss": 0.4428595006465912,
+              "last_epoch_heldout_loss": 0.4689139723777771,
+              "fit_seconds": 3.0
+            }
+          ],
+          "log_loss_mean_minus_start": -0.0001645832372557665,
+          "clears_start_seed_range": false
+        },
+        {
+          "name": "hidden=[32, 32]",
+          "overrides": {
+            "hidden": [
+              32,
+              32
+            ]
+          },
+          "log_loss_mean": 0.4288432338347108,
+          "log_loss_min": 0.428313671616396,
+          "log_loss_max": 0.4297839343630931,
+          "log_loss_after_platt_mean": 0.42956259760806287,
+          "ece_mean": 0.010702813993945315,
+          "epoch_kept_mean": 5.0,
+          "fit_seconds_mean": 3.033333333333333,
+          "per_seed": [
+            {
+              "seed": 20261117,
+              "log_loss": 0.4297839343630931,
+              "brier": 0.14170724119803152,
+              "ece": 0.014551844370578416,
+              "log_loss_after_platt": 0.430555525713375,
+              "platt_slope": 0.9369005779945493,
+              "epochs_run": 8,
+              "epoch_kept": 2,
+              "best_heldout_loss": 0.4691794812679291,
+              "last_epoch_train_loss": 0.44261085987091064,
+              "last_epoch_heldout_loss": 0.469655841588974,
+              "fit_seconds": 2.3
+            },
+            {
+              "seed": 20261118,
+              "log_loss": 0.428313671616396,
+              "brier": 0.1413921053005541,
+              "ece": 0.008271817593183396,
+              "log_loss_after_platt": 0.42915602452235796,
+              "platt_slope": 0.9340186297928801,
+              "epochs_run": 12,
+              "epoch_kept": 6,
+              "best_heldout_loss": 0.46817323565483093,
+              "last_epoch_train_loss": 0.44221386313438416,
+              "last_epoch_heldout_loss": 0.46867239475250244,
+              "fit_seconds": 3.3
+            },
+            {
+              "seed": 20261119,
+              "log_loss": 0.42843209552464334,
+              "brier": 0.14144618801976544,
+              "ece": 0.009284780018074132,
+              "log_loss_after_platt": 0.4289762425884557,
+              "platt_slope": 0.9387102592091531,
+              "epochs_run": 13,
+              "epoch_kept": 7,
+              "best_heldout_loss": 0.46866899728775024,
+              "last_epoch_train_loss": 0.4405180513858795,
+              "last_epoch_heldout_loss": 0.469722181558609,
+              "fit_seconds": 3.5
+            }
+          ],
+          "log_loss_mean_minus_start": 0.0009112510644137539,
+          "clears_start_seed_range": false
+        },
+        {
+          "name": "weight_decay=0.0",
+          "overrides": {
+            "hidden": [
+              32
+            ],
+            "weight_decay": 0.0
+          },
+          "log_loss_mean": 0.4278607432364446,
+          "log_loss_min": 0.4277683676461266,
+          "log_loss_max": 0.42803582454685773,
+          "log_loss_after_platt_mean": 0.428711738825315,
+          "ece_mean": 0.0070765298140494,
+          "epoch_kept_mean": 17.0,
+          "fit_seconds_mean": 4.366666666666666,
+          "per_seed": [
+            {
+              "seed": 20261117,
+              "log_loss": 0.4277780375163494,
+              "brier": 0.1415318045979205,
+              "ece": 0.006062824253265644,
+              "log_loss_after_platt": 0.42865228240989556,
+              "platt_slope": 0.9230097345758597,
+              "epochs_run": 30,
+              "epoch_kept": 24,
+              "best_heldout_loss": 0.46782341599464417,
+              "last_epoch_train_loss": 0.4402557909488678,
+              "last_epoch_heldout_loss": 0.46905717253685,
+              "fit_seconds": 5.7
+            },
+            {
+              "seed": 20261118,
+              "log_loss": 0.4277683676461266,
+              "brier": 0.14111554013428607,
+              "ece": 0.007939108041447105,
+              "log_loss_after_platt": 0.42855973836036226,
+              "platt_slope": 0.9414187908996189,
+              "epochs_run": 19,
+              "epoch_kept": 13,
+              "best_heldout_loss": 0.4673740565776825,
+              "last_epoch_train_loss": 0.44277864694595337,
+              "last_epoch_heldout_loss": 0.4679277241230011,
+              "fit_seconds": 3.5
+            },
+            {
+              "seed": 20261119,
+              "log_loss": 0.42803582454685773,
+              "brier": 0.1412251107095624,
+              "ece": 0.007227657147435452,
+              "log_loss_after_platt": 0.42892319570568715,
+              "platt_slope": 0.9459253847901459,
+              "epochs_run": 20,
+              "epoch_kept": 14,
+              "best_heldout_loss": 0.46867436170578003,
+              "last_epoch_train_loss": 0.44236311316490173,
+              "last_epoch_heldout_loss": 0.4694109261035919,
+              "fit_seconds": 3.9
+            }
+          ],
+          "log_loss_mean_minus_start": -7.123953385246296e-05,
+          "clears_start_seed_range": false
+        },
+        {
+          "name": "weight_decay=0.01",
+          "overrides": {
+            "hidden": [
+              32
+            ],
+            "weight_decay": 0.01
+          },
+          "log_loss_mean": 0.4279227421927197,
+          "log_loss_min": 0.42776336199734477,
+          "log_loss_max": 0.42802216786702063,
+          "log_loss_after_platt_mean": 0.4287527396126447,
+          "ece_mean": 0.007169010338743301,
+          "epoch_kept_mean": 16.0,
+          "fit_seconds_mean": 4.333333333333333,
+          "per_seed": [
+            {
+              "seed": 20261117,
+              "log_loss": 0.42798269671379385,
+              "brier": 0.141394911663656,
+              "ece": 0.006126335107233418,
+              "log_loss_after_platt": 0.4287910376404148,
+              "platt_slope": 0.9384454812788375,
+              "epochs_run": 27,
+              "epoch_kept": 21,
+              "best_heldout_loss": 0.46799221634864807,
+              "last_epoch_train_loss": 0.44129645824432373,
+              "last_epoch_heldout_loss": 0.46909600496292114,
+              "fit_seconds": 5.3
+            },
+            {
+              "seed": 20261118,
+              "log_loss": 0.42776336199734477,
+              "brier": 0.1411129206578583,
+              "ece": 0.007942859128153975,
+              "log_loss_after_platt": 0.4285561114084932,
+              "platt_slope": 0.9413933290027349,
+              "epochs_run": 19,
+              "epoch_kept": 13,
+              "best_heldout_loss": 0.46743136644363403,
+              "last_epoch_train_loss": 0.4428165555000305,
+              "last_epoch_heldout_loss": 0.46803557872772217,
+              "fit_seconds": 4.0
+            },
+            {
+              "seed": 20261119,
+              "log_loss": 0.42802216786702063,
+              "brier": 0.1412108587039962,
+              "ece": 0.007437836780842509,
+              "log_loss_after_platt": 0.4289110697890261,
+              "platt_slope": 0.9461082155680458,
+              "epochs_run": 20,
+              "epoch_kept": 14,
+              "best_heldout_loss": 0.46872678399086,
+              "last_epoch_train_loss": 0.44236454367637634,
+              "last_epoch_heldout_loss": 0.46947935223579407,
+              "fit_seconds": 3.7
+            }
+          ],
+          "log_loss_mean_minus_start": -9.240577577340758e-06,
+          "clears_start_seed_range": false
+        },
+        {
+          "name": "dropout=0.1",
+          "overrides": {
+            "hidden": [
+              32
+            ],
+            "dropout": 0.1
+          },
+          "log_loss_mean": 0.42779213395873533,
+          "log_loss_min": 0.42728217572142885,
+          "log_loss_max": 0.4282645165170415,
+          "log_loss_after_platt_mean": 0.4286087485745254,
+          "ece_mean": 0.006706602296085861,
+          "epoch_kept_mean": 12.0,
+          "fit_seconds_mean": 5.333333333333333,
+          "per_seed": [
+            {
+              "seed": 20261117,
+              "log_loss": 0.4282645165170415,
+              "brier": 0.14126317095076316,
+              "ece": 0.007578178987366672,
+              "log_loss_after_platt": 0.42902878333269,
+              "platt_slope": 0.9550382484503026,
+              "epochs_run": 15,
+              "epoch_kept": 9,
+              "best_heldout_loss": 0.46896493434906006,
+              "last_epoch_train_loss": 0.4430248439311981,
+              "last_epoch_heldout_loss": 0.46978628635406494,
+              "fit_seconds": 4.5
+            },
+            {
+              "seed": 20261118,
+              "log_loss": 0.42782970963773564,
+              "brier": 0.14125157614965025,
+              "ece": 0.006382961272849147,
+              "log_loss_after_platt": 0.4286030041419311,
+              "platt_slope": 0.9423643716080383,
+              "epochs_run": 19,
+              "epoch_kept": 13,
+              "best_heldout_loss": 0.4675728976726532,
+              "last_epoch_train_loss": 0.4421173334121704,
+              "last_epoch_heldout_loss": 0.468806654214859,
+              "fit_seconds": 5.6
+            },
+            {
+              "seed": 20261119,
+              "log_loss": 0.42728217572142885,
+              "brier": 0.14108734394643005,
+              "ece": 0.006158666628041764,
+              "log_loss_after_platt": 0.42819445824895513,
+              "platt_slope": 0.9468469684338304,
+              "epochs_run": 20,
+              "epoch_kept": 14,
+              "best_heldout_loss": 0.4690791368484497,
+              "last_epoch_train_loss": 0.44170016050338745,
+              "last_epoch_heldout_loss": 0.4693136513233185,
+              "fit_seconds": 5.9
+            }
+          ],
+          "log_loss_mean_minus_start": -0.0001398488115617047,
+          "clears_start_seed_range": false
+        },
+        {
+          "name": "batch_size=512",
+          "overrides": {
+            "hidden": [
+              32
+            ],
+            "batch_size": 512
+          },
+          "log_loss_mean": 0.4281924587288704,
+          "log_loss_min": 0.42803826492538855,
+          "log_loss_max": 0.4282878126026256,
+          "log_loss_after_platt_mean": 0.42903445024049197,
+          "ece_mean": 0.008295659806082907,
+          "epoch_kept_mean": 2.6666666666666665,
+          "fit_seconds_mean": 4.5,
+          "per_seed": [
+            {
+              "seed": 20261117,
+              "log_loss": 0.4282512986585971,
+              "brier": 0.14128595230157767,
+              "ece": 0.008045123124076587,
+              "log_loss_after_platt": 0.4291223343637322,
+              "platt_slope": 0.9461693156058755,
+              "epochs_run": 8,
+              "epoch_kept": 2,
+              "best_heldout_loss": 0.46888333559036255,
+              "last_epoch_train_loss": 0.44142335653305054,
+              "last_epoch_heldout_loss": 0.4720591604709625,
+              "fit_seconds": 4.0
+            },
+            {
+              "seed": 20261118,
+              "log_loss": 0.4282878126026256,
+              "brier": 0.1414066743896202,
+              "ece": 0.007025338202147926,
+              "log_loss_after_platt": 0.42911242171156744,
+              "platt_slope": 0.93516060289378,
+              "epochs_run": 10,
+              "epoch_kept": 4,
+              "best_heldout_loss": 0.46809765696525574,
+              "last_epoch_train_loss": 0.4408404231071472,
+              "last_epoch_heldout_loss": 0.46880725026130676,
+              "fit_seconds": 5.2
+            },
+            {
+              "seed": 20261119,
+              "log_loss": 0.42803826492538855,
+              "brier": 0.1411427093650393,
+              "ece": 0.009816518092024211,
+              "log_loss_after_platt": 0.42886859464617627,
+              "platt_slope": 0.9444689796461238,
+              "epochs_run": 8,
+              "epoch_kept": 2,
+              "best_heldout_loss": 0.46892520785331726,
+              "last_epoch_train_loss": 0.4409639835357666,
+              "last_epoch_heldout_loss": 0.47082996368408203,
+              "fit_seconds": 4.3
+            }
+          ],
+          "log_loss_mean_minus_start": 0.0002604759585733696,
+          "clears_start_seed_range": false
+        },
+        {
+          "name": "batch_size=16384",
+          "overrides": {
+            "hidden": [
+              32
+            ],
+            "batch_size": 16384
+          },
+          "log_loss_mean": 0.4282294139259344,
+          "log_loss_min": 0.4278376283154341,
+          "log_loss_max": 0.42863847498072455,
+          "log_loss_after_platt_mean": 0.4291588293805753,
+          "ece_mean": 0.008845362263598788,
+          "epoch_kept_mean": 39.0,
+          "fit_seconds_mean": 4.933333333333334,
+          "per_seed": [
+            {
+              "seed": 20261117,
+              "log_loss": 0.4278376283154341,
+              "brier": 0.14114228247678212,
+              "ece": 0.008704631907018433,
+              "log_loss_after_platt": 0.428785274240703,
+              "platt_slope": 0.93421597802095,
+              "epochs_run": 40,
+              "epoch_kept": 39,
+              "best_heldout_loss": 0.4684923589229584,
+              "last_epoch_train_loss": 0.4436238706111908,
+              "last_epoch_heldout_loss": 0.4685249626636505,
+              "fit_seconds": 5.0
+            },
+            {
+              "seed": 20261118,
+              "log_loss": 0.4282121384816444,
+              "brier": 0.14133495604462978,
+              "ece": 0.009407134174244292,
+              "log_loss_after_platt": 0.42911114839844305,
+              "platt_slope": 0.9346157684838051,
+              "epochs_run": 40,
+              "epoch_kept": 40,
+              "best_heldout_loss": 0.46831727027893066,
+              "last_epoch_train_loss": 0.44353875517845154,
+              "last_epoch_heldout_loss": 0.46831727027893066,
+              "fit_seconds": 4.8
+            },
+            {
+              "seed": 20261119,
+              "log_loss": 0.42863847498072455,
+              "brier": 0.14137900996533795,
+              "ece": 0.008424320709533636,
+              "log_loss_after_platt": 0.42958006550257993,
+              "platt_slope": 0.9334673175221627,
+              "epochs_run": 40,
+              "epoch_kept": 38,
+              "best_heldout_loss": 0.46922558546066284,
+              "last_epoch_train_loss": 0.4434279799461365,
+              "last_epoch_heldout_loss": 0.4694218933582306,
+              "fit_seconds": 5.0
+            }
+          ],
+          "log_loss_mean_minus_start": 0.000297431155637351,
+          "clears_start_seed_range": false
+        },
+        {
+          "name": "lr=0.0005",
+          "overrides": {
+            "hidden": [
+              32
+            ],
+            "lr": 0.0005
+          },
+          "log_loss_mean": 0.42816251017734,
+          "log_loss_min": 0.42791292416042215,
+          "log_loss_max": 0.42833702956444053,
+          "log_loss_after_platt_mean": 0.42907329978743086,
+          "ece_mean": 0.008745583998300164,
+          "epoch_kept_mean": 36.666666666666664,
+          "fit_seconds_mean": 7.3999999999999995,
+          "per_seed": [
+            {
+              "seed": 20261117,
+              "log_loss": 0.42791292416042215,
+              "brier": 0.14114597799509623,
+              "ece": 0.007846719761320805,
+              "log_loss_after_platt": 0.42877953770791133,
+              "platt_slope": 0.9398927074188121,
+              "epochs_run": 40,
+              "epoch_kept": 40,
+              "best_heldout_loss": 0.46836212277412415,
+              "last_epoch_train_loss": 0.4437914788722992,
+              "last_epoch_heldout_loss": 0.46836212277412415,
+              "fit_seconds": 7.3
+            },
+            {
+              "seed": 20261118,
+              "log_loss": 0.42823757680715724,
+              "brier": 0.14126168514160967,
+              "ece": 0.00950222667505617,
+              "log_loss_after_platt": 0.4291161441647797,
+              "platt_slope": 0.9386611958751792,
+              "epochs_run": 40,
+              "epoch_kept": 39,
+              "best_heldout_loss": 0.46837010979652405,
+              "last_epoch_train_loss": 0.44420015811920166,
+              "last_epoch_heldout_loss": 0.4684889018535614,
+              "fit_seconds": 7.4
+            },
+            {
+              "seed": 20261119,
+              "log_loss": 0.42833702956444053,
+              "brier": 0.14117235641834897,
+              "ece": 0.00888780555852352,
+              "log_loss_after_platt": 0.4293242174896016,
+              "platt_slope": 0.9364344560530922,
+              "epochs_run": 37,
+              "epoch_kept": 31,
+              "best_heldout_loss": 0.46938908100128174,
+              "last_epoch_train_loss": 0.4437379240989685,
+              "last_epoch_heldout_loss": 0.4698529541492462,
+              "fit_seconds": 7.5
+            }
+          ],
+          "log_loss_mean_minus_start": 0.0002305274070429908,
+          "clears_start_seed_range": false
+        },
+        {
+          "name": "label_noise=0.02",
+          "overrides": {
+            "hidden": [
+              32
+            ],
+            "label_noise": 0.02
+          },
+          "log_loss_mean": 0.43201900802205356,
+          "log_loss_min": 0.43108080017316286,
+          "log_loss_max": 0.43272988283254066,
+          "log_loss_after_platt_mean": 0.43001432670402745,
+          "ece_mean": 0.0179694498798468,
+          "epoch_kept_mean": 8.666666666666666,
+          "fit_seconds_mean": 3.1666666666666665,
+          "per_seed": [
+            {
+              "seed": 20261117,
+              "log_loss": 0.43272988283254066,
+              "brier": 0.14178060046419216,
+              "ece": 0.020680951368290873,
+              "log_loss_after_platt": 0.42989360571805046,
+              "platt_slope": 1.0932756623884605,
+              "epochs_run": 17,
+              "epoch_kept": 11,
+              "best_heldout_loss": 0.46861326694488525,
+              "last_epoch_train_loss": 0.4450143277645111,
+              "last_epoch_heldout_loss": 0.46991896629333496,
+              "fit_seconds": 3.7
+            },
+            {
+              "seed": 20261118,
+              "log_loss": 0.4322463410604571,
+              "brier": 0.1415995792928134,
+              "ece": 0.016970247978846057,
+              "log_loss_after_platt": 0.43033845567658385,
+              "platt_slope": 1.0689559694528883,
+              "epochs_run": 11,
+              "epoch_kept": 5,
+              "best_heldout_loss": 0.4690529406070709,
+              "last_epoch_train_loss": 0.44675368070602417,
+              "last_epoch_heldout_loss": 0.4690718650817871,
+              "fit_seconds": 2.6
+            },
+            {
+              "seed": 20261119,
+              "log_loss": 0.43108080017316286,
+              "brier": 0.1414506512827807,
+              "ece": 0.016257150292403478,
+              "log_loss_after_platt": 0.4298109187174478,
+              "platt_slope": 1.047280009490159,
+              "epochs_run": 16,
+              "epoch_kept": 10,
+              "best_heldout_loss": 0.4684971868991852,
+              "last_epoch_train_loss": 0.4443952739238739,
+              "last_epoch_heldout_loss": 0.4699286222457886,
+              "fit_seconds": 3.2
+            }
+          ],
+          "log_loss_mean_minus_start": 0.004087025251756526,
+          "clears_start_seed_range": false
+        },
+        {
+          "name": "raw inputs (no one-hot, no asinh)",
+          "overrides": {
+            "hidden": [
+              32
+            ],
+            "one_hot_down": false,
+            "squash_margin": false
+          },
+          "log_loss_mean": 0.4277114154116455,
+          "log_loss_min": 0.4274401889566713,
+          "log_loss_max": 0.4280956570197537,
+          "log_loss_after_platt_mean": 0.42853626986393656,
+          "ece_mean": 0.007972602214788979,
+          "epoch_kept_mean": 9.666666666666666,
+          "fit_seconds_mean": 2.966666666666667,
+          "per_seed": [
+            {
+              "seed": 20261117,
+              "log_loss": 0.42759840025851137,
+              "brier": 0.14126584595299724,
+              "ece": 0.009583212775103458,
+              "log_loss_after_platt": 0.4283051869553161,
+              "platt_slope": 0.9443730687047867,
+              "epochs_run": 17,
+              "epoch_kept": 11,
+              "best_heldout_loss": 0.4673020839691162,
+              "last_epoch_train_loss": 0.44212695956230164,
+              "last_epoch_heldout_loss": 0.4680339992046356,
+              "fit_seconds": 3.2
+            },
+            {
+              "seed": 20261118,
+              "log_loss": 0.4274401889566713,
+              "brier": 0.1412580239748222,
+              "ece": 0.00579885790940773,
+              "log_loss_after_platt": 0.4284091625843988,
+              "platt_slope": 0.9277562580189933,
+              "epochs_run": 19,
+              "epoch_kept": 13,
+              "best_heldout_loss": 0.46822404861450195,
+              "last_epoch_train_loss": 0.4416532516479492,
+              "last_epoch_heldout_loss": 0.4686644673347473,
+              "fit_seconds": 3.5
+            },
+            {
+              "seed": 20261119,
+              "log_loss": 0.4280956570197537,
+              "brier": 0.14136207269687245,
+              "ece": 0.008535735959855744,
+              "log_loss_after_platt": 0.4288944600520948,
+              "platt_slope": 0.9505017951340596,
+              "epochs_run": 11,
+              "epoch_kept": 5,
+              "best_heldout_loss": 0.4676640033721924,
+              "last_epoch_train_loss": 0.4426214396953583,
+              "last_epoch_heldout_loss": 0.46856996417045593,
+              "fit_seconds": 2.2
+            }
+          ],
+          "log_loss_mean_minus_start": -0.00022056735865155774,
+          "clears_start_seed_range": false
+        },
+        {
+          "name": "no early stopping",
+          "overrides": {
+            "hidden": [
+              32
+            ],
+            "early_stopping": false
+          },
+          "log_loss_mean": 0.4293710807793964,
+          "log_loss_min": 0.4288429522048403,
+          "log_loss_max": 0.4299036718531192,
+          "log_loss_after_platt_mean": 0.4301763386633431,
+          "ece_mean": 0.007130922839702059,
+          "epoch_kept_mean": 40.0,
+          "fit_seconds_mean": 7.3999999999999995,
+          "per_seed": [
+            {
+              "seed": 20261117,
+              "log_loss": 0.4288429522048403,
+              "brier": 0.1420980572644244,
+              "ece": 0.00675316142056761,
+              "log_loss_after_platt": 0.42955736790612975,
+              "platt_slope": 0.9075722988633156,
+              "epochs_run": 40,
+              "epoch_kept": 40,
+              "best_heldout_loss": 0.46788838505744934,
+              "last_epoch_train_loss": 0.4390515089035034,
+              "last_epoch_heldout_loss": 0.4693058729171753,
+              "fit_seconds": 7.2
+            },
+            {
+              "seed": 20261118,
+              "log_loss": 0.42936661828022976,
+              "brier": 0.14193897808341494,
+              "ece": 0.006378547937810189,
+              "log_loss_after_platt": 0.4301390361666898,
+              "platt_slope": 0.9309263134791048,
+              "epochs_run": 40,
+              "epoch_kept": 40,
+              "best_heldout_loss": 0.46744003891944885,
+              "last_epoch_train_loss": 0.4414299726486206,
+              "last_epoch_heldout_loss": 0.46959400177001953,
+              "fit_seconds": 7.5
+            },
+            {
+              "seed": 20261119,
+              "log_loss": 0.4299036718531192,
+              "brier": 0.14226289853840912,
+              "ece": 0.00826105916072838,
+              "log_loss_after_platt": 0.43083261191720984,
+              "platt_slope": 0.9016370732899482,
+              "epochs_run": 40,
+              "epoch_kept": 40,
+              "best_heldout_loss": 0.46867480874061584,
+              "last_epoch_train_loss": 0.43983253836631775,
+              "last_epoch_heldout_loss": 0.4709043502807617,
+              "fit_seconds": 7.5
+            }
+          ],
+          "log_loss_mean_minus_start": 0.00143909800909936,
+          "clears_start_seed_range": false
+        }
+      ],
+      "start_seed_range": 0.0002765199856262779,
+      "adopted": []
+    }
+  },
+  "memorization_demo": {
+    "name": "memorization demo",
+    "overrides": {
+      "hidden": [
+        128,
+        128,
+        128
+      ],
+      "batch_size": 512,
+      "weight_decay": 0.0,
+      "early_stopping": false
+    },
+    "log_loss_mean": 0.6536735152845045,
+    "log_loss_min": 0.6536735152845045,
+    "log_loss_max": 0.6536735152845045,
+    "log_loss_after_platt_mean": 0.5279048921631152,
+    "ece_mean": 0.08038087747689193,
+    "epoch_kept_mean": 40.0,
+    "fit_seconds_mean": 75.2,
+    "per_seed": [
+      {
+        "seed": 20261117,
+        "log_loss": 0.6536735152845045,
+        "brier": 0.17311442454652787,
+        "ece": 0.08038087747689193,
+        "log_loss_after_platt": 0.5279048921631152,
+        "platt_slope": 0.30022883292024166,
+        "epochs_run": 40,
+        "epoch_kept": 40,
+        "best_heldout_loss": 0.46778586506843567,
+        "last_epoch_train_loss": 0.33670634031295776,
+        "last_epoch_heldout_loss": 0.6932148337364197,
+        "fit_seconds": 75.2
+      }
+    ]
+  },
+  "trees_on_the_same_validation_seasons": {
+    "source": "results/m1_wp_tuning.json (uncalibrated booster, best grid row)",
+    "log_loss": 0.4281929577633271,
+    "ece": 0.010301735982842819
+  },
+  "config_in_use": {
+    "hidden": [
+      32
+    ],
+    "dropout": 0.0,
+    "weight_decay": 0.0001,
+    "lr": 0.002,
+    "batch_size": 4096,
+    "max_epochs": 40,
+    "patience": 6,
+    "early_stopping": true,
+    "holdout_game_fraction": 0.1,
+    "label_noise": 0.0,
+    "one_hot_down": true,
+    "squash_margin": true,
+    "calibration": "none"
+  }
+}
