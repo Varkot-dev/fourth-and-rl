@@ -1,0 +1,364 @@
+{
+  "description": "Simulated games: lead is a Gaussian random walk over T plays, true win probability Phi(lead / sqrt(T - t)). All numbers are from this simulation, not from Brill, Yurko and Wyner (arXiv 2406.16171), whose design it follows.",
+  "config": {
+    "seed": 20261118,
+    "plays_per_game": 50,
+    "nominal_level": 0.9,
+    "n_test_states": 20000,
+    "threads": 2,
+    "games_grid": [
+      100,
+      200,
+      400,
+      800,
+      1600,
+      3200
+    ],
+    "probit_reps": 50,
+    "gbm_reps": 6,
+    "gbm": {
+      "n_estimators": 150,
+      "learning_rate": 0.05,
+      "num_leaves": 15,
+      "min_child_samples": 50
+    },
+    "coverage_games": 400,
+    "probit_coverage_reps": 200,
+    "probit_boot": 100,
+    "gbm_coverage_reps": 8,
+    "gbm_boot": 40
+  },
+  "error_curves": {
+    "games_grid": [
+      100,
+      200,
+      400,
+      800,
+      1600,
+      3200
+    ],
+    "probit": {
+      "all_plays": {
+        "rmse": [
+          0.04400767380438805,
+          0.0299315093169292,
+          0.021677726622091747,
+          0.01562243825528742,
+          0.010440610182494547,
+          0.007423438729814831
+        ],
+        "se": [
+          0.0025393066623561693,
+          0.00208755150555846,
+          0.0014271830184080386,
+          0.001218695218677299,
+          0.0007699258924547908,
+          0.0005507957321455037
+        ],
+        "reps": 50
+      },
+      "independent": {
+        "rmse": [
+          0.00748734100904821,
+          0.005759727863515219,
+          0.004113579158183519,
+          0.003443875570499305,
+          0.002165666353653897,
+          0.0014871709346275424
+        ],
+        "se": [
+          0.0005003278911264685,
+          0.00039759215146407923,
+          0.0002499047526359837,
+          0.00017395544951269705,
+          0.00012119066824563672,
+          9.006859313038907e-05
+        ],
+        "reps": 50
+      },
+      "one_per_game": {
+        "rmse": [
+          0.064083083651017,
+          0.04677593208213453,
+          0.026154788263262188,
+          0.021970428060958648,
+          0.015592079202834236,
+          0.009764698459070513
+        ],
+        "se": [
+          0.004530556666514107,
+          0.002976214433449741,
+          0.0016402677887193678,
+          0.0011855100060498482,
+          0.0009186963864435221,
+          0.0005692724681771452
+        ],
+        "reps": 50
+      }
+    },
+    "gbm": {
+      "all_plays": {
+        "rmse": [
+          0.08680175556797914,
+          0.057575992529506376,
+          0.04181493939676976,
+          0.030989353439483083,
+          0.02102518076073089,
+          0.016903888366851496
+        ],
+        "se": [
+          0.005367615951020078,
+          0.004521098968087745,
+          0.0011479308601791602,
+          0.0034862342382261375,
+          0.001432109459730689,
+          0.0011563685274385252
+        ],
+        "reps": 6
+      },
+      "independent": {
+        "rmse": [
+          0.05702688160258829,
+          0.03776121072418078,
+          0.02730476822505383,
+          0.020977678108730413,
+          0.015959740204503522,
+          0.012048422303119201
+        ],
+        "se": [
+          0.0014096386343311765,
+          0.0012379208939738077,
+          0.0008333574791830772,
+          0.0005423561123445046,
+          0.0002993078782682013,
+          7.14873061017481e-05
+        ],
+        "reps": 6
+      },
+      "one_per_game": {
+        "rmse": [
+          0.28058379382746956,
+          0.12294742169378647,
+          0.11512948102361685,
+          0.11759174390552189,
+          0.09194736961181556,
+          0.06922139037873799
+        ],
+        "se": [
+          0.021262738073699754,
+          0.004611238800678585,
+          0.004086660411993698,
+          0.00275949562992034,
+          0.0025905702014187596,
+          0.0010246143168395345
+        ],
+        "reps": 6
+      }
+    }
+  },
+  "effective_sample_size_matched_error": [
+    {
+      "model": "probit",
+      "games": 100,
+      "plays": 5000,
+      "equivalent_independent_plays": 215.08975852894716,
+      "share_of_plays": 0.04301795170578943,
+      "multiple_of_games": 2.1508975852894716,
+      "outside_simulated_range": false
+    },
+    {
+      "model": "probit",
+      "games": 200,
+      "plays": 10000,
+      "equivalent_independent_plays": 340.577667765288,
+      "share_of_plays": 0.0340577667765288,
+      "multiple_of_games": 1.7028883388264402,
+      "outside_simulated_range": false
+    },
+    {
+      "model": "probit",
+      "games": 400,
+      "plays": 20000,
+      "equivalent_independent_plays": 821.9836528638845,
+      "share_of_plays": 0.041099182643194225,
+      "multiple_of_games": 2.054959132159711,
+      "outside_simulated_range": false
+    },
+    {
+      "model": "probit",
+      "games": 800,
+      "plays": 40000,
+      "equivalent_independent_plays": 1593.721690335799,
+      "share_of_plays": 0.039843042258394974,
+      "multiple_of_games": 1.9921521129197486,
+      "outside_simulated_range": false
+    },
+    {
+      "model": "probit",
+      "games": 1600,
+      "plays": 80000,
+      "equivalent_independent_plays": 2897.9992786238804,
+      "share_of_plays": 0.03622499098279851,
+      "multiple_of_games": 1.8112495491399252,
+      "outside_simulated_range": false
+    },
+    {
+      "model": "probit",
+      "games": 3200,
+      "plays": 160000,
+      "equivalent_independent_plays": 5114.533946606097,
+      "share_of_plays": 0.031965837166288105,
+      "multiple_of_games": 1.5982918583144052,
+      "outside_simulated_range": false
+    },
+    {
+      "model": "gbm",
+      "games": 100,
+      "plays": 5000,
+      "equivalent_independent_plays": 1841.5475689930686,
+      "share_of_plays": 0.3683095137986137,
+      "multiple_of_games": 18.415475689930688,
+      "outside_simulated_range": false
+    },
+    {
+      "model": "gbm",
+      "games": 200,
+      "plays": 10000,
+      "equivalent_independent_plays": 4890.862556308563,
+      "share_of_plays": 0.48908625563085634,
+      "multiple_of_games": 24.454312781542818,
+      "outside_simulated_range": false
+    },
+    {
+      "model": "gbm",
+      "games": 400,
+      "plays": 20000,
+      "equivalent_independent_plays": 8424.372989068017,
+      "share_of_plays": 0.4212186494534009,
+      "multiple_of_games": 21.060932472670043,
+      "outside_simulated_range": false
+    },
+    {
+      "model": "gbm",
+      "games": 800,
+      "plays": 40000,
+      "equivalent_independent_plays": 15258.150255548142,
+      "share_of_plays": 0.38145375638870355,
+      "multiple_of_games": 19.072687819435178,
+      "outside_simulated_range": false
+    },
+    {
+      "model": "gbm",
+      "games": 1600,
+      "plays": 80000,
+      "equivalent_independent_plays": 39762.80017356283,
+      "share_of_plays": 0.49703500216953533,
+      "multiple_of_games": 24.851750108476768,
+      "outside_simulated_range": false
+    },
+    {
+      "model": "gbm",
+      "games": 3200,
+      "plays": 160000,
+      "equivalent_independent_plays": 69152.01199444702,
+      "share_of_plays": 0.4322000749652939,
+      "multiple_of_games": 21.610003748264695,
+      "outside_simulated_range": false
+    }
+  ],
+  "probit_coverage": {
+    "games": 400,
+    "plays": 20000,
+    "reps": 200,
+    "n_boot": 100,
+    "nominal_level": 0.9,
+    "coverage_of_true_wp": {
+      "naive": {
+        "mean": 0.25620675,
+        "se": 0.010466857251021137
+      },
+      "play_bootstrap": {
+        "mean": 0.2490875,
+        "se": 0.010331902481546704
+      },
+      "game_bootstrap": {
+        "mean": 0.8983565,
+        "se": 0.011161023542729258
+      }
+    },
+    "mean_interval_width": {
+      "naive": {
+        "mean": 0.014111458281327897,
+        "se": 1.7900805346008385e-05
+      },
+      "play_bootstrap": {
+        "mean": 0.013709933113346348,
+        "se": 4.8917916034885985e-05
+      },
+      "game_bootstrap": {
+        "mean": 0.07056779423234018,
+        "se": 0.0003275242632765263
+      }
+    },
+    "coverage_of_slope": {
+      "naive": {
+        "mean": 0.355,
+        "se": 0.033920910080708584
+      },
+      "play_bootstrap": {
+        "mean": 0.36,
+        "se": 0.03402629784040012
+      },
+      "game_bootstrap": {
+        "mean": 0.9,
+        "se": 0.021266436150250076
+      }
+    },
+    "coefficients_mean": [
+      0.002419484529063846,
+      1.0151497046598268,
+      -0.002510559440573436
+    ],
+    "coefficients_true": [
+      0.0,
+      1.0,
+      0.0
+    ],
+    "design_effect": {
+      "slope": 11.68135044181782,
+      "effective_plays_from_slope": 1712.130810527045,
+      "effective_plays_per_game_from_slope": 4.280327026317613,
+      "prediction_median": 23.792291496006392,
+      "effective_plays_from_prediction": 840.6083963521152,
+      "note": "design effect = true sampling variance / variance claimed by the independent-rows formula; effective plays = plays / design effect"
+    }
+  },
+  "gbm_coverage": {
+    "games": 400,
+    "plays": 20000,
+    "reps": 8,
+    "n_boot": 40,
+    "nominal_level": 0.9,
+    "coverage_of_true_wp": {
+      "play_bootstrap": {
+        "mean": 0.6205812500000001,
+        "se": 0.034456507183357764
+      },
+      "game_bootstrap": {
+        "mean": 0.77309375,
+        "se": 0.024728138681144773
+      }
+    },
+    "mean_interval_width": {
+      "play_bootstrap": {
+        "mean": 0.08014676428875203,
+        "se": 0.0006731637792900623
+      },
+      "game_bootstrap": {
+        "mean": 0.11808029777639614,
+        "se": 0.0013044534881392308
+      }
+    }
+  },
+  "runtime_seconds": 307.1
+}
