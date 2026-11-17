@@ -1,0 +1,6 @@
+# Seasons used across the project. 2010 onward keeps the modern passing era
+# and avoids the pre-2010 overtime rules for most of the sample.
+first_season: 2010
+last_season: 2025
+raw_dir: data/raw
+processed_dir: data/processed
