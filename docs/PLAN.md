@@ -12,6 +12,19 @@ On fourth down a coach chooses: go for it, kick a field goal, or punt. Analysts 
 
 It also works as a research topic. The project is built around the work of Abraham Wyner's group at Penn (Wharton Statistics): how much win-probability models can be trusted, what a "blown lead" really tells you, and what that means for fourth-down recommendations. The RL part then asks the follow-up question: what should a decision-maker do when the win-probability estimates it relies on are that uncertain?
 
+### 1.1 Burning questions (the public framing)
+
+The project is presented as answers to concrete questions fans and coaches argue about. Each question gets the same treatment: what the standard one-step analysis says, how confident that answer is under the game-level bootstrap, what the exact full-game solution says, and what coaches actually do in that spot. Every answer is produced by a script and saved under `results/questions/`, with one figure each under `assets/questions/`.
+
+1. **Protecting a late lead (the first question to answer).** Up 4 with about 4:00 left, fourth down in your own half. Go for it or punt? Converting lets you burn the clock. Failing gives the opponent a short field, but a quick score also hands you the ball back with time to answer. The answer should be a map over yards to go, field position, time left and the opponent's timeouts, not a single number.
+2. Fourth and goal from the 1 early in a close game: take the points or go?
+3. Down 3 late, fourth and short inside field-goal range: kick to tie or go for the win?
+4. Up 7 late in field-goal range: kick to go up 10 or go for it to end the game?
+5. Fourth and 1 near midfield in the first quarter of a tied game: is it really an obvious go?
+6. Was that famous collapse really historic, or is a 95% peak for a loser ordinary? (Answered by the blown-lead analysis.)
+
+Questions 2 to 5 are candidates and can be swapped for better ones. Question 1 is fixed.
+
 ## 2. What exists today (verify before building)
 
 **Data: nflverse.** Free play-by-play for every game since 1999. Python access is the `nflreadpy` package (`pip install nflreadpy`, then `nfl.load_pbp(...)`). The older `nfl_data_py` package is deprecated in favor of it. Each play already carries the nflfastR expected-points and win-probability estimates, which make a useful baseline.
@@ -140,3 +153,5 @@ nflreadpy, polars or pandas, scikit-learn, XGBoost or LightGBM, NumPy for dynami
 - **2026-11-17. Full-game MDP discretization.** Yard line exact (1 to 99). Distance 1 to 10 exact, then bins 11 to 15 and 16+. Score differential clipped to -21..+21. Clock measured in plays remaining, not seconds. Timeouts left out of the first version. Because the clock only decreases, the model is solved by one backward pass (finite-horizon backward induction) instead of iterating to convergence.
 - **2026-11-17. The opponent in the full-game MDP.** The plan did not say how the other team behaves. Decision: both teams follow the same policy and the game is zero-sum, so the value of a state for the team without the ball is 1 minus the value for the team with it. Backward induction then solves both sides at once.
 - **2026-11-17. nfl4th comparison (M2).** nfl4th is an R package. It is used once, from a short R script, to produce a reference table of well-known fourth downs saved under `results/` and labelled as nfl4th output. The project itself stays in Python.
+- **2026-11-17. Burning questions become the framing.** The owner wants the project to answer the questions people actually argue about, starting with: up 4, about 4:00 left, fourth down in your own half, go or punt? Section 1.1 lists them. Each is answered by the one-step engine, the bootstrap and the full-game DP, with coach behavior alongside.
+- **2026-11-17. Timeouts are in the full-game MDP from the start.** This reverses part of the discretization entry above. The first burning question turns on whether a conversion lets the leading team run out the clock, which depends on the opponent's timeouts, so the end-game model tracks the trailing team's timeouts and uses real seconds (not plays remaining) in the final minutes.
