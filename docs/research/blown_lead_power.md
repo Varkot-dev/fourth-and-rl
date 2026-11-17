@@ -53,3 +53,41 @@ Rejection rate (first-crossing / continuous KS):
   game states (M3b's mid-range fault) may be harder to detect; A3 addresses that.
 - Games are independent here; real games share teams. The simulator is a Brownian lead,
   not football.
+
+# A2: what the real result rules out
+
+Code: `scripts/research/blown_power_invert.py`. Output: `results/research/blown_power_invert.json`,
+`assets/research/blown_power_invert.png`. Data: `data/processed/plays.parquet`, 4,350
+non-tied games, 2010 to 2025.
+
+## Method
+Test inversion. Rescale each real feed q to expit(c * logit(q)) for c from 0.70 to 1.30
+and run the first-crossing test (max |z| over 0.6, 0.7, 0.8, 0.9, 0.95) on the rescaled
+feed. A feed overconfident by k is calibrated after c = 1 / k, so the c values the test
+accepts give a confidence set for k. Critical value: 2.13, simulated for 4,350
+independent games in A1. Our own model is not included yet (it needs the M1 out-of-fold
+predictions, which were not rebuilt in this session).
+
+Check: at c = 1 the z values reproduce M3b (nflfastR without spread: -2.35 at 0.90 and
+-2.73 at 0.95, against M3b's -2.4 and -2.7).
+
+## Results
+| feed | z at c = 1 (0.6, 0.7, 0.8, 0.9, 0.95) | best k | max abs z at best | max abs z at k = 1.05 | at k = 0.95 |
+|---|---|---|---|---|---|
+| nflfastR, no spread | 1.69, 1.80, 0.23, -2.35, -2.73 | 0.99 | 2.29 | 4.67 | 3.38 |
+| nflfastR, with spread | 2.18, 2.11, 2.36, -2.03, -1.07 | 1.00 | 2.36 | 3.48 | 4.20 |
+
+1. **Overconfidence of 5% or more in log-odds is ruled out for both feeds**, and
+   underconfidence of 5% or more as well: every such k gives max |z| of 3.4 or more,
+   far above 2.13.
+2. **No single temperature passes.** The best k for each feed (about 1) still has max |z|
+   just above the critical value. The signs say why: teams lose slightly more often than
+   implied at first crossings of 0.6 to 0.8 (positive z, mild overconfidence in the
+   middle) and slightly less often at 0.9 to 0.95 (negative z, mild underconfidence near
+   the top). One temperature cannot fix errors in opposite directions, so the remaining
+   miscalibration has a shape, not a scale. That is the target of A3.
+3. **How seriously to take the rejection at k = 1.** The critical value assumes
+   independent games. Real games share teams, which widens the null spread of z, so the
+   true critical value is somewhat higher and the marginal rejections (2.29 and 2.36
+   against 2.13) may not survive. A4 (team bootstrap) settles this. The 5% statement in
+   point 1 is far enough from the line that it should.

@@ -16,3 +16,10 @@ n_rep: 300    # leagues per size for power (every k applied to the same leagues)
 alpha: 0.05
 # Size recheck at 16 seasons: the main run gave 0.077 at k = 1 with 600 null leagues.
 size_check: {seed: 20261120, n_games: 4350, n_null: 1500, n_rep: 1500}
+# A2: invert the first-crossing test on the real feeds. A feed is rescaled by
+# expit(c * logit(q)); c values the test does not reject form a confidence set, and
+# k = 1 / c is the overconfidence factor those values correspond to.
+invert:
+  models: [{key: nflfastr, column: wp}, {key: vegas, column: vegas_wp}]
+  min_plays: 50
+  c_grid: {start: 0.70, stop: 1.30, step: 0.01}

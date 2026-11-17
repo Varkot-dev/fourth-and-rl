@@ -97,5 +97,6 @@ summary" offered in the email.
 
 ## Status
 - [x] A1 (2026-11-17): power curves saved; write-up in `docs/research/blown_lead_power.md`. Size at 16 seasons rechecked with 1,500 leagues: 0.063 (SE about 0.008), consistent with 5%.
-- [ ] A2 to A5
+- [x] A2 (2026-11-17): overconfidence or underconfidence of 5% or more in log-odds ruled out for both nflfastR feeds; no single temperature passes, so the remaining error has a shape (see `docs/research/blown_lead_power.md`). Our own model still to add.
+- [ ] A3 to A5
 - [ ] B, C, D, E
