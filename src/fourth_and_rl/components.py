@@ -36,6 +36,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import SplineTransformer
 
 from fourth_and_rl import splits
+from fourth_and_rl.fingerprint import data_fingerprint
 from fourth_and_rl.paths import CONFIGS, DATA
 
 # Two bundles, two names (docs/research/leakage_audit.md, barrier 3).
@@ -1216,6 +1217,9 @@ class ComponentModels:
         if {"season", "game_id"} <= set(plays.columns):
             self.stamp = splits.fit_stamp(plays, "component models")
             self.stamp["config_hash"] = config_hash(cfg)
+            # What the plays were, not only which seasons: a rebuilt play table with the
+            # same seasons must not pass for the data this bundle was fitted on.
+            self.stamp["data_fingerprint"] = data_fingerprint(plays)
             self.stamp["test_seasons_allowed"] = bool(allow_test_seasons)
             self.stamp["reason"] = reason
             self.stamp["kickoff_rule_tables"] = {}
@@ -1270,6 +1274,9 @@ class ComponentModels:
                         "n_used": info["n_used"],
                         "uses_test_seasons": bool(set(use) & set(splits.test_seasons())),
                         "reason": reason,
+                        "data_fingerprint": data_fingerprint(
+                            kick.filter(pl.col("season").is_in(use))
+                        ),
                     }
         if self.kickoff_tables:
             latest = self._latest_kickoff_era()
@@ -1500,15 +1507,33 @@ def fit_dev_bundle(
     return models
 
 
-def dev_bundle_is_current(models: ComponentModels, config: dict | None = None) -> bool:
+def dev_bundle_is_current(
+    models: ComponentModels,
+    config: dict | None = None,
+    dev_plays: pl.DataFrame | None = None,
+) -> bool:
     """True if `models` is a stamped development fit of the given (default: current)
-    components config that also holds a kickoff table for every configured rule era."""
+    components config, fitted on exactly the current development plays, that also holds
+    a kickoff table for every configured rule era.
+
+    "Exactly the current development plays" compares the stamp's `data_fingerprint` with
+    the fingerprint of `dev_plays` (default: `splits.load_dev_plays()`), so a rebuilt play
+    table with the same seasons is not mistaken for the one the bundle was fitted on. A
+    bundle saved before fingerprints were stamped is never current. The kickoff rule
+    tables' own fingerprints are recorded on the stamp but not compared here (that would
+    read the test seasons on every check)."""
     cfg = load_config() if config is None else config
     if models.stamp is None or models.fitted_on_test_seasons():
         return False
     if models.stamp.get("config_hash") != config_hash(cfg):
         return False
     if set(models.stamp["seasons"]) != set(splits.dev_seasons()):
+        return False
+    saved = models.stamp.get("data_fingerprint")
+    if saved is None:
+        return False
+    dev = splits.load_dev_plays() if dev_plays is None else dev_plays
+    if saved != data_fingerprint(dev):
         return False
     have = set(getattr(models, "kickoff_tables", {}))
     return {e["name"] for e in kickoff_rule_eras(cfg)} <= have

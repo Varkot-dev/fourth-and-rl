@@ -642,6 +642,8 @@ def test_saved_development_bundle_is_current() -> None:
     if not cm.DEV_MODEL_PATH.exists():
         pytest.skip("development bundle not built (run scripts/fit_components.py)")
     saved = cm.ComponentModels.load()
+    if "data_fingerprint" not in (saved.stamp or {}):
+        pytest.skip("the saved bundle predates data fingerprints (rerun scripts/fit_components.py)")
     assert cm.dev_bundle_is_current(saved)
     assert saved.field_goal.max_kick_distance == saved.field_goal.longest_made_
     record = saved.stamp["kickoff_rule_tables"]

@@ -17,6 +17,7 @@ from __future__ import annotations
 import hashlib
 import json
 from dataclasses import dataclass
+from functools import cached_property
 from pathlib import Path
 from typing import Any
 
@@ -24,6 +25,7 @@ import numpy as np
 import polars as pl
 import yaml
 
+from fourth_and_rl import fingerprint
 from fourth_and_rl import wp as wp_mod
 from fourth_and_rl.components import ComponentModels, add_next_state, config_hash
 from fourth_and_rl.components import load_config as load_components_config
@@ -136,6 +138,26 @@ class BootstrapPlan:
             as_int(drives["len"]), as_int(games["first_drive"]), as_int(games["n_drives"]),
         )  # fmt: skip
 
+    @cached_property
+    def data_fingerprint(self) -> dict[str, Any]:
+        """Fingerprint (`fingerprint.data_fingerprint`) of the games that can be drawn: the
+        prepared rows of the train and calibration seasons. `prepare_plays` keeps every row
+        and the key columns, so with the default seasons this equals the fingerprint of
+        `splits.load_dev_plays()`, and a reader can check it without the test seasons."""
+        season = pl.col("season")
+        drawn = self.prepared.filter(
+            season.is_between(*self.train_seasons) | season.is_between(*self.calib_seasons)
+        )
+        return fingerprint.data_fingerprint(drawn)
+
+    def kickoff_fingerprint(self, kickoff_seasons: list[int]) -> dict[str, Any]:
+        """Fingerprint of the kickoff rows behind the fixed kickoff-rule tables."""
+        rows = self.prepared.filter(
+            pl.col("season").is_in([int(x) for x in kickoff_seasons])
+            & (pl.col("play_type") == "kickoff")
+        ) if "play_type" in self.prepared.columns else self.prepared.head(0)  # fmt: skip
+        return fingerprint.data_fingerprint(rows)
+
     def rng(self, replicate: int) -> np.random.Generator:
         """One independent random stream per (seed, replicate)."""
         return np.random.default_rng([self.seed, int(replicate)])
@@ -236,7 +258,9 @@ def replicate_key(
     calibration: str,
 ) -> dict[str, Any]:
     """Everything a saved replicate depends on. A saved replicate is reused only when its
-    key file equals this, so a changed config refits it instead of silently reusing it."""
+    key file equals this, so a changed config, or a changed play table (`data_fingerprint`:
+    rows and games per season and a hash of key columns), refits it instead of silently
+    reusing it."""
     comps_cfg = components_config if components_config is not None else load_components_config()
     return {
         "replicate": int(replicate),
@@ -250,6 +274,8 @@ def replicate_key(
         "components_config_hash": config_hash(comps_cfg),
         "kickoff_seasons": sorted(int(x) for x in kickoff_seasons),
         "calibration": calibration,
+        "data_fingerprint": plan.data_fingerprint,
+        "kickoff_data_fingerprint": plan.kickoff_fingerprint(kickoff_seasons),
     }
 
 
@@ -318,11 +344,15 @@ def assert_replicates_current(
     config: dict,
     wp_config: dict,
     components_config: dict | None = None,
+    data_fingerprint: dict | None = None,
 ) -> None:
     """Raise unless replicates 0..n_boot-1 exist and were fitted with the current settings.
 
     Used by scripts that read replicates without refitting them, so a half-finished or
-    stale set of replicates can never be mixed into a result.
+    stale set of replicates can never be mixed into a result. With `data_fingerprint`
+    (`fingerprint.data_fingerprint` of the games the replicates are drawn from, which is
+    that of `splits.load_dev_plays()` for the default seasons), a replicate fitted on a
+    different play table, or saved before fingerprints were recorded, is stale too.
     """
     comps_cfg = components_config if components_config is not None else load_components_config()
     expect = {
@@ -333,6 +363,8 @@ def assert_replicates_current(
         "components_config_hash": config_hash(comps_cfg),
         "kickoff_seasons": sorted(int(x) for x in config["kickoff_seasons"]),
     }
+    if data_fingerprint is not None:
+        expect["data_fingerprint"] = data_fingerprint
     bad = []
     for b in range(n_boot):
         key_path = replicate_paths(directory, b)["key"]
