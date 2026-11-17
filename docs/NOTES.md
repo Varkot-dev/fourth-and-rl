@@ -1,0 +1,32 @@
+# Teaching notes
+
+Written while building, for the teaching pass at the end. One section per milestone:
+the concepts it used, the decisions made and why, and what the results showed.
+
+## M0: data pipeline
+
+**Concepts**
+- Play-by-play data: one row per play, with the game state before the play and what happened.
+- "Posteam" point of view: every quantity (score differential, spread, win label) is
+  expressed for the team with the ball, so one model serves both teams.
+- Why a cached, typed table: every later milestone reads the same file, so results are
+  comparable and reruns are fast.
+
+**Decisions**
+- Seasons 2010 to 2025 (16 seasons, 4,363 games, about 730,000 plays). Earlier seasons
+  are a different game (fewer passes, different overtime and kickoff rules).
+- Regular season and playoffs are both kept. Playoff overtime rules differ, which only
+  matters for the handful of plays in overtime.
+- Tied games get a null win label instead of 0.5, and are dropped when fitting win
+  probability. There is about one per season.
+- A fourth-down "decision" is labelled only when the play actually ran. Penalty
+  no-plays are left out, which slightly undercounts decisions.
+- The team that receives the second-half kickoff is worked out from the opening kickoff,
+  because the raw file does not carry it. It matters for first-half win probability:
+  a guaranteed extra possession after halftime is worth something.
+
+**Results** (from `results/m0_data_summary.json`)
+- Game counts match the schedule exactly: 267 per season through 2019, 269 in 2020,
+  285 from 2021, and 284 in 2022 (one cancelled game).
+- Field goals made: 84.5%. Fourth-down conversions when going for it: 51.5%.
+- Fourth-down go rate rose from 12.6% in 2010 to 23.3% in 2025.
