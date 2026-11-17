@@ -1,76 +1,157 @@
 {
   "seed": 20261117,
+  "fitted_on": {
+    "components": {
+      "what": "component models",
+      "seasons": [
+        2010,
+        2011,
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022,
+        2023
+      ],
+      "n_games": 3793,
+      "n_rows": 637141,
+      "fitted_at": "2026-11-17T06:12:42+00:00",
+      "config_hash": "fff6405221c9aa66",
+      "test_seasons_allowed": false,
+      "reason": null,
+      "kickoff_rule_tables": {
+        "touchback_at_25": {
+          "seasons": [
+            2018,
+            2019,
+            2020,
+            2021,
+            2022,
+            2023
+          ],
+          "n_used": 16741,
+          "uses_test_seasons": false,
+          "reason": null
+        },
+        "dynamic_kickoff_2024": {
+          "seasons": [
+            2024
+          ],
+          "n_used": 2920,
+          "uses_test_seasons": true,
+          "reason": "rule constant; no data under this rule exists before the season"
+        },
+        "dynamic_kickoff_2025": {
+          "seasons": [
+            2025
+          ],
+          "n_used": 2893,
+          "uses_test_seasons": true,
+          "reason": "rule constant; no data under this rule exists before the season"
+        }
+      }
+    },
+    "tables": {
+      "what": "game-model tables (count, mode, coach)",
+      "seasons": [
+        2010,
+        2011,
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022,
+        2023
+      ],
+      "n_games": 3793,
+      "n_rows": 637141,
+      "fitted_at": "2026-11-17T06:13:00+00:00"
+    },
+    "note": "every input of the game model is fitted on development seasons; the components' kickoff rule tables are the one logged exception"
+  },
   "stage_1_single_drive": {
     "what": "expected net points over endless possessions; fourth-down actions go, field goal, punt; downs 1 to 3 a generic play",
     "n_states": 4752,
-    "touchdown_value": 6.945654268645211,
-    "solve_seconds_all_three": 0.5264463424682617,
+    "touchdown_value": 6.941821465428276,
+    "solve_seconds_all_three": 0.6168906688690186,
     "value_iteration": {
       "optimal": {
-        "iterations": 272,
-        "residual": 9.44895273136126e-11,
+        "iterations": 270,
+        "residual": 9.60826973539497e-11,
         "converged": true
       },
       "next_score": {
         "iterations": 149,
-        "residual": 9.18315215536758e-11,
+        "residual": 8.534417617056533e-11,
         "converged": true
       },
       "coach_future": {
-        "iterations": 262,
-        "residual": 8.790723704521497e-11,
+        "iterations": 260,
+        "residual": 9.012457446999633e-11,
         "converged": true
       }
     },
     "kickoff_value_to_receiver": {
-      "optimal": 1.2089600730587926,
-      "coach_future": 1.1297388973308218
+      "optimal": 1.2019296728137463,
+      "coach_future": 1.1235441951575995
     },
     "first_and_10_value_by_yardline_100": {
       "10": {
-        "optimal_endless": 4.0193839971267735,
-        "coach_future_endless": 4.008370728630055,
-        "optimal_next_score": 5.018925648581321,
-        "nflfastr_ep_mean": 5.127546210509429
+        "optimal_endless": 4.013014084813276,
+        "coach_future_endless": 4.003243656919545,
+        "optimal_next_score": 5.0058307384917615,
+        "nflfastr_ep_mean": 5.129902194882198
       },
       "25": {
-        "optimal_endless": 3.3930566375909446,
-        "coach_future_endless": 3.38933804368611,
-        "optimal_next_score": 4.325863475583805,
-        "nflfastr_ep_mean": 4.34596830937766
+        "optimal_endless": 3.406104845010963,
+        "coach_future_endless": 3.400718115309425,
+        "optimal_next_score": 4.3340666695032075,
+        "nflfastr_ep_mean": 4.3397546776875995
       },
       "50": {
-        "optimal_endless": 2.1189131810338315,
-        "coach_future_endless": 2.0672206152312516,
-        "optimal_next_score": 2.707880035498322,
-        "nflfastr_ep_mean": 2.7508716338354056
+        "optimal_endless": 2.116954360148721,
+        "coach_future_endless": 2.065193302106736,
+        "optimal_next_score": 2.697882643555099,
+        "nflfastr_ep_mean": 2.748424974765829
       },
       "75": {
-        "optimal_endless": 0.9318132587013584,
-        "coach_future_endless": 0.8452741692620309,
-        "optimal_next_score": 1.1865655543295683,
-        "nflfastr_ep_mean": 1.1841128587091343
+        "optimal_endless": 0.9240441982663168,
+        "coach_future_endless": 0.8425653744140124,
+        "optimal_next_score": 1.1726313541121836,
+        "nflfastr_ep_mean": 1.1837553110441927
       },
       "90": {
-        "optimal_endless": 0.2043254627039895,
-        "coach_future_endless": 0.09934319564643353,
-        "optimal_next_score": 0.29168735834490855,
-        "nflfastr_ep_mean": 0.13411088423112985
+        "optimal_endless": 0.170559777669046,
+        "coach_future_endless": 0.07440100364551629,
+        "optimal_next_score": 0.247616364670066,
+        "nflfastr_ep_mean": 0.14205718251823204
       }
     },
     "next_score_vs_nflfastr_ep": {
-      "correlation": 0.9993414162068367,
-      "mean_difference_ours_minus_nflfastr": 0.0021085635245857736,
-      "rmse": 0.09034665013144748,
+      "correlation": 0.9993545355352622,
+      "mean_difference_ours_minus_nflfastr": -0.01012287110612768,
+      "rmse": 0.07981698643384441,
       "note": "nflfastR ep is a fitted next-score model on real play with real coaching; ours is the optimal-policy next-score value of our transition model"
     },
     "fourth_down_chart": {
       "cells": 1188,
-      "optimal_go_cells": 631,
-      "coach_future_go_cells": 589,
-      "cells_where_the_two_charts_differ": 44,
-      "largest_margin_points_in_differing_cells": 0.09916388066682813,
-      "mean_gain_from_optimal_future_first_and_10_points": 0.05034306031484803,
+      "optimal_go_cells": 622,
+      "coach_future_go_cells": 580,
+      "cells_where_the_two_charts_differ": 42,
+      "largest_margin_points_in_differing_cells": 0.09901782840564799,
+      "mean_gain_from_optimal_future_first_and_10_points": 0.04921636520700995,
       "note": "coach_future: every later fourth down is played with the observed neutral-situation coach frequencies; only the current one is optimized"
     }
   },
@@ -91,17 +172,17 @@
       "total": 407854656
     },
     "n_states_note": "the end phase counts 61 time slices including the terminal one",
-    "solve_seconds": 42.661481618881226,
-    "kernel_build_seconds": 1.3790488243103027,
-    "peak_memory_gb_whole_script_at_end_of_solve": 2.86676025390625,
+    "solve_seconds": 45.31916689872742,
+    "kernel_build_seconds": 1.6959433555603027,
+    "peak_memory_gb_whole_script_at_end_of_solve": 2.783111572265625,
     "threads": 2,
     "dtype": "float32",
     "convergence": "none needed: one backward pass, each slice computed once from slices closer to the end of the game",
     "saved_arrays_gb": 1.899221956729889,
     "kernel_nonzeros": {
-      "play": 550305,
-      "in_bounds_part": 191632,
-      "punt": 143136
+      "play": 531335,
+      "in_bounds_part": 186633,
+      "punt": 140016
     },
     "kneel_thresholds_seconds_by_defense_timeouts_first_down": [
       120,
@@ -110,30 +191,30 @@
       5
     ],
     "solution": {
-      "value_of_receiving_the_opening_kickoff": 0.4993574023246765,
+      "value_of_receiving_the_opening_kickoff": 0.4993289113044739,
       "examples": {
-        "up_4_first_and_10_own_25_4_00_left_def_3_timeouts": 0.8400112390518188,
-        "down_4_first_and_10_own_25_4_00_left_3_timeouts_each": 0.3107985854148865,
-        "tied_first_and_10_own_25_start_of_fourth_quarter": 0.5473766326904297,
-        "up_7_first_and_10_own_25_start_of_second_half": 0.7646591663360596
+        "up_4_first_and_10_own_25_4_00_left_def_3_timeouts": 0.8376068472862244,
+        "down_4_first_and_10_own_25_4_00_left_3_timeouts_each": 0.3113928735256195,
+        "tied_first_and_10_own_25_start_of_fourth_quarter": 0.5464602708816528,
+        "up_7_first_and_10_own_25_start_of_second_half": 0.7620556950569153
       },
       "policy_shares": {
         "end": {
-          "fourth_down_go": 0.5819232579346436,
-          "fourth_down_field_goal": 0.17636360373763474,
-          "fourth_down_punt": 0.22460842680682797,
+          "fourth_down_go": 0.5837218682301046,
+          "fourth_down_field_goal": 0.17015901505363715,
+          "fourth_down_punt": 0.2281402118732545,
           "note": "shares of ALL grid states, most of which never occur in a game"
         },
         "mid": {
-          "fourth_down_go": 0.5326363766867643,
-          "fourth_down_field_goal": 0.18148037219742646,
-          "fourth_down_punt": 0.28167756375120717,
+          "fourth_down_go": 0.5271283245895649,
+          "fourth_down_field_goal": 0.17398604912170804,
+          "fourth_down_punt": 0.2943934826299167,
           "note": "shares of ALL grid states, most of which never occur in a game"
         },
         "first": {
-          "fourth_down_go": 0.5072780996876605,
-          "fourth_down_field_goal": 0.2003364284533535,
-          "fourth_down_punt": 0.28852402143745814,
+          "fourth_down_go": 0.5011310075344313,
+          "fourth_down_field_goal": 0.1916591354979598,
+          "fourth_down_punt": 0.3032508548012424,
           "note": "shares of ALL grid states, most of which never occur in a game"
         }
       }
@@ -142,86 +223,86 @@
   "count_tables": {
     "stop_prob": {
       "neutral": [
-        0.0004704160568680744,
-        0.8085621814376247,
-        0.00014030821036877675,
-        0.0003364071714093482,
-        0.0007205723403160225,
-        0.0015857633688661792
+        0.00027954434272136415,
+        0.8099789862129055,
+        9.430107188885047e-05,
+        0.00034652805544448887,
+        0.0007526256371660223,
+        0.0015772870662460567
       ],
       "neutral_end": [
-        0.03120426510558227,
-        0.817322041124828,
-        0.06821317494095362,
-        0.13739264653500613,
-        0.21627464100056618,
-        0.2941150559422077
+        0.03214759941295688,
+        0.8183588744810619,
+        0.068745481406972,
+        0.138984406237505,
+        0.21908248092778215,
+        0.2958289519803715
       ],
       "protect": [
-        0.012605042016806723,
-        0.5,
-        0.01344286781179985,
-        0.058305830583058306,
-        0.12149532710280374,
-        0.21656050955414013
+        0.017595307917888565,
+        0.48877374784110533,
+        0.01488095238095238,
+        0.0611353711790393,
+        0.09803921568627451,
+        0.2264957264957265
       ],
       "chase": [
-        0.01639344262295082,
-        0.8871635610766045,
-        0.088,
-        0.14814814814814814,
-        0.21376281112737922,
-        0.26506024096385544
+        0.022598870056497175,
+        0.894297635605007,
+        0.10054347826086957,
+        0.15846994535519127,
+        0.2035225048923679,
+        0.24846625766871167
       ],
       "chase_late": [
-        0.04727272727272727,
-        0.9540880503144654,
-        0.18518518518518517,
-        0.29014084507042254,
-        0.26113861386138615,
-        0.30067567567567566
+        0.05025125628140704,
+        0.9565957446808511,
+        0.2027491408934708,
+        0.2912621359223301,
+        0.2791095890410959,
+        0.2863636363636364
       ]
     },
     "stop_prob_n": {
       "neutral": [
-        19132,
-        51599,
-        42763,
-        50534,
-        38858,
-        22702
+        14309,
+        39022,
+        31813,
+        37515,
+        29231,
+        17118
       ],
       "neutral_end": [
-        19132,
-        51599,
-        42763,
-        50534,
-        38858,
-        22702
+        14309,
+        39022,
+        31813,
+        37515,
+        29231,
+        17118
       ],
       "protect": [
-        476,
-        788,
-        1339,
-        909,
-        535,
-        314
+        341,
+        579,
+        1008,
+        687,
+        408,
+        234
       ],
       "chase": [
-        244,
-        966,
-        500,
-        729,
-        683,
-        415
+        177,
+        719,
+        368,
+        549,
+        511,
+        326
       ],
       "chase_late": [
-        275,
-        1590,
-        405,
-        710,
-        808,
-        592
+        199,
+        1175,
+        291,
+        515,
+        584,
+        440
       ]
     },
     "gain_bucket_edges": [
@@ -233,91 +314,92 @@
       15
     ],
     "neutral_hist": [
-      0.03424833391009254,
-      0.013579888592447058,
-      0.010772373606010204,
-      0.03441019859121912,
-      0.05850570991616526,
-      0.08702180149808553,
-      0.21257297864502517,
-      0.3329165782922718,
-      0.19080496980386466,
-      0.025167167144818654
+      0.03419454590270464,
+      0.013751017694818533,
+      0.011278672851263435,
+      0.03551661550182625,
+      0.06055377536767727,
+      0.09345612895033649,
+      0.21773814058753668,
+      0.3226073901449795,
+      0.18560512694108947,
+      0.02529858605776772
     ],
-    "neutral_hist_n": 179162,
+    "neutral_hist_n": 133881,
     "neutral_median_seconds": 38.0,
     "hurry_hist": [
-      0.012223515715948778,
-      0.007566938300349243,
-      0.005238649592549476,
-      0.08207217694994179,
-      0.13445867287543656,
-      0.13038416763678695,
-      0.1612339930151339,
-      0.27066356228172295,
-      0.16821885913853318,
-      0.027939464493597205
+      0.011583011583011582,
+      0.009266409266409266,
+      0.006177606177606178,
+      0.08108108108108109,
+      0.13513513513513514,
+      0.14285714285714285,
+      0.16061776061776062,
+      0.2602316602316602,
+      0.16293436293436295,
+      0.030115830115830116
     ],
-    "hurry_hist_n": 1718,
-    "hurry_hist_median_seconds": 37.0,
+    "hurry_hist_n": 1295,
+    "hurry_hist_median_seconds": 36.0,
     "hurry_hist_late": [
-      0.016812865497076022,
-      0.02412280701754386,
-      0.17105263157894737,
-      0.3530701754385965,
-      0.21929824561403508,
-      0.07163742690058479,
-      0.054093567251461985,
-      0.04751461988304093,
-      0.038011695906432746,
-      0.0043859649122807015
+      0.015841584158415842,
+      0.020792079207920793,
+      0.17425742574257425,
+      0.3594059405940594,
+      0.21782178217821782,
+      0.07524752475247524,
+      0.054455445544554455,
+      0.04356435643564356,
+      0.033663366336633666,
+      0.0049504950495049506
     ],
-    "hurry_hist_late_n": 1368,
+    "hurry_hist_late_n": 1010,
     "hurry_hist_late_median_seconds": 21.5,
-    "burn_n": 1408,
+    "burn_n": 1069,
     "burn_median_seconds": 44.0,
-    "free_kick_n": 243,
-    "free_kick_mean_yardline_100": 61.56378600823045,
+    "free_kick_n": 217,
+    "free_kick_mean_yardline_100": 62.336405529953915,
     "adjust": {
       "protect": {
-        "n": 4539,
-        "tilt": -0.036267681128720156,
-        "turnover_scale": 0.5088583778725677,
-        "first_down_rate_observed": 0.22273628552544614,
-        "first_down_rate_generic_model": 0.2981086287348852,
-        "first_down_rate_adjusted_model": 0.2227362855251849,
-        "turnover_rate_observed": 0.0103547036792245,
-        "turnover_rate_generic_model": 0.020348891026449024,
-        "mean_gain_observed_without_turnovers": 4.775823686553873
+        "n": 3387,
+        "tilt": -0.03555653852226895,
+        "turnover_scale": 0.5155677749306132,
+        "first_down_rate_observed": 0.22586359610274578,
+        "first_down_rate_generic_model": 0.30001059431651117,
+        "first_down_rate_adjusted_model": 0.22586359610250864,
+        "turnover_rate_observed": 0.010628875110717449,
+        "turnover_rate_generic_model": 0.020615863961140544,
+        "mean_gain_observed_without_turnovers": 4.7967770814682185
       },
       "chase": {
-        "n": 7488,
-        "tilt": 0.012715328621652588,
-        "turnover_scale": 1.4396563152626567,
-        "first_down_rate_observed": 0.3175747863247863,
-        "first_down_rate_generic_model": 0.2866496845324573,
-        "first_down_rate_adjusted_model": 0.31757478632537806,
-        "turnover_rate_observed": 0.027777777777777776,
-        "turnover_rate_generic_model": 0.01929472852880855,
-        "mean_gain_observed_without_turnovers": 6.060302197802198
+        "n": 5562,
+        "tilt": 0.012711440446673807,
+        "turnover_scale": 1.4862420694337046,
+        "first_down_rate_observed": 0.31859043509528945,
+        "first_down_rate_generic_model": 0.28796784451674845,
+        "first_down_rate_adjusted_model": 0.31859043509475116,
+        "turnover_rate_observed": 0.029306005034160375,
+        "turnover_rate_generic_model": 0.019718191024781513,
+        "mean_gain_observed_without_turnovers": 6.078162622707909
       }
     }
   },
   "coach_table": {
-    "n": 31241,
+    "n": 23286,
     "n_by_situation": [
-      22324,
-      1038,
-      2569,
-      149,
-      206,
-      252,
-      337,
-      1654,
-      255,
-      2457
+      16706,
+      764,
+      1919,
+      104,
+      147,
+      175,
+      250,
+      1244,
+      191,
+      1786
     ],
     "first_season": 2018,
+    "last_season": 2023,
     "situations": [
       "neutral",
       "q4_trail_1_8_before_5min",
@@ -335,14 +417,14 @@
     "n_states": 60,
     "games_per_state": 4000,
     "seed": 20261118,
-    "simulate_seconds": 6.072038650512695,
+    "simulate_seconds": 6.479304552078247,
     "states_with_value_between_0.02_and_0.98": 52,
-    "max_abs_z": 2.6662264354291008,
-    "share_abs_z_below_2": 0.9230769230769231,
-    "mean_z": -0.008275989102078812,
-    "rms_z": 1.0322514984532454,
-    "max_abs_difference": 0.018797587871551502,
-    "max_abs_difference_in_near_certain_states": 0.0037251176834106614,
+    "max_abs_z": 3.6162763183528637,
+    "share_abs_z_below_2": 0.9423076923076923,
+    "mean_z": 0.21197979397880398,
+    "rms_z": 1.119025047509383,
+    "max_abs_difference": 0.024700938224792468,
+    "max_abs_difference_in_near_certain_states": 0.004521893352270125,
     "expected_if_correct": "z scores behave like standard normal draws: rms near 1, about 95% below 2 in absolute value",
     "states": [
       {
@@ -353,9 +435,9 @@
         "yardline_100": 93,
         "off_timeouts": 1,
         "def_timeouts": 0,
-        "dp_value": 0.014290530234575272,
-        "simulated": 0.012875,
-        "standard_error": 0.0017781123681449385,
+        "dp_value": 0.013853106647729874,
+        "simulated": 0.018375,
+        "standard_error": 0.002105045093044327,
         "z": null
       },
       {
@@ -366,10 +448,10 @@
         "yardline_100": 47,
         "off_timeouts": 2,
         "def_timeouts": 3,
-        "dp_value": 0.8485608100891113,
-        "simulated": 0.846875,
-        "standard_error": 0.005575958087517337,
-        "z": -0.3023355022852908
+        "dp_value": 0.8461287617683411,
+        "simulated": 0.843375,
+        "standard_error": 0.005643715739098666,
+        "z": -0.4879341723863772
       },
       {
         "seconds": 95,
@@ -379,10 +461,10 @@
         "yardline_100": 59,
         "off_timeouts": 0,
         "def_timeouts": 2,
-        "dp_value": 0.13814347982406616,
-        "simulated": 0.136875,
-        "standard_error": 0.005319838681177278,
-        "z": -0.23844328749184016
+        "dp_value": 0.14360074698925018,
+        "simulated": 0.145,
+        "standard_error": 0.005453783090662847,
+        "z": 0.2565655779646607
       },
       {
         "seconds": 205,
@@ -392,10 +474,10 @@
         "yardline_100": 19,
         "off_timeouts": 1,
         "def_timeouts": 3,
-        "dp_value": 0.8879593014717102,
-        "simulated": 0.88975,
-        "standard_error": 0.0044537887663201985,
-        "z": 0.4020618449243033
+        "dp_value": 0.8879953026771545,
+        "simulated": 0.891375,
+        "standard_error": 0.004462009339271939,
+        "z": 0.7574384242317496
       },
       {
         "seconds": 190,
@@ -405,10 +487,10 @@
         "yardline_100": 88,
         "off_timeouts": 1,
         "def_timeouts": 3,
-        "dp_value": 0.7039129137992859,
-        "simulated": 0.722,
-        "standard_error": 0.007057194910160837,
-        "z": 2.5629285333571543
+        "dp_value": 0.6997905373573303,
+        "simulated": 0.706875,
+        "standard_error": 0.007183144060489807,
+        "z": 0.9862620856564904
       },
       {
         "seconds": 2275,
@@ -418,10 +500,10 @@
         "yardline_100": 48,
         "off_timeouts": 1,
         "def_timeouts": 1,
-        "dp_value": 0.33180463314056396,
-        "simulated": 0.3365,
-        "standard_error": 0.007340261405426921,
-        "z": 0.6396729762191578
+        "dp_value": 0.33430612087249756,
+        "simulated": 0.330125,
+        "standard_error": 0.007292204474214229,
+        "z": -0.5733685728756384
       },
       {
         "seconds": 130,
@@ -431,10 +513,10 @@
         "yardline_100": 24,
         "off_timeouts": 3,
         "def_timeouts": 0,
-        "dp_value": 0.6574596762657166,
-        "simulated": 0.655625,
-        "standard_error": 0.006571117853436355,
-        "z": -0.27920306812897877
+        "dp_value": 0.6578704714775085,
+        "simulated": 0.656625,
+        "standard_error": 0.006588932185396204,
+        "z": -0.18902478314604756
       },
       {
         "seconds": 295,
@@ -444,10 +526,10 @@
         "yardline_100": 11,
         "off_timeouts": 2,
         "def_timeouts": 1,
-        "dp_value": 0.07417138665914536,
-        "simulated": 0.065375,
-        "standard_error": 0.0032991896495579032,
-        "z": -2.6662264354291008
+        "dp_value": 0.07612267881631851,
+        "simulated": 0.077,
+        "standard_error": 0.0038184093546920817,
+        "z": 0.22976090360857462
       },
       {
         "seconds": 2015,
@@ -457,10 +539,10 @@
         "yardline_100": 84,
         "off_timeouts": 3,
         "def_timeouts": 3,
-        "dp_value": 0.21191537380218506,
-        "simulated": 0.212375,
-        "standard_error": 0.006326222399169192,
-        "z": 0.07265413208920876
+        "dp_value": 0.21438081562519073,
+        "simulated": 0.208625,
+        "standard_error": 0.006283174145585176,
+        "z": -0.9160681355991079
       },
       {
         "seconds": 760,
@@ -470,10 +552,10 @@
         "yardline_100": 64,
         "off_timeouts": 2,
         "def_timeouts": 1,
-        "dp_value": 0.759710967540741,
-        "simulated": 0.763375,
-        "standard_error": 0.006515771431208281,
-        "z": 0.5623328715475833
+        "dp_value": 0.7565526366233826,
+        "simulated": 0.766125,
+        "standard_error": 0.006453971342805141,
+        "z": 1.483174137004591
       },
       {
         "seconds": 2485,
@@ -483,10 +565,10 @@
         "yardline_100": 91,
         "off_timeouts": 3,
         "def_timeouts": 0,
-        "dp_value": 0.7378455400466919,
-        "simulated": 0.744625,
-        "standard_error": 0.006779493147997865,
-        "z": 0.9999951036620212
+        "dp_value": 0.7342812418937683,
+        "simulated": 0.740125,
+        "standard_error": 0.006844751353683346,
+        "z": 0.8537575441782904
       },
       {
         "seconds": 740,
@@ -496,10 +578,10 @@
         "yardline_100": 78,
         "off_timeouts": 1,
         "def_timeouts": 0,
-        "dp_value": 0.45041152834892273,
-        "simulated": 0.4445,
-        "standard_error": 0.007488236608174184,
-        "z": -0.7894419819039478
+        "dp_value": 0.44837650656700134,
+        "simulated": 0.450625,
+        "standard_error": 0.00753117868223494,
+        "z": 0.2985579718487566
       },
       {
         "seconds": 265,
@@ -509,10 +591,10 @@
         "yardline_100": 99,
         "off_timeouts": 1,
         "def_timeouts": 2,
-        "dp_value": 0.13634032011032104,
-        "simulated": 0.14,
-        "standard_error": 0.005093500760773478,
-        "z": 0.7184999201066624
+        "dp_value": 0.13336335122585297,
+        "simulated": 0.137875,
+        "standard_error": 0.005097253779610154,
+        "z": 0.8851136257320289
       },
       {
         "seconds": 1095,
@@ -522,10 +604,10 @@
         "yardline_100": 79,
         "off_timeouts": 0,
         "def_timeouts": 1,
-        "dp_value": 0.4801846146583557,
-        "simulated": 0.479375,
-        "standard_error": 0.007734049866903498,
-        "z": -0.10468185133125665
+        "dp_value": 0.47805508971214294,
+        "simulated": 0.490125,
+        "standard_error": 0.00774540160958423,
+        "z": 1.5583324011141806
       },
       {
         "seconds": 3495,
@@ -535,10 +617,10 @@
         "yardline_100": 50,
         "off_timeouts": 2,
         "def_timeouts": 0,
-        "dp_value": 0.49821165204048157,
+        "dp_value": 0.49852773547172546,
         "simulated": 0.50425,
-        "standard_error": 0.007779892953955085,
-        "z": 0.7761479489828556
+        "standard_error": 0.007797947446283541,
+        "z": 0.7338167598194973
       },
       {
         "seconds": 1165,
@@ -548,10 +630,10 @@
         "yardline_100": 26,
         "off_timeouts": 0,
         "def_timeouts": 1,
-        "dp_value": 0.8158180713653564,
-        "simulated": 0.81475,
-        "standard_error": 0.00602198965251519,
-        "z": -0.1773618732324411
+        "dp_value": 0.813487708568573,
+        "simulated": 0.818125,
+        "standard_error": 0.0059918483036330294,
+        "z": 0.7739333835630101
       },
       {
         "seconds": 20,
@@ -561,10 +643,10 @@
         "yardline_100": 88,
         "off_timeouts": 2,
         "def_timeouts": 3,
-        "dp_value": 0.07574594765901566,
-        "simulated": 0.07275,
-        "standard_error": 0.004106623841429843,
-        "z": -0.7295403169851886
+        "dp_value": 0.08033262193202972,
+        "simulated": 0.07425,
+        "standard_error": 0.0041453871200407815,
+        "z": -1.4673230161360389
       },
       {
         "seconds": 1860,
@@ -574,10 +656,10 @@
         "yardline_100": 32,
         "off_timeouts": 3,
         "def_timeouts": 0,
-        "dp_value": 0.40216344594955444,
-        "simulated": 0.401,
-        "standard_error": 0.007616987593530661,
-        "z": -0.15274357943586128
+        "dp_value": 0.4021253287792206,
+        "simulated": 0.39525,
+        "standard_error": 0.007624425183251523,
+        "z": -0.9017504420298513
       },
       {
         "seconds": 120,
@@ -587,10 +669,10 @@
         "yardline_100": 48,
         "off_timeouts": 2,
         "def_timeouts": 1,
-        "dp_value": 0.8898340463638306,
-        "simulated": 0.887,
-        "standard_error": 0.00492077229710947,
-        "z": -0.5759352785934261
+        "dp_value": 0.8877015113830566,
+        "simulated": 0.883125,
+        "standard_error": 0.004985045997154891,
+        "z": -0.9180479750173897
       },
       {
         "seconds": 115,
@@ -600,10 +682,10 @@
         "yardline_100": 3,
         "off_timeouts": 3,
         "def_timeouts": 3,
-        "dp_value": 0.9143571257591248,
-        "simulated": 0.910125,
-        "standard_error": 0.004372784706997362,
-        "z": -0.9678330955449317
+        "dp_value": 0.9109435677528381,
+        "simulated": 0.924875,
+        "standard_error": 0.004001366465815146,
+        "z": 3.4816686664873617
       },
       {
         "seconds": 3230,
@@ -613,10 +695,10 @@
         "yardline_100": 92,
         "off_timeouts": 3,
         "def_timeouts": 3,
-        "dp_value": 0.7334718704223633,
-        "simulated": 0.734625,
-        "standard_error": 0.006871837624955205,
-        "z": 0.16780512587332969
+        "dp_value": 0.7298247814178467,
+        "simulated": 0.73475,
+        "standard_error": 0.006871907258905637,
+        "z": 0.716717847984707
       },
       {
         "seconds": 3145,
@@ -626,10 +708,10 @@
         "yardline_100": 54,
         "off_timeouts": 3,
         "def_timeouts": 2,
-        "dp_value": 0.795149028301239,
-        "simulated": 0.789875,
-        "standard_error": 0.00635236145805243,
-        "z": -0.8302468831576822
+        "dp_value": 0.791965901851654,
+        "simulated": 0.7885,
+        "standard_error": 0.006356940105113466,
+        "z": -0.5452154329511668
       },
       {
         "seconds": 95,
@@ -639,10 +721,10 @@
         "yardline_100": 37,
         "off_timeouts": 2,
         "def_timeouts": 1,
-        "dp_value": 0.8398873805999756,
-        "simulated": 0.838625,
-        "standard_error": 0.005782962246439968,
-        "z": -0.21829307302719508
+        "dp_value": 0.843297004699707,
+        "simulated": 0.839125,
+        "standard_error": 0.005805315115801209,
+        "z": -0.7186525824156283
       },
       {
         "seconds": 2795,
@@ -652,10 +734,10 @@
         "yardline_100": 55,
         "off_timeouts": 3,
         "def_timeouts": 3,
-        "dp_value": 0.5978208780288696,
-        "simulated": 0.584,
-        "standard_error": 0.007676164406785461,
-        "z": -1.800492706572633
+        "dp_value": 0.5971574783325195,
+        "simulated": 0.6065,
+        "standard_error": 0.007599880755643471,
+        "z": 1.229298454524171
       },
       {
         "seconds": 180,
@@ -665,10 +747,10 @@
         "yardline_100": 29,
         "off_timeouts": 2,
         "def_timeouts": 0,
-        "dp_value": 0.14230111241340637,
-        "simulated": 0.136375,
-        "standard_error": 0.004632476642547699,
-        "z": -1.2792535981675717
+        "dp_value": 0.14398092031478882,
+        "simulated": 0.148625,
+        "standard_error": 0.004872707393610866,
+        "z": 0.9530799430518945
       },
       {
         "seconds": 1280,
@@ -678,10 +760,10 @@
         "yardline_100": 10,
         "off_timeouts": 2,
         "def_timeouts": 1,
-        "dp_value": 0.280666321516037,
-        "simulated": 0.283,
-        "standard_error": 0.00697828775560309,
-        "z": 0.3344199273079849
+        "dp_value": 0.2832571268081665,
+        "simulated": 0.288875,
+        "standard_error": 0.007055383305940933,
+        "z": 0.7962534348917656
       },
       {
         "seconds": 105,
@@ -691,10 +773,10 @@
         "yardline_100": 73,
         "off_timeouts": 0,
         "def_timeouts": 0,
-        "dp_value": 0.2772241532802582,
-        "simulated": 0.273375,
-        "standard_error": 0.00704589613489654,
-        "z": -0.5462971929424729
+        "dp_value": 0.2730759382247925,
+        "simulated": 0.248375,
+        "standard_error": 0.006830489722102656,
+        "z": -3.6162763183528637
       },
       {
         "seconds": 1235,
@@ -704,10 +786,10 @@
         "yardline_100": 71,
         "off_timeouts": 2,
         "def_timeouts": 1,
-        "dp_value": 0.4904573857784271,
-        "simulated": 0.488375,
-        "standard_error": 0.007675893423162544,
-        "z": -0.2712890426726583
+        "dp_value": 0.49105238914489746,
+        "simulated": 0.495375,
+        "standard_error": 0.00769806971543841,
+        "z": 0.5615187982038655
       },
       {
         "seconds": 30,
@@ -717,9 +799,9 @@
         "yardline_100": 95,
         "off_timeouts": 0,
         "def_timeouts": 0,
-        "dp_value": 0.0059370980598032475,
-        "simulated": 0.006125,
-        "standard_error": 0.0009219523272653528,
+        "dp_value": 0.005899615120142698,
+        "simulated": 0.00425,
+        "standard_error": 0.0007257646829379341,
         "z": null
       },
       {
@@ -730,10 +812,10 @@
         "yardline_100": 87,
         "off_timeouts": 1,
         "def_timeouts": 3,
-        "dp_value": 0.7908113598823547,
-        "simulated": 0.7955,
-        "standard_error": 0.006188290353562929,
-        "z": 0.7576632397259363
+        "dp_value": 0.7873975038528442,
+        "simulated": 0.78325,
+        "standard_error": 0.006381505259341247,
+        "z": -0.649925634202545
       },
       {
         "seconds": 95,
@@ -743,7 +825,7 @@
         "yardline_100": 5,
         "off_timeouts": 3,
         "def_timeouts": 1,
-        "dp_value": 0.99981689453125,
+        "dp_value": 0.9997920989990234,
         "simulated": 1.0,
         "standard_error": 0.0,
         "z": null
@@ -756,9 +838,9 @@
         "yardline_100": 3,
         "off_timeouts": 0,
         "def_timeouts": 2,
-        "dp_value": 0.9915497899055481,
-        "simulated": 0.992125,
-        "standard_error": 0.0013578921510009544,
+        "dp_value": 0.9913381934165955,
+        "simulated": 0.99175,
+        "standard_error": 0.0013970448722213616,
         "z": null
       },
       {
@@ -782,10 +864,10 @@
         "yardline_100": 13,
         "off_timeouts": 1,
         "def_timeouts": 2,
-        "dp_value": 0.3725619614124298,
-        "simulated": 0.3725,
-        "standard_error": 0.0074915577485593745,
-        "z": -0.008270831582620711
+        "dp_value": 0.3739011287689209,
+        "simulated": 0.366,
+        "standard_error": 0.007469420994963399,
+        "z": -1.057796685211425
       },
       {
         "seconds": 100,
@@ -795,10 +877,10 @@
         "yardline_100": 79,
         "off_timeouts": 2,
         "def_timeouts": 0,
-        "dp_value": 0.03147498518228531,
-        "simulated": 0.035,
-        "standard_error": 0.0026112736356038984,
-        "z": 1.3499216511254206
+        "dp_value": 0.03229604288935661,
+        "simulated": 0.03325,
+        "standard_error": 0.0027394998402993204,
+        "z": 0.3482230940882838
       },
       {
         "seconds": 5,
@@ -821,10 +903,10 @@
         "yardline_100": 13,
         "off_timeouts": 0,
         "def_timeouts": 2,
-        "dp_value": 0.8375362753868103,
-        "simulated": 0.846375,
-        "standard_error": 0.004509347496451122,
-        "z": 1.9600894852627357
+        "dp_value": 0.8395680785179138,
+        "simulated": 0.837625,
+        "standard_error": 0.0046823300656564145,
+        "z": -0.41498110783898057
       },
       {
         "seconds": 90,
@@ -834,10 +916,10 @@
         "yardline_100": 35,
         "off_timeouts": 3,
         "def_timeouts": 2,
-        "dp_value": 0.02744806557893753,
-        "simulated": 0.0275,
-        "standard_error": 0.002573603990516024,
-        "z": 0.020179647394802352
+        "dp_value": 0.027417710050940514,
+        "simulated": 0.03075,
+        "standard_error": 0.0027066786612008455,
+        "z": 1.23113615104243
       },
       {
         "seconds": 1505,
@@ -847,10 +929,10 @@
         "yardline_100": 62,
         "off_timeouts": 0,
         "def_timeouts": 1,
-        "dp_value": 0.8050486445426941,
-        "simulated": 0.803375,
-        "standard_error": 0.00612935782474396,
-        "z": -0.27305381583984356
+        "dp_value": 0.8022260665893555,
+        "simulated": 0.8015,
+        "standard_error": 0.00616892920205768,
+        "z": -0.11769734512649214
       },
       {
         "seconds": 3390,
@@ -860,10 +942,10 @@
         "yardline_100": 18,
         "off_timeouts": 3,
         "def_timeouts": 1,
-        "dp_value": 0.5751267075538635,
-        "simulated": 0.563875,
-        "standard_error": 0.007735591192258676,
-        "z": -1.4545375103487315
+        "dp_value": 0.5743969678878784,
+        "simulated": 0.569,
+        "standard_error": 0.007725590592310726,
+        "z": -0.6985832116511669
       },
       {
         "seconds": 1170,
@@ -873,10 +955,10 @@
         "yardline_100": 73,
         "off_timeouts": 1,
         "def_timeouts": 3,
-        "dp_value": 0.6682078242301941,
-        "simulated": 0.668125,
-        "standard_error": 0.007231380994924137,
-        "z": -0.011453445787500204
+        "dp_value": 0.667492687702179,
+        "simulated": 0.662625,
+        "standard_error": 0.007292815117891719,
+        "z": -0.6674634724027031
       },
       {
         "seconds": 2225,
@@ -886,10 +968,10 @@
         "yardline_100": 1,
         "off_timeouts": 3,
         "def_timeouts": 1,
-        "dp_value": 0.4347338378429413,
-        "simulated": 0.433125,
-        "standard_error": 0.007682614046908122,
-        "z": -0.2094128161480116
+        "dp_value": 0.4364669919013977,
+        "simulated": 0.433,
+        "standard_error": 0.007723923873265453,
+        "z": -0.4488640693880848
       },
       {
         "seconds": 2990,
@@ -899,10 +981,10 @@
         "yardline_100": 12,
         "off_timeouts": 3,
         "def_timeouts": 0,
-        "dp_value": 0.3130475878715515,
-        "simulated": 0.29425,
-        "standard_error": 0.0070916665442616504,
-        "z": -2.6506587350418935
+        "dp_value": 0.31622642278671265,
+        "simulated": 0.33325,
+        "standard_error": 0.007349650289299484,
+        "z": 2.316243160313674
       },
       {
         "seconds": 140,
@@ -912,10 +994,10 @@
         "yardline_100": 69,
         "off_timeouts": 3,
         "def_timeouts": 2,
-        "dp_value": 0.8888412117958069,
-        "simulated": 0.893125,
-        "standard_error": 0.004187488339536004,
-        "z": 1.0229970466419802
+        "dp_value": 0.885505199432373,
+        "simulated": 0.891375,
+        "standard_error": 0.004370014570198823,
+        "z": 1.3431993128022734
       },
       {
         "seconds": 125,
@@ -925,10 +1007,10 @@
         "yardline_100": 7,
         "off_timeouts": 2,
         "def_timeouts": 2,
-        "dp_value": 0.7695671319961548,
-        "simulated": 0.775125,
-        "standard_error": 0.005533844377442323,
-        "z": 1.0043412182859304
+        "dp_value": 0.7678106427192688,
+        "simulated": 0.763,
+        "standard_error": 0.005792365665252842,
+        "z": -0.8305143351233504
       },
       {
         "seconds": 1985,
@@ -938,10 +1020,10 @@
         "yardline_100": 95,
         "off_timeouts": 3,
         "def_timeouts": 2,
-        "dp_value": 0.44548216462135315,
-        "simulated": 0.432625,
-        "standard_error": 0.007701835972269858,
-        "z": -1.6693635994904146
+        "dp_value": 0.4451346695423126,
+        "simulated": 0.437,
+        "standard_error": 0.007714126651799281,
+        "z": -1.0545159432163655
       },
       {
         "seconds": 185,
@@ -951,10 +1033,10 @@
         "yardline_100": 56,
         "off_timeouts": 0,
         "def_timeouts": 2,
-        "dp_value": 0.8377076387405396,
-        "simulated": 0.840375,
-        "standard_error": 0.005786997480883329,
-        "z": 0.4609231761844979
+        "dp_value": 0.8386412858963013,
+        "simulated": 0.833375,
+        "standard_error": 0.005885333664606451,
+        "z": -0.8948151789544198
       },
       {
         "seconds": 2000,
@@ -964,10 +1046,10 @@
         "yardline_100": 86,
         "off_timeouts": 3,
         "def_timeouts": 2,
-        "dp_value": 0.6059414744377136,
-        "simulated": 0.607125,
-        "standard_error": 0.0076028240538467025,
-        "z": 0.1556692031676821
+        "dp_value": 0.60467928647995,
+        "simulated": 0.61575,
+        "standard_error": 0.0075659919623933,
+        "z": 1.4632203649008562
       },
       {
         "seconds": 265,
@@ -977,10 +1059,10 @@
         "yardline_100": 87,
         "off_timeouts": 2,
         "def_timeouts": 0,
-        "dp_value": 0.4973514676094055,
-        "simulated": 0.49525,
-        "standard_error": 0.007833859800570853,
-        "z": -0.26825443177478875
+        "dp_value": 0.49060824513435364,
+        "simulated": 0.494375,
+        "standard_error": 0.007848660066772543,
+        "z": 0.479923303290074
       },
       {
         "seconds": 260,
@@ -990,10 +1072,10 @@
         "yardline_100": 80,
         "off_timeouts": 0,
         "def_timeouts": 1,
-        "dp_value": 0.21624444425106049,
-        "simulated": 0.21775,
-        "standard_error": 0.0063999011222830625,
-        "z": 0.23524672024970758
+        "dp_value": 0.2143712341785431,
+        "simulated": 0.21575,
+        "standard_error": 0.006424113508881985,
+        "z": 0.21462351490997533
       },
       {
         "seconds": 100,
@@ -1003,10 +1085,10 @@
         "yardline_100": 51,
         "off_timeouts": 1,
         "def_timeouts": 0,
-        "dp_value": 0.3464788794517517,
-        "simulated": 0.347125,
-        "standard_error": 0.007442558941234526,
-        "z": 0.0868143004778318
+        "dp_value": 0.3480473756790161,
+        "simulated": 0.3515,
+        "standard_error": 0.007476174656868311,
+        "z": 0.46181696916510145
       },
       {
         "seconds": 385,
@@ -1016,10 +1098,10 @@
         "yardline_100": 57,
         "off_timeouts": 3,
         "def_timeouts": 1,
-        "dp_value": 0.8982267379760742,
-        "simulated": 0.903125,
-        "standard_error": 0.004154898746509955,
-        "z": 1.1789124892731007
+        "dp_value": 0.8961939215660095,
+        "simulated": 0.899125,
+        "standard_error": 0.004294232596605592,
+        "z": 0.6825616377434524
       },
       {
         "seconds": 100,
@@ -1029,9 +1111,9 @@
         "yardline_100": 47,
         "off_timeouts": 0,
         "def_timeouts": 3,
-        "dp_value": 0.9847251176834106,
-        "simulated": 0.981,
-        "standard_error": 0.0019773087771008356,
+        "dp_value": 0.9841465950012207,
+        "simulated": 0.987375,
+        "standard_error": 0.0016415015515527241,
         "z": null
       },
       {
@@ -1042,10 +1124,10 @@
         "yardline_100": 49,
         "off_timeouts": 3,
         "def_timeouts": 3,
-        "dp_value": 0.7445493340492249,
-        "simulated": 0.737125,
-        "standard_error": 0.006702783645154452,
-        "z": -1.107649365139809
+        "dp_value": 0.7435206174850464,
+        "simulated": 0.749,
+        "standard_error": 0.006571700693123508,
+        "z": 0.83378455149169
       },
       {
         "seconds": 3040,
@@ -1055,10 +1137,10 @@
         "yardline_100": 4,
         "off_timeouts": 1,
         "def_timeouts": 1,
-        "dp_value": 0.32522058486938477,
-        "simulated": 0.3265,
-        "standard_error": 0.007323297583739172,
-        "z": 0.174704785103379
+        "dp_value": 0.33591166138648987,
+        "simulated": 0.33175,
+        "standard_error": 0.007341098989592771,
+        "z": -0.56689896054933
       },
       {
         "seconds": 140,
@@ -1068,10 +1150,10 @@
         "yardline_100": 18,
         "off_timeouts": 2,
         "def_timeouts": 1,
-        "dp_value": 0.045349352061748505,
-        "simulated": 0.04825,
-        "standard_error": 0.0033042373363606913,
-        "z": 0.8778570190258456
+        "dp_value": 0.047220680862665176,
+        "simulated": 0.0475,
+        "standard_error": 0.0033069529025977974,
+        "z": 0.08446420180807633
       },
       {
         "seconds": 20,
@@ -1094,10 +1176,10 @@
         "yardline_100": 54,
         "off_timeouts": 3,
         "def_timeouts": 3,
-        "dp_value": 0.37382736802101135,
-        "simulated": 0.391875,
-        "standard_error": 0.007564249539362779,
-        "z": 2.385911766272715
+        "dp_value": 0.3759293556213379,
+        "simulated": 0.38375,
+        "standard_error": 0.00754960160372718,
+        "z": 1.0359015997348917
       },
       {
         "seconds": 2885,
@@ -1107,10 +1189,10 @@
         "yardline_100": 87,
         "off_timeouts": 2,
         "def_timeouts": 1,
-        "dp_value": 0.2895375192165375,
-        "simulated": 0.289625,
-        "standard_error": 0.007067617338520106,
-        "z": 0.012377690991524932
+        "dp_value": 0.29124948382377625,
+        "simulated": 0.29675,
+        "standard_error": 0.0071140606811440675,
+        "z": 0.7731893812493019
       },
       {
         "seconds": 2200,
@@ -1120,10 +1202,10 @@
         "yardline_100": 77,
         "off_timeouts": 2,
         "def_timeouts": 0,
-        "dp_value": 0.4943246841430664,
-        "simulated": 0.496125,
-        "standard_error": 0.007766876533958166,
-        "z": 0.23179406149464013
+        "dp_value": 0.4930760860443115,
+        "simulated": 0.500375,
+        "standard_error": 0.007805244380783348,
+        "z": 0.9351294590671048
       }
     ]
   },

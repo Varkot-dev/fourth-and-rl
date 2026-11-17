@@ -27,6 +27,7 @@ import numpy as np  # noqa: E402
 import polars as pl  # noqa: E402
 from matplotlib.colors import LinearSegmentedColormap  # noqa: E402
 
+from fourth_and_rl import components as cm  # noqa: E402
 from fourth_and_rl import mdp, style  # noqa: E402
 from fourth_and_rl import mdp_game as mg  # noqa: E402
 from fourth_and_rl.components import ComponentModels  # noqa: E402
@@ -230,6 +231,32 @@ def map_summary(maps: dict[str, np.ndarray], q: dict) -> dict:
     return out
 
 
+def defense_rate_label(cfg: dict) -> str:
+    rates = cfg["clock"]["defense_timeout_rate_before_warning"][1:]
+    rates += cfg["clock"]["defense_timeout_rate_after_warning"][1:]
+    return (
+        f"defense calls timeouts at measured rates ({100 * min(rates):.0f}% to "
+        f"{100 * max(rates):.0f}%), not optimally"
+    )
+
+
+KICKOFF_SCENARIO = "every kickoff starts at the touchback spot (no returns)"
+
+
+class _FixedKickoff:
+    """The component models with the kickoff table replaced by a fixed touchback spot."""
+
+    def __init__(self, models: Any, spot: int) -> None:
+        self._models = models
+        self._table = cm.constant_kickoff(spot)
+
+    def kickoff_start(self, season: int | None = None) -> np.ndarray:
+        return self._table.copy()
+
+    def __getattr__(self, name: str) -> Any:
+        return getattr(self._models, name)
+
+
 def sensitivity(cfg: dict, models: Any, tables: dict, q: dict, base_maps: dict) -> list[dict]:
     """Re-solve the last 5:00 with one assumption changed at a time."""
     h = q["headline"]
@@ -238,13 +265,7 @@ def sensitivity(cfg: dict, models: Any, tables: dict, q: dict, base_maps: dict) 
         scenarios.append(
             (f"fourth-down conversion probability {shift:+.2f}", {"go_convert_shift": shift}, {})
         )
-    scenarios.append(
-        (
-            "defense calls timeouts at measured rates (40% to 94%), not optimally",
-            {"defense_timeout": "empirical"},
-            {},
-        )
-    )
+    scenarios.append((defense_rate_label(cfg), {"defense_timeout": "empirical"}, {}))
     for tilt in q["chase_tilts"]:
         word = "better" if tilt > 0 else "worse"
         scenarios.append(
@@ -257,10 +278,14 @@ def sensitivity(cfg: dict, models: Any, tables: dict, q: dict, base_maps: dict) 
             {"calibrate_modes": False},
         )
     )
+    scenarios.append((KICKOFF_SCENARIO, {}, {}))
+    era = models.kickoff_era()
+    spot = models.kickoff_era_info[era]["touchback_yardline_100"]
     rows = []
     for label, kw, table_cfg in scenarios:
         c = {**cfg, "tables": {**cfg["tables"], **table_cfg}}
-        model = mg.build_model(c, models, tables, horizon="endgame", **kw)
+        used = _FixedKickoff(models, spot) if label == KICKOFF_SCENARIO else models
+        model = mg.build_model(c, used, tables, horizon="endgame", **kw)
         sol = mg.solve(model)
         maps = action_maps(sol, q)
         ex = headline_exact(sol, h, q)
@@ -345,9 +370,9 @@ def one_step_comparison(maps: dict, q: dict, exact: dict, dec_coach: dict) -> di
     """The M2 one-step engine on the same grid, if it can be loaded."""
     out: dict[str, Any] = {"saved_one_step_answer_found": ONE_STEP.exists()}
     try:
-        from fourth_and_rl import data, decision, wp
+        from fourth_and_rl import decision, wp
 
-        engine = decision.load_engine(data.load_plays(), decision.load_config())
+        engine = decision.load_engine(config=decision.load_config())
     except Exception as err:  # the engine belongs to another milestone and may be absent
         out["status"] = f"one-step engine not available ({type(err).__name__}: {err})"
         return out
@@ -625,9 +650,8 @@ def figure(maps: dict, q: dict, exact: dict, dec: dict, sens: list[dict]) -> Non
     ax = fig.add_subplot(right[1])
     labels = {
         "base model": "Base model",
-        "defense calls timeouts at measured rates (40% to 94%), not optimally": (
-            "Defense uses timeouts\nas real teams do"
-        ),
+        defense_rate_label(mdp.load_config()): "Defense uses timeouts\nas real teams do",
+        KICKOFF_SCENARIO: "Kickoffs to the touchback\nspot (no returns)",
         "no protect or chase tables: every play is the generic play": (
             "Generic plays only (no\nprotect or chase tables)"
         ),
@@ -681,7 +705,7 @@ def main() -> None:
     h = q["headline"]
     sol = mg.load_solution()
     bundle = joblib.load(mg.SOLUTION_DIR / "tables.joblib")
-    models = ComponentModels.load()
+    models = ComponentModels.load()  # the development bundle the game was solved with
     tick = sol.model.clock.tick_seconds
 
     maps = action_maps(sol, q)
@@ -712,9 +736,12 @@ def main() -> None:
         v = read_json(validation)
         facts = {
             "source": "results/m4_simulator_validation.json (40,000 simulated games) against "
-            "results/research/endgame_clock_stats.json (real, 2010 to 2025)",
+            "real test-season drives (out of sample) from "
+            "results/research/endgame_clock_stats_test.json, and development-season drives "
+            "(in sample) from endgame_clock_stats_dev.json",
             "what": "drives by a team down 4 to 8 starting with 1:00 to 5:00 left",
             "real": v["late_trailing_drives_real"],
+            "real_in_sample": v.get("late_trailing_drives_real_in_sample"),
             "model_coach_like_policy": v["late_trailing_drives_coach"],
             "model_optimal_policy": v["late_trailing_drives_optimal"],
         }

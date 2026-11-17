@@ -9,6 +9,12 @@ and how often a team leading by d with t left goes on to win.
 Run:  .venv/bin/python scripts/validate_simulator.py     (needs scripts/solve_mdp.py first)
 Writes results/m4_simulator_validation.json and assets/m4_simulator_validation.png.
 The mismatches are the point: a later RL milestone may trust the simulator only this far.
+
+Out of sample. Every input of the solved game is fitted on development seasons (the
+solution's stamp says so and `splits.assert_can_score` checks it), so the comparison with
+real 2024 to 2025 games and drives is a true out-of-sample check. The same comparison on
+recent development seasons is kept, labelled in-sample, to show how much of the fit is
+lost out of sample.
 """
 
 from __future__ import annotations
@@ -24,7 +30,8 @@ import matplotlib.pyplot as plt  # noqa: E402
 import numpy as np  # noqa: E402
 import polars as pl  # noqa: E402
 
-from fourth_and_rl import data, mdp, style  # noqa: E402
+from fourth_and_rl import components as cm  # noqa: E402
+from fourth_and_rl import mdp, splits, style  # noqa: E402
 from fourth_and_rl import mdp_game as mg  # noqa: E402
 from fourth_and_rl.components import DRIVE_START_BINS  # noqa: E402
 from fourth_and_rl.io import read_json, write_json  # noqa: E402
@@ -78,6 +85,8 @@ def real_game_table(
     """One row per real game: regulation points, regulation margin (home), the home team's
     result (1, 0.5, 0), and the home margin at each checkpoint."""
     p = plays.filter(pl.col("season") >= first_season).sort("game_id", "order_sequence", "play_id")
+    if p.height == 0:
+        raise ValueError(f"no real games from season {first_season} on")
     home = pl.col("is_home") == 1
     margin = (
         pl.when(home).then(pl.col("score_differential")).otherwise(-pl.col("score_differential"))
@@ -157,7 +166,7 @@ def compare(sim: dict, real: dict, keys: list[str]) -> dict[str, dict[str, float
     return {k: {"simulated": sim[k], "real": real[k], "difference": sim[k] - real[k]} for k in keys}
 
 
-def figure(res: dict, sim_games: dict, real_games: pl.DataFrame) -> None:
+def figure(res: dict, sim_games: dict, real_games: pl.DataFrame, real_label: str) -> None:
     style.apply()
     fig, axes = plt.subplots(2, 3, figsize=(17, 9.6), gridspec_kw={"hspace": 0.5, "wspace": 0.24})
     real_c, sim_c = style.MUTED, style.BLUE
@@ -178,7 +187,7 @@ def figure(res: dict, sim_games: dict, real_games: pl.DataFrame) -> None:
         [100 * d["real"]["outcome_share"][k] for k in labels],
         0.38,
         color=real_c,
-        label="Real drives, 2021 to 2025",
+        label=f"Real drives, {real_label}",
     )
     ax.bar(
         x + 0.2,
@@ -203,7 +212,7 @@ def figure(res: dict, sim_games: dict, real_games: pl.DataFrame) -> None:
         [d["real"]["by_start"][k]["points_per_drive"] for k in names],
         0.38,
         color=real_c,
-        label="Real",
+        label=f"Real, {real_label}",
     )
     ax.bar(
         x + 0.2,
@@ -291,7 +300,7 @@ def figure(res: dict, sim_games: dict, real_games: pl.DataFrame) -> None:
     )
     style.title(ax, "Does a lead hold as often as in real games?")
     fig.suptitle(
-        "Simulator against real football",
+        f"Simulator against real football, out of sample ({real_label})",
         x=0.125,
         y=0.98,
         ha="left",
@@ -302,127 +311,11 @@ def figure(res: dict, sim_games: dict, real_games: pl.DataFrame) -> None:
     style.save(fig, FIG)
 
 
-def main() -> None:
-    cfg = mdp.load_config()
-    vcfg = cfg["validation"]
-    sol = mg.load_solution()
-    bundle = joblib.load(mg.SOLUTION_DIR / "tables.joblib")
-    sim = mg.Simulator(sol, coach=bundle["coach"])
-    tick = sol.model.clock.tick_seconds
-    cps_s = vcfg["checkpoints_seconds"]
-    cps_t = [c // tick for c in cps_s]
-    n = vcfg["n_games"]
-    targets = read_json(RESULTS / "m1_components.json")["drive_targets"]["recent_seasons"]
-    first_season = targets["seasons"][0]
-    plays = data.load_plays()
-    real_games = real_game_table(plays, first_season, cps_s)
-    real_summary = game_summary(
-        real_games["regulation_total"].to_numpy().astype(float),
-        real_games["regulation_margin"].to_numpy().astype(float),
-    )
-    clock_real = read_json(RESULTS / "research" / "endgame_clock_stats.json")
-
-    out: dict[str, Any] = {
-        "seed": vcfg["seed"],
-        "n_simulated_games": n,
-        "real_data": f"seasons {first_season} to {targets['seasons'][1]}; drive targets from "
-        "results/m1_components.json; games from the play-by-play cache",
-        "policy_note": "coach = fourth downs sampled from observed coach behavior by "
-        "situation, measured timeout rates, simple end-of-half kicking rules; "
-        "optimal = the solved policy of the game model",
-    }
-    by_policy = {}
-    for policy in ("coach", "optimal"):
-        g = simulate_games(sim, n, policy, vcfg["seed"], cps_t)
-        by_policy[policy] = g
-        total, margin = g["points"].sum(axis=1).astype(float), g["margin"].astype(float)
-        out[f"games_{policy}"] = game_summary(total, margin)
-        out[f"drives_{policy}"] = drive_summary(g["drives"], n)
-        out[f"late_trailing_drives_{policy}"] = mg.late_trailing_drive_stats(
-            g["drives"], g["result"], tick
-        )
-    g = by_policy["coach"]
-    keys = [
-        "points_per_game_mean",
-        "points_per_game_sd",
-        "margin_sd",
-        "abs_margin_mean",
-        "share_tied_after_regulation",
-        "share_decided_by_1_to_3",
-        "share_decided_by_4_to_8",
-        "share_decided_by_9_to_16",
-        "share_decided_by_17_plus",
-    ]
-    out["games"] = compare(out["games_coach"], real_summary, keys)
-    out["games_real"] = real_summary
-    sim_d = out["drives_coach"]
-    out["drives"] = {
-        "simulated": sim_d,
-        "real": targets,
-        "headline": compare(
-            sim_d,
-            targets,
-            [
-                "points_per_drive",
-                "plays_per_drive",
-                "drives_per_game",
-                "scrimmage_plays_per_game",
-                "mean_start_yardline_100",
-            ],
-        ),
-        "outcome_share": compare(
-            sim_d["outcome_share"], targets["outcome_share"], list(mg.DRIVE_RESULTS)
-        ),
-        "points_per_drive_by_start": {
-            k: {
-                "simulated": sim_d["by_start"][k]["points_per_drive"],
-                "real": targets["by_start"][k]["points_per_drive"],
-                "difference": sim_d["by_start"][k]["points_per_drive"]
-                - targets["by_start"][k]["points_per_drive"],
-            }
-            for k in DRIVE_START_BINS
-        },
-        "touchdown_share_by_start": {
-            k: {
-                "simulated": sim_d["by_start"][k]["outcome_share"]["touchdown"],
-                "real": targets["by_start"][k]["outcome_share"]["touchdown"],
-            }
-            for k in DRIVE_START_BINS
-        },
-    }
-    out["leader_win_rate"] = {}
-    home = real_games["home_result"].to_numpy()
-    for c_s, c_t in zip(cps_s, cps_t, strict=True):
-        real_m = real_games[f"m_{c_s}"].cast(pl.Float64).fill_null(np.nan).to_numpy()
-        out["leader_win_rate"][str(c_s)] = {
-            "simulated": lead_table(g["checkpoint_margin"][c_t], g["result"], vcfg["lead_bins"]),
-            "real": lead_table(real_m, home, vcfg["lead_bins"]),
-            "simulated_optimal_policy": lead_table(
-                by_policy["optimal"]["checkpoint_margin"][c_t],
-                by_policy["optimal"]["result"],
-                vcfg["lead_bins"],
-            ),
-        }
-    worst = []
-    for c, tab in out["leader_win_rate"].items():
-        for s_row, r_row in zip(tab["simulated"][:-1], tab["real"][:-1], strict=True):
-            worst.append(
-                {
-                    "seconds_left": int(c),
-                    "lead": s_row["lead"],
-                    "simulated": s_row["leader_win_rate"],
-                    "real": r_row["leader_win_rate"],
-                    "difference": s_row["leader_win_rate"] - r_row["leader_win_rate"],
-                    "real_n": r_row["n"],
-                    "real_standard_error": r_row["standard_error"],
-                }
-            )
-    worst.sort(key=lambda r: -abs(r["difference"]))
-    out["leader_win_rate_largest_gaps"] = worst[:8]
-    out["leader_win_rate_mean_abs_gap"] = float(np.mean([abs(r["difference"]) for r in worst]))
+def late_trailing_real(clock_real: dict, source: str) -> dict[str, Any]:
     real_late = clock_real["trailing_drives_down_4_to_8"]
-    out["late_trailing_drives_real"] = {
-        "source": "results/research/endgame_clock_stats.json (2010 to 2025)",
+    return {
+        "source": source,
+        "seasons": clock_real["seasons"],
         "td_rate": real_late["td_rate"],
         "trailing_team_win_rate": real_late["trailing_team_win_rate"],
         "by_time": {
@@ -460,15 +353,180 @@ def main() -> None:
         },
         "after_no_touchdown": real_late["after_no_touchdown"],
     }
+
+
+def comparison(
+    sim_out: dict, by_policy: dict, plays: pl.DataFrame, cps_s: list[int], cps_t: list[int],
+    vcfg: dict, label: str,
+) -> tuple[dict[str, Any], pl.DataFrame]:  # fmt: skip
+    """The simulated games (coach-like policy) against one set of real games."""
+    targets = cm.drive_targets(plays)
+    first_season = targets["seasons"][0]
+    real_games = real_game_table(plays, first_season, cps_s)
+    real_summary = game_summary(
+        real_games["regulation_total"].to_numpy().astype(float),
+        real_games["regulation_margin"].to_numpy().astype(float),
+    )
+    g = by_policy["coach"]
+    keys = [
+        "points_per_game_mean", "points_per_game_sd", "margin_sd", "abs_margin_mean",
+        "share_tied_after_regulation", "share_decided_by_1_to_3", "share_decided_by_4_to_8",
+        "share_decided_by_9_to_16", "share_decided_by_17_plus",
+    ]  # fmt: skip
+    sim_d = sim_out["drives_coach"]
+    out: dict[str, Any] = {
+        "real_seasons": targets["seasons"],
+        "label": label,
+        "games": compare(sim_out["games_coach"], real_summary, keys),
+        "games_real": real_summary,
+    }
+    out["drives"] = {
+        "simulated": sim_d,
+        "real": targets,
+        "headline": compare(
+            sim_d, targets,
+            ["points_per_drive", "plays_per_drive", "drives_per_game", "scrimmage_plays_per_game",
+             "mean_start_yardline_100"],
+        ),  # fmt: skip
+        "outcome_share": compare(
+            sim_d["outcome_share"], targets["outcome_share"], list(mg.DRIVE_RESULTS)
+        ),
+        "points_per_drive_by_start": {
+            k: {
+                "simulated": sim_d["by_start"][k]["points_per_drive"],
+                "real": targets["by_start"][k]["points_per_drive"],
+                "difference": sim_d["by_start"][k]["points_per_drive"]
+                - targets["by_start"][k]["points_per_drive"],
+            }
+            for k in DRIVE_START_BINS
+        },
+        "touchdown_share_by_start": {
+            k: {
+                "simulated": sim_d["by_start"][k]["outcome_share"]["touchdown"],
+                "real": targets["by_start"][k]["outcome_share"]["touchdown"],
+            }
+            for k in DRIVE_START_BINS
+        },
+    }
+    out["leader_win_rate"] = {}
+    home = real_games["home_result"].to_numpy()
+    for c_s, c_t in zip(cps_s, cps_t, strict=True):
+        real_m = real_games[f"m_{c_s}"].cast(pl.Float64).fill_null(np.nan).to_numpy()
+        out["leader_win_rate"][str(c_s)] = {
+            "simulated": lead_table(g["checkpoint_margin"][c_t], g["result"], vcfg["lead_bins"]),
+            "real": lead_table(real_m, home, vcfg["lead_bins"]),
+            "simulated_optimal_policy": lead_table(
+                by_policy["optimal"]["checkpoint_margin"][c_t],
+                by_policy["optimal"]["result"],
+                vcfg["lead_bins"],
+            ),
+        }
+    worst = []
+    for c, tab in out["leader_win_rate"].items():
+        for s_row, r_row in zip(tab["simulated"][:-1], tab["real"][:-1], strict=True):
+            if r_row["leader_win_rate"] is None:
+                continue
+            gap = s_row["leader_win_rate"] - r_row["leader_win_rate"]
+            se = r_row["standard_error"]
+            worst.append({
+                "seconds_left": int(c), "lead": s_row["lead"],
+                "simulated": s_row["leader_win_rate"], "real": r_row["leader_win_rate"],
+                "difference": gap, "real_n": r_row["n"], "real_standard_error": se,
+                "z_real_sampling_only": gap / se if se else None,
+            })  # fmt: skip
+    worst.sort(key=lambda r: -abs(r["difference"]))
+    out["leader_win_rate_largest_gaps"] = worst[:8]
+    out["leader_win_rate_mean_abs_gap"] = float(np.mean([abs(r["difference"]) for r in worst]))
+    zs = [r["z_real_sampling_only"] for r in worst if r["z_real_sampling_only"] is not None]
+    out["leader_win_rate_share_of_gaps_within_2_standard_errors"] = float(
+        np.mean(np.abs(zs) < 2)
+    )
+    return out, real_games
+
+
+def main() -> None:
+    cfg = mdp.load_config()
+    vcfg = cfg["validation"]
+    sol = mg.load_solution()
+    stamp = sol.meta.get("stamp")
+    if stamp is None:
+        raise SystemExit("the saved solution has no fit stamp; rerun scripts/solve_mdp.py")
+    bundle = joblib.load(mg.SOLUTION_DIR / "tables.joblib")
+    sim = mg.Simulator(sol, coach=bundle["coach"])
+    tick = sol.model.clock.tick_seconds
+    cps_s = vcfg["checkpoints_seconds"]
+    cps_t = [c // tick for c in cps_s]
+    n = vcfg["n_games"]
+
+    test = splits.load_test_plays(
+        "M4 simulator validation: real 2024 and 2025 games and drives as the out-of-sample "
+        "target of a simulator fitted on development seasons"
+    )
+    splits.assert_can_score(
+        stamp["tables"], test, "simulator validation (count, mode and coach tables)"
+    )
+    splits.assert_can_score(stamp["components"], test, "simulator validation (components)")
+    dev = splits.load_dev_plays()
+    recent = vcfg["in_sample_first_season"]
+
+    out: dict[str, Any] = {
+        "seed": vcfg["seed"],
+        "n_simulated_games": n,
+        "solution_fitted_on": stamp,
+        "out_of_sample_note": "every table of the solved game is fitted on development seasons "
+        f"({stamp['tables']['seasons'][0]} to {stamp['tables']['seasons'][-1]}); the play-outcome "
+        "models likewise, except the kickoff rule tables (the 2025 rule's table is used for "
+        "every simulated kickoff). The test-season comparison is therefore out of sample.",
+        "policy_note": "coach = fourth downs sampled from observed coach behavior by "
+        "situation (development seasons), measured timeout rates, simple end-of-half kicking "
+        "rules; optimal = the solved policy of the game model",
+    }
+    by_policy = {}
+    for policy in ("coach", "optimal"):
+        g = simulate_games(sim, n, policy, vcfg["seed"], cps_t)
+        by_policy[policy] = g
+        total, margin = g["points"].sum(axis=1).astype(float), g["margin"].astype(float)
+        out[f"games_{policy}"] = game_summary(total, margin)
+        out[f"drives_{policy}"] = drive_summary(g["drives"], n)
+        out[f"late_trailing_drives_{policy}"] = mg.late_trailing_drive_stats(
+            g["drives"], g["result"], tick
+        )
+    oos, real_test = comparison(out, by_policy, test, cps_s, cps_t, vcfg,
+                                "out of sample: test seasons")  # fmt: skip
+    ins, _ = comparison(out, by_policy, dev.filter(pl.col("season") >= recent), cps_s, cps_t,
+                        vcfg, "in sample: recent development seasons")  # fmt: skip
+    out["out_of_sample"] = oos
+    out["in_sample"] = ins
+    # Top-level keys kept for readers of the earlier file: they are the out-of-sample ones.
+    for k in ("games", "games_real", "drives", "leader_win_rate", "leader_win_rate_largest_gaps",
+              "leader_win_rate_mean_abs_gap"):  # fmt: skip
+        out[k] = oos[k]
+    out["real_data"] = (
+        f"out of sample: seasons {oos['real_seasons'][0]} to {oos['real_seasons'][1]} (test, via "
+        f"splits.load_test_plays); in sample: {ins['real_seasons'][0]} to "
+        f"{ins['real_seasons'][1]} (development)"
+    )
+    clock_test = read_json(RESULTS / "research" / "endgame_clock_stats_test.json")
+    clock_dev = read_json(RESULTS / "research" / "endgame_clock_stats_dev.json")
+    out["late_trailing_drives_real"] = late_trailing_real(
+        clock_test, "results/research/endgame_clock_stats_test.json (test seasons, out of sample)"
+    )
+    out["late_trailing_drives_real_in_sample"] = late_trailing_real(
+        clock_dev, "results/research/endgame_clock_stats_dev.json (development seasons)"
+    )
     write_json(out, OUT)
-    figure(out, g, real_games)
+    lo, hi = oos["real_seasons"]
+    figure(out, by_policy["coach"], real_test, f"{lo} to {hi}")
     print("wrote", OUT, "and", FIG)
-    for k, v in out["games"].items():
-        print(f"  {k:32s} sim {v['simulated']:.3f}  real {v['real']:.3f}")
-    for k, v in out["drives"]["headline"].items():
-        print(f"  {k:32s} sim {v['simulated']:.3f}  real {v['real']:.3f}")
-    for k, v in out["drives"]["outcome_share"].items():
-        print(f"  {k:32s} sim {v['simulated']:.3f}  real {v['real']:.3f}")
+    for name, res in (("out of sample", oos), ("in sample", ins)):
+        print(name, res["real_seasons"])
+        for k, v in res["games"].items():
+            print(f"  {k:32s} sim {v['simulated']:.3f}  real {v['real']:.3f}")
+        for k, v in res["drives"]["headline"].items():
+            print(f"  {k:32s} sim {v['simulated']:.3f}  real {v['real']:.3f}")
+        for k, v in res["drives"]["outcome_share"].items():
+            print(f"  {k:32s} sim {v['simulated']:.3f}  real {v['real']:.3f}")
+        print(f"  leader win rate mean abs gap {res['leader_win_rate_mean_abs_gap']:.4f}")
 
 
 if __name__ == "__main__":
