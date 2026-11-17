@@ -232,3 +232,198 @@ The live version of burning question 2 is a debate from the week of 2026-10-27, 
 2. **Is an average-EPA gap evidence at all?** @3firsts's endogeneity point: the averages come from the current mix, so they cannot say what happens at a different mix.
 3. **EPA or win probability?** Same reply: "teams care about expected win % more than EPA". Late-lead running (87.4% run share in the last 2:00 when leading by 1 to 8, per `docs/research/endgame_clock.md`) is a clock decision that EPA averages count as inefficiency.
 4. **Does the gap survive by down, distance and situation?** Walder's .11 is a league-wide average; Sharp's posts are single-game splits. Nobody posts the gap in neutral situations by down and distance.
+
+## 8. Scope scan: other decisions people argue about (added 2026-11-17)
+
+A wider keyword sweep for debates outside fourth downs and run versus pass, to judge what else the project could cover. Same rules as above: exact quotes, `[truncated]` where X cut the post, counts as displayed.
+
+### 8.1 Two-point tries (down 8, down 14)
+
+- @RyanPaganetti, 2026-10-09, https://x.com/RyanPaganetti/status/2108669679623623087 (105 replies, 369K views): "The go for 2 down 8 strategy has now been used 53 times by 23 different franchises since 2018. In 2025, teams went for 2 in this situation in the 4th quarter roughly half the time when it came up. Dallas was the largest favorite (9.5) to ever try the strategy. This is an" [truncated]
+- @MaioccoNBCS, 2026-10-29, https://x.com/MaioccoNBCS/status/2116003473766723743 (128 replies): "If you go for 2 when you’re down 8 (extra point cuts it to 7), why not just go for 2 every time? I don’t understand the logic."
+- @Herlens_, 2026-10-29, https://x.com/Herlens_/status/2116002448472981663 (5.5K likes): "I will forever hate the “go for 2” on the first TD score when down 14. Idc what the analytics say"
+- @FB_FilmAnalysis, 2026-01-14, https://x.com/FB_FilmAnalysis/status/2011473227948945579: "To every other candidate: so would you go for 2 down 14 with 5 minutes remaining? To Ben Johnson: how much money do you want?"
+- Read: a beat writer with a large audience openly asks for the logic and gets 128 replies. The answer is a short sequential argument, which the full-game solve produces as a by-product.
+
+### 8.2 Declining to score, kneeling, and the intentional safety
+
+- @RGIII, 2026-09-19, https://x.com/RGIII/status/2101416353345249565 (581 replies): "Dear Football Fans, this is a safe space. How do you feel about NC State trying to take an intentional safety up 31-28 on Vanderbilt with 6 secs left in the game? They fumbled and ended up losing. I’ll start. Worst execution of a smart play EVER." (college)
+- @br_betting, 2025-11-01, https://x.com/br_betting/status/1984761602772795447 (547 replies, 3M views): "OH MY GOODNESS..... Georgia (-6.5) had the easiest touchdown you will EVER see... But Gunner Stockton decided to ice the game and go down at the 1-yard line 🤮🤮🤮🤮🤮" (college)
+- @JonMetler, 2026-09-12, https://x.com/JonMetler/status/2098973934414667972 (278 replies, 1.2M views): "I will never understand why teams don’t just let them score here. Save the clock. Keep your timeouts. Put the ball back in your offense’s hands and go win the game on your terms." (college)
+- @mshap2, 2026-11-16 (shown as "11h"), https://x.com/mshap2/status/2122388066283475280: "📊 Steve Sarkisian credits two Texas staffers, Michael Bimonte and John Michael Jones, for the decision to a take a knee after taking a 22-21 lead at LSU. Says he originally planned to go for 2, was then told, “this is a take-a-knee, be-safe situation.” Sarkisian adds he gets" [truncated]
+- @HornSports, 2026-11-14, https://x.com/HornSports/status/2121826408687391091 (2.5K likes, 1.5M views): "Shoutout to the unnamed analyst standing next to Steve Sarkisian who you can see on the TV broadcast immediately told Sarkisian they needed to take a knee on the two point conversion to prevent any chance LSU had at 2 points. #HookEm"
+- @TomBradyDaily, 2026-11-03, https://x.com/TomBradyDaily/status/2117613989740093685 (4.8K likes, 1.1M views): "On this date in 2003, Belichick takes the intentional safety & Brady leads game-winning touchdown drive"
+- Read: these draw far more attention than their rarity suggests (hundreds of replies, millions of views), and nearly all recent examples are college. The plan's "maybe later" list covers exactly these; the audience for them is real.
+
+### 8.3 Clock management and timeouts
+
+- @gbellseattle, 2025-12-14, https://x.com/gbellseattle/status/2000366662361690451 (2K likes, 363K views): "Coach Mike Macdonald’s clock management won this game late. I had him walk us through his thinking. He credits his main-man analyst Brian Eayrs. Gave him game ball in the locker room for convincing him why to use all 3 of the #Seahawks’ time outs on defense to leave :47 left."
+- @ProFootballTalk, 2026-10-12, https://x.com/ProFootballTalk/status/2109690213958144371 (136 replies): "Dysfunctional teams do dysfunctional things -- like not immediately firing the head coach after the worst instance of NFL late-game clock management in years, if not ever." (headline: "Dan Quinn remains employed for now, somehow")
+- @Zirksee, 2026-10-11, https://x.com/Zirksee/status/2109385319313441107: "I’ve said it a million times and I’ll say it again, NFL teams need to hire Madden players for clock management. This is ALL TIME TERRIBLE CLOCK MANAGEMENT."
+- @SethWalder on McVay and the two-minute warning, and @SharpFootball on the Packers failing to run out the clock (sections 3 and 7).
+- Read: a defense spending timeouts to save clock is the mirror image of burning question 1 and uses the same end-game model. The Seahawks and Commanders games are natural worked examples; the plays themselves were not identified in the posts collected.
+
+### 8.4 Referees and penalties
+
+- @SharpFootball, 2026-10-05, https://x.com/SharpFootball/status/2107203117465108740 (1.8K replies, 29K likes, 3.8M views; the most-engaged post in this whole file): "if you watched the NFL and thought something didn't feel right, you're not alone: #1 most flags in over a decade thru 4 weeks, refs are impacting the most CRITICAL moments of games most: #1 most red zone penalties per game by offenses in history #1 most penalties on 3rd/4th" [truncated]
+- @StickToTheModel, 2026-11-14, https://x.com/StickToTheModel/status/2121620921719152671: "Every fanbase swears the refs screw them when it matters. 2026, 4th quarter or OT, one-score game, accepted flags: Packers: 15 on them, 7 on the opp Commanders: 15 on the opp, 9 on them Bengals: 3 on them. Fewest in NFL."
+- @CraigCartonShow, 2026-10-06, https://x.com/CraigCartonShow/status/2107525322379808902: "The NFL has a serious officiating problem. 255 accepted penalties in ONE Sunday. Nearly 18 flags per game. “Nobody is tuning in to watch the refs throw the yellow hanky.”"
+- @nflrefstats1, 2026-10-26, https://x.com/nflrefstats1/status/2114666395791458720 (3.7K likes): "Green Bay Packers 2026 penalty numbers, specifically on all-important THIRD DOWN plays & in the FOURTH QTR of games The #Packers lead the #NFL in 4TH qtr penalty per game avg, recording historically high numbers in this category" [truncated]
+- Read: this is the largest audience of any topic searched, and none of the posts says whether a 15-to-7 split in a handful of games is more than chance. That is a sample-size question the project's game-level bootstrap answers directly. Nothing about individual crews ("best" or "worst" referee) turned up in this search.
+
+### 8.5 Searched and found little
+
+- Overtime under the 2025 rules (receive or kick): one relevant post, about a captain not knowing the coin-toss rule (@ProFootballTalk, 2026-09-21, https://x.com/ProFootballTalk/status/2101976882627420206). No decision debate found.
+- "Prevent defense" and "playing not to lose": no results at the like threshold used.
+
+### 8.6 Kicking range and short-yardage plays
+
+- @RyanPaganetti, 2026-10-31, https://x.com/RyanPaganetti/status/2116700157282775484 (10K likes, 476K views): "How rare was what happened at the end of Indiana–Minnesota? Before that game, there had never been an NCAA or NFL game in which both teams made a field goal of 60 yards or longer in the final 30 seconds of regulation. First time in the history of the sport of football."
+- @tbhorka, 2025-12-04, https://x.com/tbhorka/status/1996785268834341056: "The sixth 60+ yard field goal of Notre Dame alum Brandon Aubrey’s career. Most in NFL history. The machine."
+- @BrettKollmann, 2026-07-15, https://x.com/BrettKollmann/status/2077459159583457435: "Week 11+ the tush push success rate fell off a cliff. Detroit game was teach tape on how to stop it. Attack center’s off shoulder. Submarine the LG/LT combo. Linebacker over the top to stop initial jump. Edge defender chasing LT’s heels to take out the pusher. Team effort." (quoting @RossTuckerNFL: "1. QB sneak is most efficient short yardage play by a wide margin push or no push.")
+- @RyanPaganetti, 2026-11-01, https://x.com/RyanPaganetti/status/2116912218646163474: "Going for two down nine buys information early. Is it worth it? I’m not so sure. Ohio State scored with 2:12 remaining against USC, cutting a 15 point deficit to nine. They went for two and failed, leaving their estimated win probability under 1% and the game effectively over." [truncated] (college)
+- Read: longer field-goal range moves the go-or-kick line and the value of a late possession, which bears on the model's field-goal curve (the decision log already notes under-prediction from 55 yards and beyond). The sneak posts back the point that the play call, which play-by-play barely records, changes conversion odds.
+- Icing the kicker, onside kicks and the kickoff rule: the keyword search returned no relevant posts.
+
+### 8.7 "Malpractice": coaches blamed by name (owner's question, 2026-11-17)
+
+The owner asked whether the data backs up calls that are labelled malpractice, and which coach has cost his team the most wins, naming Todd Bowles. A note for the build session is in `docs/research/inbox/coach_cost_idea.md`. Posts found:
+
+Todd Bowles, 4th-and-goal from the 1 while up 14 (decision 6 in section 1; posts date it 2026-10-08):
+- @SharpFootball, 2026-10-08, https://x.com/SharpFootball/status/2108391871718273445 (1.9K likes): "I don't know how he does it, but Todd Bowles somehow gets every critical decision wrong it's amazing how predictable he is at picking the worst thing to go with, without fail"
+- @JJarvNFLbets, 2026-10-08, https://x.com/JJarvNFLbets/status/2108390024031133877: "One of the worst decisions by a coach that I’ve ever seen by Todd Bowles. You can go up 3 scores with 8 minutes left - fireable offense, win or lose!!!!"
+- @junior_miller, 2026-10-08, https://x.com/junior_miller/status/2108394048956350642 (121 replies): "We have seen coaching malpractice tonight. From Christian Parker's defense, to Bowles not kicking the FG to make it a three possession game (in the 4th quarter!) to Shotty going for two (at home against an 0-4 team). Is there a serious lack of good coaches these days in the" [truncated]
+- @FTFonFS1, 2026-10-09, https://x.com/FTFonFS1/status/2108652650375921851: "“Todd Bowles not kicking that field goal is quite simply one of the most indefensibly awful coaching decisions I’ve ever seen. I like Todd Bowles. It was shocking to see him make a mistake in that direction.” @getnickwright explains:"
+- Against that, the one analyst who posted numbers (@RyanPaganetti, decision 6) called it "an unneeded risk that slightly lowered the Bucs total odds to win the game". Using his figures (about 54.5% to win 99%, 45.5% to win 96%, against 98.5% for the kick), going was worth roughly 97.6% against 98.5%, a cost of about one point of win probability. That subtraction is mine, not his.
+
+Bowles on other days:
+- @SneakyJoeSports, 2025-11-17, https://x.com/SneakyJoeSports/status/1990496624779698683 (5.1K likes, 2.2M views): "Yesterday when Todd Bowles kneeled the ball with 38 seconds left I was reminded that Tampa's coach is a giant coward that opted not to call a timeout, in which a missed 48 yard DET FG would've given his team a chance to tie A PLAYOFF GAME with roughly 30 seconds to play."
+- @EMT_Ashlie, 2025-11-23, https://x.com/EMT_Ashlie/status/1992797169523491211 (12K likes, 2.3M views): "Bowles trotting out Baker who was clearly already injured to try a 70 yard bomb of a hail Mary might be the single dumbest decision he's mad as the Bucs HC, and that's saying something"
+- The other direction: @LedyardNFLDraft, 2025-09-15, https://x.com/LedyardNFLDraft/status/1967776426700181611: "Todd Bowles used to be one of the worst game management head coaches. Last year, lots of growth. Tonight, great management of the clock late in the game to make sure the team had timeouts and options in goal-to-go. Changed everything"
+
+"Malpractice" used elsewhere in this file: @EmmanuelAcho on Campbell (decision 1), where the public models said go or toss-up; @MatrixPrime_ "SOMEONE NEEDS TO BE FIRED" on the same play (2026-10-25, https://x.com/MatrixPrime_/status/2114495074105233652).
+
+Pre-snap penalties blamed on coaching: the keyword search (false start, delay of game, pre-snap penalties, with coach or discipline) returned no relevant posts at the like threshold used. The nearest material is the referee and flag posts in 8.4.
+
+Read: in the two cases where numbers exist, the label and the measured cost do not match. One "malpractice" call was the model's recommendation, and one "fireable offense" cost about a point. Whether that holds in general is exactly what a per-coach ledger would show.
+
+### 8.8 What this scan suggests for scope (my ranking, for the owner to accept or reject)
+
+Ordered by how much argument exists on X and how little new machinery each needs:
+
+1. **Coach cost ledger and the malpractice check** (8.7). Largest named-coach audience; extends plan section 3.6.
+2. **Referees and flags: real or noise?** (8.4). The single most-engaged post found (3.8M views). Needs penalties by game and crew, plus the bootstrap already built.
+3. **Two-point tries when down 8 or 14** (8.1). A direct, repeated public question ("why not just go for 2 every time?").
+4. **Defensive timeouts and clock use** (8.3). Same end-game model as burning question 1, seen from the other sideline.
+5. **Kneel, decline the score, intentional safety** (8.2). Huge views when they happen, but rare and mostly college; already on the "maybe later" list.
+6. **Field-goal range drift** (8.6). Not a question of its own; a check on the kick model.
+
+Not supported by what was found: overtime strategy, prevent defense, icing the kicker, onside kicks.
+
+## 9. Coach blame: third pass (added 2026-11-17)
+
+For the coach-cost idea in `docs/research/inbox/coach_cost_idea.md`. Same quoting rules as above.
+
+### 9.1 Penalties treated as a coaching problem
+
+The owner's premise (pre-snap and procedure penalties are on the coach) is a common view on X, usually stated for penalties in general, not split by type:
+
+- @byesline, 2025-10-12, https://x.com/byesline/status/1977398351873372438: "The theme continues w/ the Denver Broncos: They’ve one of the most undisciplined team in the NFL. Came into today giving up 411 yds of penalty yds in 5 games, 2nd most in the league. 52 total flags thrown on Denver, 4th most. You’re either coaching it or allowing it."
+- @TomOatesWSJ, 2025-09-21, link not captured (95 replies, 1.8K likes): "So typical of a Matt LaFleur-coached team. #Packers on a really nice run going into a game they should win and lay a colossal egg. What an unfocused, undisciplined performance. Fourteen penalties says it all."
+- @ShaneHaffNFL, 2025-11-28, https://x.com/ShaneHaffNFL/status/1994505059653357644: "Seriously, start benching people for false starting and other stupid penalties. An NFL team shouldn’t be this undisciplined."
+- @Shellsyeah81, 2025-10-19, https://x.com/Shellsyeah81/status/1980043606284218491: "I hate when we prove them all right. We absolutely 100 percent have a coaching issue when we have over 100 yards in penalties. Undisciplined football team all season so far! #RaiseHail tho"
+- @Rob_Shenanigans, 2025-12-15, https://x.com/Rob_Shenanigans/status/2000642647992500513: "Here's how the Browns offense started off the game: 1. Failed challenge on kickoff (Stefanski), pinned inside 1 yard line 2. Penalty: False start (Fannin), half the distance to goal 3. Run: 1 yard 4. Penalty: 12 men in huddle How can you call this good coaching?"
+- @PhillyTruthr, 2026-10-04, https://x.com/PhillyTruthr/status/2106842401977376786: "8+ penalties 0-for-11 on 3rd down Late in situational playcalling Just reeks of a poorly coached team"
+- @Bill_Michaels, 2026-09-20 (link not captured): "This @pacekrs team is undisciplined and fundamentally unsound. Penalties are a direct reflection of that."
+- The player-fault view also appears: @ChanceMock, 2025-09-06, https://x.com/ChanceMock/status/1964366296403079353: "Really undisciplined football. Sloppy all over. Linemen missing blocks, defensive leaders jumping offsides, dropped balls, special teams penalties keeping the defense on the field … 🙄"
+- Read: nobody found separates false starts and delay of game (coach) from offside and encroachment (player) the way the owner proposes, and nobody tests whether a team's penalty rate belongs to the coach. Both are open. The "12 men in huddle" example supports adding substitution penalties to the coach's column.
+
+### 9.2 Named coaches and the calls they were blamed for
+
+**Dan Quinn (Commanders vs Giants, 2026-10-11): ran the ball with 13 seconds left, no timeouts, in field-goal range; the game ended in a tie.**
+- @ProFootballTalk, 2026-10-11, https://x.com/ProFootballTalk/status/2109391902130766281 (218 replies, 7.5K likes): "I've been watching football for 50 years. I've never seen an end-of-game failure like the one the Commanders committed. I thought the Fox bug was incorrect, and that Washington had a timeout. It's an immediately fireable offense by Dan Quinn."
+- @barstoolsports, 2026-10-11, https://x.com/barstoolsports/status/2109396237908664417: "- 13 seconds left - No timeouts - In field goal range And the Commanders decided to run the ball?"
+- @barstoolsports, 2026-10-11, https://x.com/barstoolsports/status/2109470670551961704: "The Commanders talked about not having any timeouts in the huddle…and still messed it up???"
+- @barstoolsports, 2026-10-11, https://x.com/barstoolsports/status/2109473695500742725 (7.2K likes): "Big dog on the Giants “accidentally” stepping on the football to waste more clock as the Commanders struggled to get a spike off is a high IQ play"
+- @Tiller56, 2026-10-19, https://x.com/Tiller56/status/2112359413914779713: "Here’s the video of Head Coach Dan Quinn calling for the Field Goal after a failed 4th down… This is a fireable offense!!!"
+- This is a pure clock error: no go-or-kick model is needed, only the end-game clock rules already written up in `docs/research/endgame_clock.md`.
+
+**"Cowardly punt" (a set phrase on X):**
+- @ByJoshCarney, 2025-11-23, https://x.com/ByJoshCarney/status/1992699772655075517: "Mike Tomlin punting on 4th and 9 with 2:01 left in the game?????? There are cowardly punts, and then there is this one."
+- @Peter_Bukowski, 2025-10-12, https://x.com/Peter_Bukowski/status/1977487891107315791: "Cowardly punt. LaFleur come on dude."
+- @GregTompsett, 2025-10-13, https://x.com/GregTompsett/status/1977893308035657966: "McDermott cowardly punt Horrific decision"
+- @dawest76, 2026-09-13, https://x.com/dawest76/status/2099316741088153671 (2.4K likes): "Schottenheimer's decision to punt on 4th & inches set the tone for the entire game. It gave the Giants momentum and it's been a shitfest ever since. Penalties, dropped passes, turnovers. Just an undisciplined football team"
+- Game situations for these four are not stated in the posts; each needs looking up in play-by-play by date and team.
+
+**Nick Sirianni (timeouts):**
+- @inside_the_dome, 2026-01-11, https://x.com/inside_the_dome/status/2010513580743901517: "Nick Sirianni calling a timeout was idiotic for the Eagles, essentially ended the game since they needed all three timeouts. Him also benching starters against the Commanders was a huge mistake Wouldn’t say he should be fired, but that’s bad"
+- @KBeckNFL, 2026-01-11, https://x.com/KBeckNFL/status/2010537485672005939: "4th-and-8. Season on the line. HAVE TO HAVE IT. And this is what Nick Sirianni and Kevin Patullo draw-up off a timeout... There was nobody open. Jalen Hurts never had a chance. It’s incredible how Patullo survived the entire season. Malpractice."
+
+**Other "fireable" and "worst decision" posts:**
+- @wheatonbrando, 2025-09-08, https://x.com/wheatonbrando/status/1965133167012311510 (6.7K likes, 3.2M views): "This is honestly a fireable offense for an NFL head coach. Embarrassing. Hard to back a team led by that." (The post does not say which coach or play; the video was not viewed.)
+- @gavinmchughh, 2026-10-08, https://x.com/gavinmchughh/status/2108392898903642168: "not kicking the field goal could go down as one of the worst coaching decision in NFL history if the buccaneers lose this game" (Bowles; note the "if they lose" condition)
+- @SharpFootball, 2026-10-03, https://x.com/SharpFootball/status/2106266459517440304 (263 replies, 1.7M views): "one of the WORST coaching decisions you will ever see the Montana State coach LOST HIS TEAM THE GAME worst timeout EVER💀💀💀" (college)
+- @lt4kicks, 2025-09-21, https://x.com/lt4kicks/status/1969957314485522922 (13K likes): "A professional football team that cannot scheme up a single play to their #1 receiver until the 4th qtr is coaching malpractice and incompetence." (play design, which play-by-play cannot score)
+
+### 9.3 Existing coach rankings (so the build does not repeat them unknowingly)
+
+- @run_the_sims (section 3): coaches go 29% of the time the model says to; Shanahan "bottom 10 of 57, about -20 points since 2017"; going when the model says kick happens "about 0.6% of the time for punt and 6.2% for field goal".
+- @benbbaldwin, 2025-10-02, https://x.com/benbbaldwin/status/1973915266758123613: "Watching both of these coaches go for it on 4th down is kind of shocking. 2 of the most conservative year over year" (the game is not named in the post)
+- @FungibleEther (section 3): coach overrides of the nfl4th recommendation "give up 0.5 to 4.4 points of win probability".
+- Not found: any public ranking that puts fourth downs, timeouts, clock errors and penalties into one total per coach, in wins. The fourth-down part alone exists; the combined ledger appears not to.
+
+### 9.4 What kinds of "bad decision" people mean (for deciding what the ledger can score)
+
+| Kind | Example found | Scoreable from play-by-play? |
+|---|---|---|
+| Go, kick or punt | Bowles 4th-and-goal; Tomlin 4th-and-9 punt; Campbell own 24 | Yes, the existing fourth-down engine |
+| Clock and timeouts | Quinn run with 13 seconds and no timeouts; Bowles kneel with 38 seconds; Sirianni timeout | Yes, with the end-game clock model |
+| Two-point choice | "Shotty going for two"; down 8 and down 14 | Yes, needs the two-point action |
+| Penalties and discipline | LaFleur "Fourteen penalties"; Browns "12 men in huddle" | Countable; assigning them to the coach is the assumption to test |
+| Play design and personnel | "cannot scheme up a single play to their #1 receiver"; Hail Mary with an injured quarterback | No |
+
+## 10. Fourth pass: existing bots, referee crews, and a reply thread (added 2026-11-17)
+
+### 10.1 The Surrender Index: an existing public "cowardly punt" score
+
+An automated account already scores every punt for timidity and posts the situation in a fixed format. It is prior work for the coach ledger and a ready source of labelled examples.
+
+- @surrender_idx90, 2026-11-08, https://x.com/surrender_idx90/status/2119530291635364249 (3.1K likes): "WSH decided to punt to LAR from the LAR 40* on 4th & 6* with 8:21 remaining in the 4th while losing 13 to 20. With a Surrender Index of 123.03, this punt ranks at the 100th percentile of cowardly punts of the 2026 season, and the 99.9th percentile of all punts since 1999."
+- @surrender_idx90, 2026-09-20, https://x.com/surrender_idx90/status/2101873083460268456: "IND decided to punt to KC from the IND 49 on 4th & 4 with 0:33 remaining in the 4th while tied 27 to 27. With a Surrender Index of 18.44, this punt ranks at the 98th percentile of cowardly punts of the 2026 season, and the 96th percentile of all punts since 1999."
+- @surrender_idx90, 2025-10-16, https://x.com/surrender_idx90/status/1979020626670293197 (2K likes): "PIT decided to punt to CIN from the PIT 45 on 4th & 4 with 5:25 remaining in the 4th while losing 24 to 30. With a Surrender Index of 16.27, this punt ranks at the 98th percentile of cowardly punts of the 2025 season, and the 95th percentile of all punts since 1999."
+- @surrender_idx90, 2025-12-14, https://x.com/surrender_idx90/status/2000269005052096605: "BUF decided to punt to NE from the NE 44 on 4th & 5 with 9:17 remaining in the 1st while losing 0 to 7. With a Surrender Index of 18.59, this punt ranks at the 98th percentile of cowardly punts of the 2025 season, and the 96th percentile of all punts since 1999."
+- @surrender_idx90, 2025-11-27, https://x.com/surrender_idx90/status/1994190028856336823: "KC decided to punt to DAL from the DAL 44 on 4th & 4 with 7:12 remaining in the 3rd while losing 14 to 17. With a Surrender Index of 20.49, this punt ranks at the 98th percentile of cowardly punts of the 2025 season, and the 96th percentile of all punts since 1999."
+- @surrender_idx90, 2025-09-14 (link not captured): "MIN decided to punt to ATL from the MIN 28 on 4th & 1 with 9:47 remaining in the 4th while losing 6 to 15. With a Surrender Index of 8.35, this punt ranks at the 93rd percentile of cowardly punts of the 2025 season, and the 90th percentile of all punts since 1999."
+- Each post is headed "Automated by @shackoverflow". How the index is computed is not stated in the posts; it reads as a formula on field position, distance, score and time, not a win-probability model. Worth comparing: does a high Surrender Index match a large win-probability cost from the project's engine?
+- Fans use the phrase on their own too: @BarstoolBigCat, 2026-09-12, https://x.com/BarstoolBigCat/status/2098951020063683030 (639K views): "Dead. Cowardly punt. Step on their throats, Ryan"; @hcf_m2h, 2025-11-23 (link not captured): "Here comes Andy Reid’s weekly cowardly punt"
+
+### 10.2 Referee crews
+
+- @nflrefstats1 is an account dedicated to officiating numbers. 2026-11-14, https://x.com/nflrefstats1/status/2121765762893599084: "#SFvsDAL officiating crew cheat sheet update John Hussey assigned to the game to replace Bill Vinovich This is the @dallascowboys second game w' Hussey in 2026, the previous their 34-31 "home" loss to #Ravens in Brazil That game had six AUTOMATIC 1ST DOWNS via penalty," [truncated]
+- @DaBearsTakeOver, 2026-09-28, https://x.com/DaBearsTakeOver/status/2104675877040640055: "Shawn Hochuli’s crew has Bears-Eagles tonight. • Hochuli ranked 3rd in penalties in 2025 • Eagles are 6-0 in his games during the Hurts/Sirianni era • Philly has the NFL’s least penalized defense • Chicago ranks top 10 in pre-snap penalties"
+- @SharpFootball, 2025-10-26, https://x.com/SharpFootball/status/1982595746454237645: "also NFL: let’s have Shawn Hochuli ref the game to further destroy enjoyment w his many flags & long explanations" [last paragraph of the post]
+- @SeifertESPN, 2026-11-14, https://x.com/SeifertESPN/status/2121687828912378362 (518K views): "How significant is the NFL's officiating shuffle? Backup referee Don Willard will work TWO games on Sunday: Miami at Indianapolis (1 p.m. ET) Pittsburgh at Cincinnati (8:20 p.m. ET) Vikings-Packers referee has changed from John Hussey to Clete Blakeman."
+- The full text of the most-engaged post (@SharpFootball, section 8.4), opened this pass: "#1 most flags in over a decade thru 4 weeks, refs are impacting the most CRITICAL moments of games most: #1 most red zone penalties per game by offenses in history #1 most penalties on 3rd/4th downs in the second half of games in history and 17 touchdowns nullified by penalty! (vs only 5 in 2025 & 4 in 2024)"
+- Read: "6-0 in his games" is the kind of small-sample claim the project can test (six games). Two cautions for any crew analysis: referees are being reassigned mid-season in 2026, so crew is not fixed, and pre-snap penalties are already tracked per team by fans, which overlaps the coach ledger.
+
+### 10.3 Inside the biggest argument: replies to the Payton "no hindsight" question
+
+Top replies under @Tyler_Polumbus (about 3,000 replies; section 1, decision 2), all dated 2026-01-26 or 01-27. They show what fans actually condition on, none of which a public fourth-down model sees:
+
+- Backup quarterback: @IDPGodfather, https://x.com/IDPGodfather/status/2015922701324439844: "Backup QB. Chance to go up two scores. Take the points. It's not that difficult. It wasn't fourth and a foot, neither. It was a full yard, if not a little more."
+- How the defense was playing and the weather: @SlaminSammons, https://x.com/SlaminSammons/status/2015836303993229433 (360 likes): "I liked it. I thought going up 14 would be a dagger with how the D was playing and with the storm coming in. Atrocious play call though."
+- Expected low score: @AstorAaron (link not captured): "I wanted the points in the moment. I don't like the near-automatic tendency to go for it on 4th and short anyway. But this was clearly going to be a low-scoring game and points would matter a lot."
+- The decision versus the play call: @jecwick (link not captured): "I liked going for it, but hated the call. Should've just ran a sneak." And @Andrew_Moser (link not captured): "You can’t kick a FG on 4th and 1. A 10-0 lead would be great… and I was tempted in the moment… but you can’t kick there. What I do take issue with is the play call. Just sneak it."
+- Quarterback-specific: @VegabondETH, https://x.com/VegabondETH/status/2015846084292292643: "In the moment I did not like it. If it was Bo Nix there I'm fine with it bc Bo brings mobility in a way that Stiddy doesn't have. With a backup QB in a big game I think you take the 3. That being said. I like Sean showing his confidence in his QB. And if no snow we win."
+- Read: the replies give the score as 7-0 at the time ("A 10-0 lead", "going up 14"). The recurring split is decision versus play call, which matters for a coach ledger: a model can grade the choice to go, not the play that was run.
+
+### 10.4 Searched this pass and found nothing useful
+
+- Overtime under the 2025 rules, second set of keywords (kickoff, won the toss, both teams): no decision debate.
+- Posts that separate coach-fault penalties from player-fault penalties by type: none.
+
+### 10.5 Coverage summary for the whole file
+
+Searched (Top tab, with date and like filters): Lions and Campbell fourth downs; fourth-down bots and nfl4th; late-lead punts; "should have punted / gone for it"; win probability; the six biggest decisions by date; run versus pass by keyword and by analyst account; two-point tries; kneel, concede and intentional safety; clock and timeouts; referees and crews; kicking range; sneaks; Bowles, Quinn, Sirianni, Tomlin, LaFleur, McDermott, Schottenheimer by name; penalties as coaching; "malpractice", "fireable", "cowardly punt"; coach rankings.
+
+Still not done: the Latest tab for any topic; quote posts; video content; reply threads other than four posts; the article behind the "EPA go brrrr" debate; any check of game facts against play-by-play.
