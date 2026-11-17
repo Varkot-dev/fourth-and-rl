@@ -283,6 +283,10 @@ def ensure_replicate(
         except (OSError, ValueError):
             pass
     directory.mkdir(parents=True, exist_ok=True)
+    # The replicate is about to change: cached decision values made from the old models
+    # must not survive it.
+    for stale in directory.glob(f"values/*/rep_{replicate:03d}*.npy"):
+        stale.unlink()
     model, comps, draw = fit_replicate(
         plan, replicate, wp_config, components_config, kickoff_seasons, n_threads, calibration
     )
@@ -302,9 +306,53 @@ def load_replicate_engine(
     )
 
 
+def replicate_tag(directory: Path, replicate: int) -> str:
+    """Short hash of a saved replicate's key file (raises if the replicate is missing)."""
+    key = replicate_paths(directory, replicate)["key"]
+    return hashlib.sha1(key.read_bytes(), usedforsecurity=False).hexdigest()[:10]
+
+
+def assert_replicates_current(
+    directory: Path,
+    n_boot: int,
+    config: dict,
+    wp_config: dict,
+    components_config: dict | None = None,
+) -> None:
+    """Raise unless replicates 0..n_boot-1 exist and were fitted with the current settings.
+
+    Used by scripts that read replicates without refitting them, so a half-finished or
+    stale set of replicates can never be mixed into a result.
+    """
+    comps_cfg = components_config if components_config is not None else load_components_config()
+    expect = {
+        "seed": int(config["seed"]),
+        "within_game": config["within_game"],
+        "calibration": config["calibration"],
+        "wp_config_hash": config_hash(wp_config),
+        "components_config_hash": config_hash(comps_cfg),
+        "kickoff_seasons": sorted(int(x) for x in config["kickoff_seasons"]),
+    }
+    bad = []
+    for b in range(n_boot):
+        key_path = replicate_paths(directory, b)["key"]
+        if not key_path.exists():
+            bad.append((b, "missing"))
+            continue
+        key = json.loads(key_path.read_text())
+        diff = [k for k, v in expect.items() if key.get(k) != v]
+        if diff:
+            bad.append((b, ",".join(diff)))
+    if bad:
+        raise RuntimeError(
+            f"{len(bad)} of {n_boot} bootstrap replicates are missing or stale "
+            f"(first: replicate {bad[0][0]}: {bad[0][1]}); run scripts/bootstrap_decisions.py"
+        )
+
+
 def _states_tag(states: pl.DataFrame, engine_config: dict | None) -> str:
     cols = states.select(wp_mod.STATE_COLUMNS).cast(pl.Float64)
-    digest = hashlib.sha1(cols.to_numpy().tobytes())
+    digest = hashlib.sha1(cols.to_numpy().tobytes(), usedforsecurity=False)
     digest.update(repr(sorted((engine_config or {}).items())).encode())
     return digest.hexdigest()[:12]
 
@@ -328,7 +376,9 @@ def replicate_values(
         cache.mkdir(parents=True, exist_ok=True)
     out = np.empty((len(replicates), states.height, 3), dtype=np.float32)
     for i, b in enumerate(replicates):
-        path = cache / f"rep_{b:03d}.npy" if cache else None
+        # The file name carries a hash of the replicate's key file, so values are reused
+        # only with the exact models that produced them.
+        path = cache / f"rep_{b:03d}_{replicate_tag(directory, b)}.npy" if cache else None
         if path is not None and path.exists():
             out[i] = np.load(path)
             continue

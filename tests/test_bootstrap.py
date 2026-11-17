@@ -6,6 +6,8 @@ The `data` test refits real (small) models on one replicate.
 
 from __future__ import annotations
 
+import json
+
 import numpy as np
 import polars as pl
 import pytest
@@ -186,3 +188,31 @@ def test_one_replicate_refits_both_models_without_test_seasons(plays: pl.DataFra
     other, _, draw2 = bootstrap.fit_replicate(plan, 1, wp_config, None, [2025], n_threads=2)
     assert not np.array_equal(draw["train"], draw2["train"])
     assert not np.allclose(other.predict(states), model.predict(states))
+
+
+def test_cached_values_are_tied_to_the_replicate_that_made_them(tmp_path):
+    """A refit replicate (new key file) must never reuse values cached from the old one."""
+    paths = bootstrap.replicate_paths(tmp_path, 0)
+    paths["key"].write_text('{"calibration": "platt"}')
+    old = bootstrap.replicate_tag(tmp_path, 0)
+    paths["key"].write_text('{"calibration": "none"}')
+    assert bootstrap.replicate_tag(tmp_path, 0) != old
+
+
+def test_stale_or_missing_replicates_are_refused(tmp_path):
+    cfg = {"seed": 1, "within_game": "none", "calibration": "none", "kickoff_seasons": [2025]}
+    wcfg = {"seed": 1}
+    with pytest.raises(RuntimeError, match="missing or stale"):
+        bootstrap.assert_replicates_current(tmp_path, 1, cfg, wcfg, {"a": 1})
+    key = {
+        "seed": 1, "within_game": "none", "calibration": "platt",
+        "wp_config_hash": bootstrap.config_hash(wcfg),
+        "components_config_hash": bootstrap.config_hash({"a": 1}),
+        "kickoff_seasons": [2025],
+    }  # fmt: skip
+    bootstrap.replicate_paths(tmp_path, 0)["key"].write_text(json.dumps(key))
+    with pytest.raises(RuntimeError, match="calibration"):
+        bootstrap.assert_replicates_current(tmp_path, 1, cfg, wcfg, {"a": 1})
+    key["calibration"] = "none"
+    bootstrap.replicate_paths(tmp_path, 0)["key"].write_text(json.dumps(key))
+    bootstrap.assert_replicates_current(tmp_path, 1, cfg, wcfg, {"a": 1})

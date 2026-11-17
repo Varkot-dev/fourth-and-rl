@@ -100,14 +100,15 @@ def replicate_diagnostics(directory, n_boot: int) -> dict:
     slope, conv, fg50, punt = [], [], [], []
     for b in range(n_boot):
         eng = bootstrap.load_replicate_engine(directory, b)
-        slope.append(eng.wp_model.calibrator.a)
+        if eng.wp_model.calibration != "none":
+            slope.append(eng.wp_model.calibrator.a)
         conv.append(float(eng.components.p_convert(50, 2)))
         fg50.append(float(eng.components.p_field_goal(32)))
         punt.append(float(eng.components.punt_outcomes(70) @ np.arange(100)))
     q = lambda x: {"mean": float(np.mean(x)), "sd": float(np.std(x, ddof=1)),  # noqa: E731
                    "min": float(np.min(x)), "max": float(np.max(x))}  # fmt: skip
     return {
-        "platt_slope": q(slope),
+        "platt_slope": q(slope) if slope else "no calibration map (version 2)",
         "p_convert_fourth_and_2_at_midfield": q(conv),
         "p_field_goal_50_yards": q(fg50),
         "expected_opponent_yardline_after_punt_from_own_30": q(punt),
@@ -369,7 +370,11 @@ def main() -> None:
             "train_games": plan.blocks["train"].n_games,
             "calib_seasons": cfg["calib_seasons"],
             "calib_games": plan.blocks["calib"].n_games,
-            "calibration": f"{cfg['calibration']} map refitted on the drawn calibration games",
+            "calibration": (
+                "none: trees grown on all drawn development games (version 2)"
+                if cfg["calibration"] == "none"
+                else f"{cfg['calibration']} map refitted on the drawn calibration games"
+            ),
             "components": "refitted on all drawn games (training and calibration seasons)",
             "kickoff_table_seasons_not_resampled": cfg["kickoff_seasons"],
             "wp_seed_per_replicate": "wp.yaml seed + replicate number",
