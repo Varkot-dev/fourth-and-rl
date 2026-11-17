@@ -427,3 +427,30 @@ Top replies under @Tyler_Polumbus (about 3,000 replies; section 1, decision 2), 
 Searched (Top tab, with date and like filters): Lions and Campbell fourth downs; fourth-down bots and nfl4th; late-lead punts; "should have punted / gone for it"; win probability; the six biggest decisions by date; run versus pass by keyword and by analyst account; two-point tries; kneel, concede and intentional safety; clock and timeouts; referees and crews; kicking range; sneaks; Bowles, Quinn, Sirianni, Tomlin, LaFleur, McDermott, Schottenheimer by name; penalties as coaching; "malpractice", "fireable", "cowardly punt"; coach rankings.
 
 Still not done: the Latest tab for any topic; quote posts; video content; reply threads other than four posts; the article behind the "EPA go brrrr" debate; any check of game facts against play-by-play.
+
+## 11. Referees over a longer span, and what YouTube already covers (added 2026-11-17)
+
+Search dates were widened to 2010 onward. X's search returns little before about 2022 at the like thresholds used, so "since 2010" coverage on X is thin; the long-span work is on YouTube (notes in `docs/research/inbox/referee_and_coach_prior_work.md`, links in `research-kit/x/3_videos.md`).
+
+### 11.1 Claims about one referee and one team (X)
+
+- @cmowder, 2022-12-18, https://x.com/cmowder/status/1604694276897652736 (2.5K likes): "In 15 years as a head ref, Carl Cheffers' crews penalized the KC @Chiefs 143x, most in the #NFL, & for a total of 1,240 yards, 2nd most of any team. The avg team caught 86 flags & 740 yards. Is it still a conspiracy if the data supports you #ChiefsKingdom? H/T @pfref #Chiefs"
+- @MistedTwister, 2023-01-29, https://x.com/MistedTwister/status/1619837570711711746 (445 replies, 4.2K likes): "11 penalties for the 49ers and 4 penalties for the Eagles called by the John Hussey crew. 4 on one drive against the Niners defense. Plus roughing the kicker after he was pushed by the Eagles blocker number 89. Eagles are 7-0 with him. Tell me the @NFL isn’t #rigged #nflrigged"
+- @sportslarryk, 2023-11-26, https://x.com/sportslarryk/status/1728916134014136479 (2.3K likes): "Eagles are 4-0 with Shawn Hochuli as the ref since Nick Siranni was hired (4-0 ATS as well) First half penalty distribution: 10 penalties for 75 yds on Bills 1 penalty for 5 yards on Eagles👀👀👀👀👀👀👀👀👀👀"
+- @MLFootball, 2025-10-13, https://x.com/MLFootball/status/1977888343330562526 (3.1K likes): "🚨BREAKING NEWS🚨 A NEW STUDY FROM THE UTEP SHOWS THAT #NFL REFS FAVOR THE KANSAS CITY #CHIEFS. From 2015 to 2023, data show KC benefited from biased officiating, especially in the playoffs. KC opponents face more subjective penalties, longer yardage and more 1st downs. WOW." (The study itself was not found or read.)
+- Two of these point in opposite directions for the same team: one says a crew penalized the Chiefs most, one says officials favor the Chiefs. Both rest on counts with no interval.
+
+### 11.2 The referee-statistics account
+
+- @nflrefstats1, 2026-10-20, https://x.com/nflrefstats1/status/2112502226535223630: "AUTOMATIC 1st DOWNS via penalty are on a record pace in 2026 This is particularly evident on THIRD DOWN, w' 34.1% of these penalties being awarded on the money down The five yr avg (2021-2025) is 31.5% of AUTOMATIC 1st DOWNS awarded on third down plays" [truncated]
+- @nflrefstats1, 2025-10-12, https://x.com/nflrefstats1/status/1977576624536359353: "While 0 accepted penalties is extremely unusual, it's not unprecedented for the #Chiefs #DETvsKC marks the third time in the Patrick Mahomes era that KC has recorded zero penalties in a game Previous two occasions 2019 vs #Raiders & 2022 vs Jaguars Both games were at Arrowhead" [truncated]
+
+### 11.3 What YouTube already covers (read from descriptions and one methods page, not watched)
+
+- "We looked at 92,255 flags - NFL refs are biased", Michael MacKelvie and ThatsGoodSports, 2026-11-04, about 1.58M views, https://www.youtube.com/watch?v=LH3Ck59I8V0. Its methods page prices each flag as win probability with the flag minus without it, and separates seven judgment fouls from procedural fouls (false start, delay of game, offside, formation, substitution). It reports that from 2018 to 2025 half of team-seasons net out within half a game and 82% within one game.
+- "I Checked 87,000 NFL Flags to Find the Worst Refs", BlitzTalk, about 128K views, https://www.youtube.com/watch?v=KEoN3-5VrCQ. Every game from 2000 through Week 6 of 2026 with each flag matched to its seven-man crew.
+- A linked article fits a fourth-down model per coach for 2014 to 2025 and ranks all 32 current coaches (https://thesidequest.com/posts/prospect-theory-on-fourth-down/).
+
+### 11.4 Read
+
+A plain "best and worst referees" ranking over many seasons already exists twice on YouTube. What is still open, and matches this project's tools: intervals on those rankings, whether a crew or team effect repeats from season to season, and assigning the procedural fouls to head coaches (the owner's idea), which neither source does.
