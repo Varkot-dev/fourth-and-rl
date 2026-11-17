@@ -1,0 +1,47 @@
+# M1 win-probability model. Read by scripts/fit_wp.py.
+seed: 20261117
+n_threads: 2
+
+# Seasons are split whole. Trees are grown on `train`, the calibration map is fitted
+# on `calib`, and `test` is touched once, for the reported numbers.
+split:
+  train: [2010, 2021]
+  calib: [2022, 2023]
+  test: [2024, 2025]
+
+# "platt", "isotonic" or "none". Chosen from a game-grouped comparison inside the
+# calibration seasons (results/m1_wp_metrics.json, key calibration_choice).
+calibration: platt
+
+# LightGBM hyperparameters. Chosen with `python scripts/fit_wp.py --tune`, which
+# fits on 2010-2018 and scores 2019-2021 (results/m1_wp_tuning.json). The
+# calibration and test seasons play no part in the choice.
+lgbm:
+  n_estimators: 300
+  learning_rate: 0.06
+  num_leaves: 15
+  min_child_samples: 10000
+  colsample_bytree: 0.8
+  subsample: 0.8
+  subsample_freq: 1
+  reg_lambda: 10.0
+  max_bin: 127
+  monotone_constraints_method: intermediate
+
+# Grid for --tune. Every combination of the first two, then tree counts at the best.
+tuning:
+  fit_seasons: [2010, 2018]
+  validation_seasons: [2019, 2021]
+  min_child_samples: [400, 2000, 5000, 10000, 20000]
+  num_leaves: [15, 31]
+  n_estimators: [150, 300, 600]
+
+# Leave-seasons-out cross-fitting for out-of-fold predictions on every season.
+crossfit:
+  fold_size: 4          # consecutive seasons per fold
+  n_calib_seasons: 2    # most recent seasons outside the fold, used for calibration
+
+metrics:
+  ece_bins: 10
+  reliability_bins: 20
+  bootstrap_reps: 2000
