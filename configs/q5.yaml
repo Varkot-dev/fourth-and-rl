@@ -1,0 +1,52 @@
+# M13: goal-line and two-point decisions read from the exactly solved game (M4).
+# Read by scripts/questions/q5_goal_line_and_two_point.py. Times are seconds of GAME time
+# left (3600 at kickoff, 900 at the start of the fourth quarter). The 2026 cases quoted on X
+# are in the sealed holdout season and are rebuilt here only as hypothetical states.
+
+seed: 20261117
+
+# Question 1: leading late, fourth and goal from the 1, 2 or 3. Field goal or go?
+goal_line_late:
+  leads: [3, 4, 7, 14]
+  yardlines: [1, 2, 3]
+  seconds: {first: 120, last: 720, step: 30}   # 2:00 to 12:00 left in the fourth quarter
+  offense_timeouts: 3                          # the leader's own timeouts (last 5:00 only)
+  opponent_timeouts: [0, 1, 2, 3]
+  # Daboll kicked from the 1 up 7 in the fourth quarter (clock not stated in the posts);
+  # the headline puts the same call at 8:00 left, the clock of the Bowles case.
+  headline: {lead: 7, seconds: 480, yardline: 1, opponent_timeouts: 3}
+  # Bowles went for it up 14 with about 8 minutes left and failed (2026: hypothetical only).
+  comparison: {lead: 14, seconds: 480, yardline: 1, opponent_timeouts: 3}
+
+# Question 2: after a touchdown, kick or go for two? Margin = score difference just after
+# the touchdown, before the try, from the scoring team's side ("down 8 after a touchdown"
+# is a team that was down 14 and scored).
+two_point:
+  margins: {first: -15, last: 15}     # wider would let the score clip at +-21 in the model
+  seconds: {first: 30, last: 900, step: 30}
+  timeouts: {scorer: 3, receiver: 3}  # the map; every combination is checked for flips
+  named_margins: [-2, -5, -8, -9, -10, 1, 5]
+  headline: {margin: -8, seconds: 480}
+  path_games: 100000                  # simulated games per start for the arithmetic path
+
+# Question 3: fourth and goal early in a close game. Take the points or go?
+goal_line_early:
+  margins: [-3, -2, -1, 0, 1, 2, 3]
+  yardlines: [1, 2, 3]
+  seconds: {first: 1860, last: 3540, step: 60}   # first quarter 14:00 to second quarter 1:00
+  # Averaged over who receives the second-half kickoff (both values are saved).
+  headline: {margin: 0, seconds: 3300, yardline: 1}   # tied, first quarter 10:00 left
+
+# Re-solves of the whole game with one assumption changed (the first half needs all of it;
+# the last 12 or 15 minutes alone would serve questions 1 and 2, see endgame_questions.truncated).
+sensitivity:
+  convert_shifts: [-0.05, 0.05]       # every fourth-down conversion probability, including goal line
+  two_point_shifts: [-0.05, 0.05]     # the two-point success probability
+  defense_timeout: empirical          # measured timeout rates instead of optimal (as in q1)
+
+# Figure categories, in win-probability points (|margin| below the first edge is grey).
+margin_edges: [0.25, 1.0, 3.0]
+
+# What coaches did in comparable spots, development seasons only (splits.load_dev_plays).
+coach_counts:
+  two_point_first_season: 2015        # the extra point moved to the 15-yard line in 2015
