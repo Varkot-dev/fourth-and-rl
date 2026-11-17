@@ -21,8 +21,81 @@
       ],
       "n_games": 3793,
       "n_rows": 637141,
-      "fitted_at": "2026-11-17T06:12:42+00:00",
+      "fitted_at": "2026-11-17T08:27:32+00:00",
       "config_hash": "fff6405221c9aa66",
+      "data_fingerprint": {
+        "n_rows": 637141,
+        "by_season": {
+          "2010": {
+            "rows": 44501,
+            "games": 267
+          },
+          "2011": {
+            "rows": 45051,
+            "games": 267
+          },
+          "2012": {
+            "rows": 45413,
+            "games": 267
+          },
+          "2013": {
+            "rows": 45714,
+            "games": 267
+          },
+          "2014": {
+            "rows": 45267,
+            "games": 267
+          },
+          "2015": {
+            "rows": 45666,
+            "games": 267
+          },
+          "2016": {
+            "rows": 45245,
+            "games": 267
+          },
+          "2017": {
+            "rows": 44797,
+            "games": 267
+          },
+          "2018": {
+            "rows": 44568,
+            "games": 267
+          },
+          "2019": {
+            "rows": 44821,
+            "games": 267
+          },
+          "2020": {
+            "rows": 45173,
+            "games": 269
+          },
+          "2021": {
+            "rows": 47187,
+            "games": 285
+          },
+          "2022": {
+            "rows": 46711,
+            "games": 284
+          },
+          "2023": {
+            "rows": 47027,
+            "games": 285
+          }
+        },
+        "columns_hashed": [
+          "game_id",
+          "play_id",
+          "down",
+          "ydstogo",
+          "yardline_100",
+          "play_type",
+          "yards_gained",
+          "posteam_won"
+        ],
+        "columns_missing": [],
+        "hash": "180536b538b20206"
+      },
       "test_seasons_allowed": false,
       "reason": null,
       "kickoff_rule_tables": {
@@ -37,7 +110,48 @@
           ],
           "n_used": 16741,
           "uses_test_seasons": false,
-          "reason": null
+          "reason": null,
+          "data_fingerprint": {
+            "n_rows": 16940,
+            "by_season": {
+              "2018": {
+                "rows": 2741,
+                "games": 267
+              },
+              "2019": {
+                "rows": 2716,
+                "games": 267
+              },
+              "2020": {
+                "rows": 2898,
+                "games": 269
+              },
+              "2021": {
+                "rows": 2912,
+                "games": 285
+              },
+              "2022": {
+                "rows": 2835,
+                "games": 284
+              },
+              "2023": {
+                "rows": 2838,
+                "games": 285
+              }
+            },
+            "columns_hashed": [
+              "game_id",
+              "play_id",
+              "down",
+              "ydstogo",
+              "yardline_100",
+              "play_type",
+              "yards_gained",
+              "posteam_won"
+            ],
+            "columns_missing": [],
+            "hash": "b0d12cc87ecbd07f"
+          }
         },
         "dynamic_kickoff_2024": {
           "seasons": [
@@ -45,7 +159,28 @@
           ],
           "n_used": 2920,
           "uses_test_seasons": true,
-          "reason": "rule constant; no data under this rule exists before the season"
+          "reason": "rule constant; no data under this rule exists before the season",
+          "data_fingerprint": {
+            "n_rows": 2955,
+            "by_season": {
+              "2024": {
+                "rows": 2955,
+                "games": 285
+              }
+            },
+            "columns_hashed": [
+              "game_id",
+              "play_id",
+              "down",
+              "ydstogo",
+              "yardline_100",
+              "play_type",
+              "yards_gained",
+              "posteam_won"
+            ],
+            "columns_missing": [],
+            "hash": "0334f7a96282d957"
+          }
         },
         "dynamic_kickoff_2025": {
           "seasons": [
@@ -53,7 +188,28 @@
           ],
           "n_used": 2893,
           "uses_test_seasons": true,
-          "reason": "rule constant; no data under this rule exists before the season"
+          "reason": "rule constant; no data under this rule exists before the season",
+          "data_fingerprint": {
+            "n_rows": 2927,
+            "by_season": {
+              "2025": {
+                "rows": 2927,
+                "games": 285
+              }
+            },
+            "columns_hashed": [
+              "game_id",
+              "play_id",
+              "down",
+              "ydstogo",
+              "yardline_100",
+              "play_type",
+              "yards_gained",
+              "posteam_won"
+            ],
+            "columns_missing": [],
+            "hash": "7f52724334ea0457"
+          }
         }
       }
     },
@@ -77,7 +233,7 @@
       ],
       "n_games": 3793,
       "n_rows": 637141,
-      "fitted_at": "2026-11-17T06:13:00+00:00"
+      "fitted_at": "2026-11-17T09:03:33+00:00"
     },
     "note": "every input of the game model is fitted on development seasons; the components' kickoff rule tables are the one logged exception"
   },
@@ -85,64 +241,64 @@
     "what": "expected net points over endless possessions; fourth-down actions go, field goal, punt; downs 1 to 3 a generic play",
     "n_states": 4752,
     "touchdown_value": 6.941821465428276,
-    "solve_seconds_all_three": 0.6168906688690186,
+    "solve_seconds_all_three": 0.6822052001953125,
     "value_iteration": {
       "optimal": {
         "iterations": 270,
-        "residual": 9.60826973539497e-11,
+        "residual": 9.608291939855462e-11,
         "converged": true
       },
       "next_score": {
         "iterations": 149,
-        "residual": 8.534417617056533e-11,
+        "residual": 8.534423168171656e-11,
         "converged": true
       },
       "coach_future": {
         "iterations": 260,
-        "residual": 9.012457446999633e-11,
+        "residual": 9.012390833618156e-11,
         "converged": true
       }
     },
     "kickoff_value_to_receiver": {
-      "optimal": 1.2019296728137463,
-      "coach_future": 1.1235441951575995
+      "optimal": 1.2019296728137432,
+      "coach_future": 1.1235441951575986
     },
     "first_and_10_value_by_yardline_100": {
       "10": {
-        "optimal_endless": 4.013014084813276,
-        "coach_future_endless": 4.003243656919545,
-        "optimal_next_score": 5.0058307384917615,
+        "optimal_endless": 4.013014084813275,
+        "coach_future_endless": 4.003243656919544,
+        "optimal_next_score": 5.00583073849176,
         "nflfastr_ep_mean": 5.129902194882198
       },
       "25": {
-        "optimal_endless": 3.406104845010963,
-        "coach_future_endless": 3.400718115309425,
-        "optimal_next_score": 4.3340666695032075,
+        "optimal_endless": 3.4061048450109617,
+        "coach_future_endless": 3.4007181153094246,
+        "optimal_next_score": 4.334066669503207,
         "nflfastr_ep_mean": 4.3397546776875995
       },
       "50": {
-        "optimal_endless": 2.116954360148721,
-        "coach_future_endless": 2.065193302106736,
-        "optimal_next_score": 2.697882643555099,
+        "optimal_endless": 2.1169543601487186,
+        "coach_future_endless": 2.065193302106735,
+        "optimal_next_score": 2.6978826435550958,
         "nflfastr_ep_mean": 2.748424974765829
       },
       "75": {
-        "optimal_endless": 0.9240441982663168,
-        "coach_future_endless": 0.8425653744140124,
-        "optimal_next_score": 1.1726313541121836,
+        "optimal_endless": 0.9240441982663137,
+        "coach_future_endless": 0.8425653744140116,
+        "optimal_next_score": 1.1726313541121791,
         "nflfastr_ep_mean": 1.1837553110441927
       },
       "90": {
-        "optimal_endless": 0.170559777669046,
-        "coach_future_endless": 0.07440100364551629,
-        "optimal_next_score": 0.247616364670066,
+        "optimal_endless": 0.17055977766904243,
+        "coach_future_endless": 0.07440100364551609,
+        "optimal_next_score": 0.24761636467006146,
         "nflfastr_ep_mean": 0.14205718251823204
       }
     },
     "next_score_vs_nflfastr_ep": {
-      "correlation": 0.9993545355352622,
-      "mean_difference_ours_minus_nflfastr": -0.01012287110612768,
-      "rmse": 0.07981698643384441,
+      "correlation": 0.9993545355352618,
+      "mean_difference_ours_minus_nflfastr": -0.010122871106130813,
+      "rmse": 0.0798169864338442,
       "note": "nflfastR ep is a fitted next-score model on real play with real coaching; ours is the optimal-policy next-score value of our transition model"
     },
     "fourth_down_chart": {
@@ -150,8 +306,8 @@
       "optimal_go_cells": 622,
       "coach_future_go_cells": 580,
       "cells_where_the_two_charts_differ": 42,
-      "largest_margin_points_in_differing_cells": 0.09901782840564799,
-      "mean_gain_from_optimal_future_first_and_10_points": 0.04921636520700995,
+      "largest_margin_points_in_differing_cells": 0.09901782840566042,
+      "mean_gain_from_optimal_future_first_and_10_points": 0.04921636520700843,
       "note": "coach_future: every later fourth down is played with the observed neutral-situation coach frequencies; only the current one is optimized"
     }
   },
@@ -172,10 +328,10 @@
       "total": 407854656
     },
     "n_states_note": "the end phase counts 61 time slices including the terminal one",
-    "solve_seconds": 45.31916689872742,
-    "kernel_build_seconds": 1.6959433555603027,
-    "peak_memory_gb_whole_script_at_end_of_solve": 2.783111572265625,
-    "threads": 2,
+    "solve_seconds": 53.45259165763855,
+    "kernel_build_seconds": 1.7751517295837402,
+    "peak_memory_gb_whole_script_at_end_of_solve": 2.7822189331054688,
+    "threads": 3,
     "dtype": "float32",
     "convergence": "none needed: one backward pass, each slice computed once from slices closer to the end of the game",
     "saved_arrays_gb": 1.899221956729889,
@@ -417,7 +573,7 @@
     "n_states": 60,
     "games_per_state": 4000,
     "seed": 20261118,
-    "simulate_seconds": 6.479304552078247,
+    "simulate_seconds": 9.150489091873169,
     "states_with_value_between_0.02_and_0.98": 52,
     "max_abs_z": 3.6162763183528637,
     "share_abs_z_below_2": 0.9423076923076923,

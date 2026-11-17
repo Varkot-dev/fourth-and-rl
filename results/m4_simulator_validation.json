@@ -39,7 +39,7 @@
       ],
       "n_games": 3793,
       "n_rows": 637141,
-      "fitted_at": "2026-11-17T06:13:00+00:00"
+      "fitted_at": "2026-11-17T09:03:33+00:00"
     },
     "components": {
       "what": "component models",
@@ -61,8 +61,81 @@
       ],
       "n_games": 3793,
       "n_rows": 637141,
-      "fitted_at": "2026-11-17T06:12:42+00:00",
+      "fitted_at": "2026-11-17T08:27:32+00:00",
       "config_hash": "fff6405221c9aa66",
+      "data_fingerprint": {
+        "n_rows": 637141,
+        "by_season": {
+          "2010": {
+            "rows": 44501,
+            "games": 267
+          },
+          "2011": {
+            "rows": 45051,
+            "games": 267
+          },
+          "2012": {
+            "rows": 45413,
+            "games": 267
+          },
+          "2013": {
+            "rows": 45714,
+            "games": 267
+          },
+          "2014": {
+            "rows": 45267,
+            "games": 267
+          },
+          "2015": {
+            "rows": 45666,
+            "games": 267
+          },
+          "2016": {
+            "rows": 45245,
+            "games": 267
+          },
+          "2017": {
+            "rows": 44797,
+            "games": 267
+          },
+          "2018": {
+            "rows": 44568,
+            "games": 267
+          },
+          "2019": {
+            "rows": 44821,
+            "games": 267
+          },
+          "2020": {
+            "rows": 45173,
+            "games": 269
+          },
+          "2021": {
+            "rows": 47187,
+            "games": 285
+          },
+          "2022": {
+            "rows": 46711,
+            "games": 284
+          },
+          "2023": {
+            "rows": 47027,
+            "games": 285
+          }
+        },
+        "columns_hashed": [
+          "game_id",
+          "play_id",
+          "down",
+          "ydstogo",
+          "yardline_100",
+          "play_type",
+          "yards_gained",
+          "posteam_won"
+        ],
+        "columns_missing": [],
+        "hash": "180536b538b20206"
+      },
       "test_seasons_allowed": false,
       "reason": null,
       "kickoff_rule_tables": {
@@ -77,7 +150,48 @@
           ],
           "n_used": 16741,
           "uses_test_seasons": false,
-          "reason": null
+          "reason": null,
+          "data_fingerprint": {
+            "n_rows": 16940,
+            "by_season": {
+              "2018": {
+                "rows": 2741,
+                "games": 267
+              },
+              "2019": {
+                "rows": 2716,
+                "games": 267
+              },
+              "2020": {
+                "rows": 2898,
+                "games": 269
+              },
+              "2021": {
+                "rows": 2912,
+                "games": 285
+              },
+              "2022": {
+                "rows": 2835,
+                "games": 284
+              },
+              "2023": {
+                "rows": 2838,
+                "games": 285
+              }
+            },
+            "columns_hashed": [
+              "game_id",
+              "play_id",
+              "down",
+              "ydstogo",
+              "yardline_100",
+              "play_type",
+              "yards_gained",
+              "posteam_won"
+            ],
+            "columns_missing": [],
+            "hash": "b0d12cc87ecbd07f"
+          }
         },
         "dynamic_kickoff_2024": {
           "seasons": [
@@ -85,7 +199,28 @@
           ],
           "n_used": 2920,
           "uses_test_seasons": true,
-          "reason": "rule constant; no data under this rule exists before the season"
+          "reason": "rule constant; no data under this rule exists before the season",
+          "data_fingerprint": {
+            "n_rows": 2955,
+            "by_season": {
+              "2024": {
+                "rows": 2955,
+                "games": 285
+              }
+            },
+            "columns_hashed": [
+              "game_id",
+              "play_id",
+              "down",
+              "ydstogo",
+              "yardline_100",
+              "play_type",
+              "yards_gained",
+              "posteam_won"
+            ],
+            "columns_missing": [],
+            "hash": "0334f7a96282d957"
+          }
         },
         "dynamic_kickoff_2025": {
           "seasons": [
@@ -93,7 +228,28 @@
           ],
           "n_used": 2893,
           "uses_test_seasons": true,
-          "reason": "rule constant; no data under this rule exists before the season"
+          "reason": "rule constant; no data under this rule exists before the season",
+          "data_fingerprint": {
+            "n_rows": 2927,
+            "by_season": {
+              "2025": {
+                "rows": 2927,
+                "games": 285
+              }
+            },
+            "columns_hashed": [
+              "game_id",
+              "play_id",
+              "down",
+              "ydstogo",
+              "yardline_100",
+              "play_type",
+              "yards_gained",
+              "posteam_won"
+            ],
+            "columns_missing": [],
+            "hash": "7f52724334ea0457"
+          }
         }
       }
     },

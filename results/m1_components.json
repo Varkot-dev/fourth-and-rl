@@ -24,8 +24,81 @@
         ],
         "n_games": 3793,
         "n_rows": 637141,
-        "fitted_at": "2026-11-17T06:12:42+00:00",
+        "fitted_at": "2026-11-17T08:27:32+00:00",
         "config_hash": "fff6405221c9aa66",
+        "data_fingerprint": {
+          "n_rows": 637141,
+          "by_season": {
+            "2010": {
+              "rows": 44501,
+              "games": 267
+            },
+            "2011": {
+              "rows": 45051,
+              "games": 267
+            },
+            "2012": {
+              "rows": 45413,
+              "games": 267
+            },
+            "2013": {
+              "rows": 45714,
+              "games": 267
+            },
+            "2014": {
+              "rows": 45267,
+              "games": 267
+            },
+            "2015": {
+              "rows": 45666,
+              "games": 267
+            },
+            "2016": {
+              "rows": 45245,
+              "games": 267
+            },
+            "2017": {
+              "rows": 44797,
+              "games": 267
+            },
+            "2018": {
+              "rows": 44568,
+              "games": 267
+            },
+            "2019": {
+              "rows": 44821,
+              "games": 267
+            },
+            "2020": {
+              "rows": 45173,
+              "games": 269
+            },
+            "2021": {
+              "rows": 47187,
+              "games": 285
+            },
+            "2022": {
+              "rows": 46711,
+              "games": 284
+            },
+            "2023": {
+              "rows": 47027,
+              "games": 285
+            }
+          },
+          "columns_hashed": [
+            "game_id",
+            "play_id",
+            "down",
+            "ydstogo",
+            "yardline_100",
+            "play_type",
+            "yards_gained",
+            "posteam_won"
+          ],
+          "columns_missing": [],
+          "hash": "180536b538b20206"
+        },
         "test_seasons_allowed": false,
         "reason": null,
         "kickoff_rule_tables": {
@@ -40,7 +113,48 @@
             ],
             "n_used": 16741,
             "uses_test_seasons": false,
-            "reason": null
+            "reason": null,
+            "data_fingerprint": {
+              "n_rows": 16940,
+              "by_season": {
+                "2018": {
+                  "rows": 2741,
+                  "games": 267
+                },
+                "2019": {
+                  "rows": 2716,
+                  "games": 267
+                },
+                "2020": {
+                  "rows": 2898,
+                  "games": 269
+                },
+                "2021": {
+                  "rows": 2912,
+                  "games": 285
+                },
+                "2022": {
+                  "rows": 2835,
+                  "games": 284
+                },
+                "2023": {
+                  "rows": 2838,
+                  "games": 285
+                }
+              },
+              "columns_hashed": [
+                "game_id",
+                "play_id",
+                "down",
+                "ydstogo",
+                "yardline_100",
+                "play_type",
+                "yards_gained",
+                "posteam_won"
+              ],
+              "columns_missing": [],
+              "hash": "b0d12cc87ecbd07f"
+            }
           },
           "dynamic_kickoff_2024": {
             "seasons": [
@@ -48,7 +162,28 @@
             ],
             "n_used": 2920,
             "uses_test_seasons": true,
-            "reason": "rule constant; no data under this rule exists before the season"
+            "reason": "rule constant; no data under this rule exists before the season",
+            "data_fingerprint": {
+              "n_rows": 2955,
+              "by_season": {
+                "2024": {
+                  "rows": 2955,
+                  "games": 285
+                }
+              },
+              "columns_hashed": [
+                "game_id",
+                "play_id",
+                "down",
+                "ydstogo",
+                "yardline_100",
+                "play_type",
+                "yards_gained",
+                "posteam_won"
+              ],
+              "columns_missing": [],
+              "hash": "0334f7a96282d957"
+            }
           },
           "dynamic_kickoff_2025": {
             "seasons": [
@@ -56,7 +191,28 @@
             ],
             "n_used": 2893,
             "uses_test_seasons": true,
-            "reason": "rule constant; no data under this rule exists before the season"
+            "reason": "rule constant; no data under this rule exists before the season",
+            "data_fingerprint": {
+              "n_rows": 2927,
+              "by_season": {
+                "2025": {
+                  "rows": 2927,
+                  "games": 285
+                }
+              },
+              "columns_hashed": [
+                "game_id",
+                "play_id",
+                "down",
+                "ydstogo",
+                "yardline_100",
+                "play_type",
+                "yards_gained",
+                "posteam_won"
+              ],
+              "columns_missing": [],
+              "hash": "7f52724334ea0457"
+            }
           }
         }
       }
@@ -85,8 +241,89 @@
         ],
         "n_games": 4363,
         "n_rows": 729962,
-        "fitted_at": "2026-11-17T06:12:45+00:00",
+        "fitted_at": "2026-11-17T08:27:34+00:00",
         "config_hash": "fff6405221c9aa66",
+        "data_fingerprint": {
+          "n_rows": 729962,
+          "by_season": {
+            "2010": {
+              "rows": 44501,
+              "games": 267
+            },
+            "2011": {
+              "rows": 45051,
+              "games": 267
+            },
+            "2012": {
+              "rows": 45413,
+              "games": 267
+            },
+            "2013": {
+              "rows": 45714,
+              "games": 267
+            },
+            "2014": {
+              "rows": 45267,
+              "games": 267
+            },
+            "2015": {
+              "rows": 45666,
+              "games": 267
+            },
+            "2016": {
+              "rows": 45245,
+              "games": 267
+            },
+            "2017": {
+              "rows": 44797,
+              "games": 267
+            },
+            "2018": {
+              "rows": 44568,
+              "games": 267
+            },
+            "2019": {
+              "rows": 44821,
+              "games": 267
+            },
+            "2020": {
+              "rows": 45173,
+              "games": 269
+            },
+            "2021": {
+              "rows": 47187,
+              "games": 285
+            },
+            "2022": {
+              "rows": 46711,
+              "games": 284
+            },
+            "2023": {
+              "rows": 47027,
+              "games": 285
+            },
+            "2024": {
+              "rows": 46779,
+              "games": 285
+            },
+            "2025": {
+              "rows": 46042,
+              "games": 285
+            }
+          },
+          "columns_hashed": [
+            "game_id",
+            "play_id",
+            "down",
+            "ydstogo",
+            "yardline_100",
+            "play_type",
+            "yards_gained",
+            "posteam_won"
+          ],
+          "columns_missing": [],
+          "hash": "16dd8646b939d61a"
+        },
         "test_seasons_allowed": true,
         "reason": "forward-looking all-seasons bundle (future app); nothing reported on the test seasons may use it",
         "kickoff_rule_tables": {
@@ -101,7 +338,48 @@
             ],
             "n_used": 16741,
             "uses_test_seasons": false,
-            "reason": "forward-looking all-seasons bundle (future app); nothing reported on the test seasons may use it"
+            "reason": "forward-looking all-seasons bundle (future app); nothing reported on the test seasons may use it",
+            "data_fingerprint": {
+              "n_rows": 16940,
+              "by_season": {
+                "2018": {
+                  "rows": 2741,
+                  "games": 267
+                },
+                "2019": {
+                  "rows": 2716,
+                  "games": 267
+                },
+                "2020": {
+                  "rows": 2898,
+                  "games": 269
+                },
+                "2021": {
+                  "rows": 2912,
+                  "games": 285
+                },
+                "2022": {
+                  "rows": 2835,
+                  "games": 284
+                },
+                "2023": {
+                  "rows": 2838,
+                  "games": 285
+                }
+              },
+              "columns_hashed": [
+                "game_id",
+                "play_id",
+                "down",
+                "ydstogo",
+                "yardline_100",
+                "play_type",
+                "yards_gained",
+                "posteam_won"
+              ],
+              "columns_missing": [],
+              "hash": "b0d12cc87ecbd07f"
+            }
           },
           "dynamic_kickoff_2024": {
             "seasons": [
@@ -109,7 +387,28 @@
             ],
             "n_used": 2920,
             "uses_test_seasons": true,
-            "reason": "forward-looking all-seasons bundle (future app); nothing reported on the test seasons may use it"
+            "reason": "forward-looking all-seasons bundle (future app); nothing reported on the test seasons may use it",
+            "data_fingerprint": {
+              "n_rows": 2955,
+              "by_season": {
+                "2024": {
+                  "rows": 2955,
+                  "games": 285
+                }
+              },
+              "columns_hashed": [
+                "game_id",
+                "play_id",
+                "down",
+                "ydstogo",
+                "yardline_100",
+                "play_type",
+                "yards_gained",
+                "posteam_won"
+              ],
+              "columns_missing": [],
+              "hash": "0334f7a96282d957"
+            }
           },
           "dynamic_kickoff_2025": {
             "seasons": [
@@ -117,7 +416,28 @@
             ],
             "n_used": 2893,
             "uses_test_seasons": true,
-            "reason": "forward-looking all-seasons bundle (future app); nothing reported on the test seasons may use it"
+            "reason": "forward-looking all-seasons bundle (future app); nothing reported on the test seasons may use it",
+            "data_fingerprint": {
+              "n_rows": 2927,
+              "by_season": {
+                "2025": {
+                  "rows": 2927,
+                  "games": 285
+                }
+              },
+              "columns_hashed": [
+                "game_id",
+                "play_id",
+                "down",
+                "ydstogo",
+                "yardline_100",
+                "play_type",
+                "yards_gained",
+                "posteam_won"
+              ],
+              "columns_missing": [],
+              "hash": "7f52724334ea0457"
+            }
           }
         }
       },
@@ -275,9 +595,9 @@
         "third_and_fourth_downs": {
           "by_block": {
             "2020-2021": 0.645444902728645,
-            "2022-2023": 0.6300772881591983
+            "2022-2023": 0.6300772881591999
           },
-          "pooled": 0.6375391626276107,
+          "pooled": 0.6375391626276116,
           "minus_adopted": {
             "difference": 0.0,
             "standard_error": 0.0
@@ -290,19 +610,19 @@
           },
           "pooled": 0.6395558139345051,
           "minus_adopted": {
-            "difference": 0.002016651306894584,
-            "standard_error": 0.0012865974927473726
+            "difference": 0.002016651306893701,
+            "standard_error": 0.0012865974927473382
           }
         },
         "third_downs_only": {
           "by_block": {
             "2020-2021": 0.6465214579346955,
-            "2022-2023": 0.6292806619584651
+            "2022-2023": 0.6292806619584501
           },
-          "pooled": 0.6376520754090544,
+          "pooled": 0.6376520754090468,
           "minus_adopted": {
-            "difference": 0.00011291278144383657,
-            "standard_error": 0.00035198601615312055
+            "difference": 0.00011291278143526711,
+            "standard_error": 0.0003519860161537876
           }
         },
         "no_season_trend": {
@@ -312,8 +632,8 @@
           },
           "pooled": 0.6376543936772767,
           "minus_adopted": {
-            "difference": 0.00011523104966605273,
-            "standard_error": 0.0003218712794817177
+            "difference": 0.00011523104966516993,
+            "standard_error": 0.0003218712794822807
           }
         },
         "no_spread_control": {
@@ -323,38 +643,38 @@
           },
           "pooled": 0.6375293769348421,
           "minus_adopted": {
-            "difference": -9.78569276853954e-06,
-            "standard_error": 0.00016183629154885242
+            "difference": -9.785692769419347e-06,
+            "standard_error": 0.00016183629154931927
           }
         },
         "coarser_distance_knots": {
           "by_block": {
-            "2020-2021": 0.645420823041302,
-            "2022-2023": 0.63007117033162
+            "2020-2021": 0.6454208230413045,
+            "2022-2023": 0.6300711703316115
           },
-          "pooled": 0.6375243232679962,
+          "pooled": 0.6375243232679932,
           "minus_adopted": {
-            "difference": -1.4839359614282466e-05,
-            "standard_error": 0.00016442126811195903
+            "difference": -1.483935961823182e-05,
+            "standard_error": 0.00016442126811227862
           }
         },
         "fourth_down_effect_varies_with_distance": {
           "by_block": {
-            "2020-2021": 0.6454671482065194,
-            "2022-2023": 0.6319142005158075
+            "2020-2021": 0.6454671482065196,
+            "2022-2023": 0.631914200515806
           },
-          "pooled": 0.6384949482231397,
+          "pooled": 0.638494948223139,
           "minus_adopted": {
-            "difference": 0.0009557855955290185,
-            "standard_error": 0.0007840855926092335
+            "difference": 0.0009557855955274793,
+            "standard_error": 0.0007840855926091432
           }
         }
       },
       "lowest_pooled_log_loss": "coarser_distance_knots",
       "adopted": "third_and_fourth_downs",
       "adopted_minus_lowest": {
-        "difference": 1.4839359614282466e-05,
-        "standard_error": 0.00016442126811195903
+        "difference": 1.483935961823182e-05,
+        "standard_error": 0.00016442126811227862
       },
       "lowest_beats_adopted_by_more_than_one_standard_error": false,
       "block_winners": {
@@ -530,58 +850,58 @@
   "fitted": {
     "conversion_probability_fourth_down": {
       "yardline_100_50": {
-        "fourth_and_1": 0.7097357250507869,
-        "fourth_and_2": 0.6023308807828219,
-        "fourth_and_3": 0.5490276158741922,
-        "fourth_and_5": 0.47328769260517467,
-        "fourth_and_10": 0.3164379565602286,
-        "fourth_and_15": 0.18010714659896504
+        "fourth_and_1": 0.709735725050784,
+        "fourth_and_2": 0.6023308807828193,
+        "fourth_and_3": 0.5490276158741887,
+        "fourth_and_5": 0.47328769260517206,
+        "fourth_and_10": 0.31643795656022644,
+        "fourth_and_15": 0.1801071465989635
       },
       "yardline_100_30": {
-        "fourth_and_1": 0.6861629214599377,
-        "fourth_and_2": 0.5752555906098716,
-        "fourth_and_3": 0.5212079819736228,
-        "fourth_and_5": 0.445514505526687,
-        "fourth_and_10": 0.2927531460453496,
-        "fourth_and_15": 0.16417566088550428
+        "fourth_and_1": 0.6861629214599346,
+        "fourth_and_2": 0.5752555906098691,
+        "fourth_and_3": 0.5212079819736193,
+        "fourth_and_5": 0.44551450552668453,
+        "fourth_and_10": 0.29275314604534747,
+        "fourth_and_15": 0.16417566088550284
       },
       "yardline_100_5": {
-        "fourth_and_1": 0.6136584172185418,
-        "fourth_and_2": 0.49595066098161966,
-        "fourth_and_3": 0.441607238439924,
-        "fourth_and_5": 0.36857489563125906
+        "fourth_and_1": 0.6136584172185385,
+        "fourth_and_2": 0.4959506609816171,
+        "fourth_and_3": 0.4416072384399207,
+        "fourth_and_5": 0.3685748956312569
       }
     },
     "conversion_model": {
-      "intercept": -0.9188862230300637,
+      "intercept": -0.9188862230300634,
       "coefficients": {
-        "distance_spline_0": 0.4919299114408321,
-        "distance_spline_1": 2.0745657642271893,
-        "distance_spline_2": 0.9582804485315481,
-        "distance_spline_3": 0.9673003455067761,
-        "distance_spline_4": 0.6600227123482058,
-        "distance_spline_5": 0.5597228279774682,
-        "distance_spline_6": 0.16724924195734886,
-        "distance_spline_7": -0.0343056182711244,
-        "distance_spline_8": -0.6763242080548754,
-        "distance_spline_9": -0.9222758356860838,
-        "distance_spline_10": -2.854145851485226,
-        "distance_spline_11": -2.027824944856052,
-        "fourth_down": 0.03788553817942052,
-        "spread_per_10": 0.14984745061104704,
-        "season_per_decade": 0.032678366737178076,
-        "yardline_spline_0": -0.12785928986957268,
-        "yardline_spline_1": -0.570580002398217,
-        "yardline_spline_2": -0.24386934496767332,
-        "yardline_spline_3": -0.06953710571459576,
-        "yardline_spline_4": -0.06317512509212411,
-        "yardline_spline_5": 0.14743337401632647,
-        "yardline_spline_6": 0.12999206275932113,
-        "yardline_spline_7": 0.1568633845402802,
-        "yardline_spline_8": -0.18103737694982192
+        "distance_spline_0": 0.49192991144083126,
+        "distance_spline_1": 2.0745657642271826,
+        "distance_spline_2": 0.9582804485315494,
+        "distance_spline_3": 0.9673003455067686,
+        "distance_spline_4": 0.660022712348208,
+        "distance_spline_5": 0.5597228279774639,
+        "distance_spline_6": 0.16724924195735702,
+        "distance_spline_7": -0.03430561827112945,
+        "distance_spline_8": -0.6763242080548707,
+        "distance_spline_9": -0.9222758356860916,
+        "distance_spline_10": -2.854145851485228,
+        "distance_spline_11": -2.027824944856038,
+        "fourth_down": 0.03788553817941397,
+        "spread_per_10": 0.1498474506110465,
+        "season_per_decade": 0.0326783667371727,
+        "yardline_spline_0": -0.1278592898695722,
+        "yardline_spline_1": -0.570580002398218,
+        "yardline_spline_2": -0.24386934496767218,
+        "yardline_spline_3": -0.06953710571459853,
+        "yardline_spline_4": -0.0631751250921236,
+        "yardline_spline_5": 0.14743337401632425,
+        "yardline_spline_6": 0.12999206275932218,
+        "yardline_spline_7": 0.1568633845402813,
+        "yardline_spline_8": -0.1810373769498241
       },
       "reference_season": 2023.0,
-      "largest_monotone_correction": 0.029823687005838914,
+      "largest_monotone_correction": 0.02982368700583913,
       "share_of_failed_fourth_downs_that_are_turnovers_by_distance_1_2__3_6__7_plus": [
         0.08454106280193237,
         0.07612456747404844,
@@ -589,13 +909,13 @@
       ]
     },
     "go_outcomes_example_fourth_and_3_at_yardline_100_40": {
-      "p_convert": 0.5411890999103542,
-      "p_touchdown": 0.024153092360863278,
-      "p_first_down_short_of_end_zone": 0.5170360075494909,
-      "mean_new_yardline_100_after_first_down": 29.45837793960055,
-      "p_turnover_any_kind": 0.4588109000896458,
-      "p_returned_for_touchdown": 0.0026524419112801565,
-      "mean_opponent_yardline_100_after_turnover": 59.49284681718329,
+      "p_convert": 0.5411890999103505,
+      "p_touchdown": 0.024153092360863115,
+      "p_first_down_short_of_end_zone": 0.5170360075494873,
+      "mean_new_yardline_100_after_first_down": 29.458377939600545,
+      "p_turnover_any_kind": 0.45881090008964953,
+      "p_returned_for_touchdown": 0.0026524419112801782,
+      "mean_opponent_yardline_100_after_turnover": 59.4928468171833,
       "p_safety": 0.0
     },
     "field_goal_make_probability_by_kick_distance": {
@@ -1325,7 +1645,7 @@
         "mean_score_differential": 0.6541501976284585
       }
     },
-    "fourth_down_coefficient_with_spread_control": 0.03788553817942052,
+    "fourth_down_coefficient_with_spread_control": 0.03788553817941397,
     "fourth_down_coefficient_without_spread_control": 0.011156819747066862,
     "share_of_failed_third_downs_that_are_turnovers": 0.04778238672622846,
     "play_model_touchdown_rate_in_sample_by_yardline_100": {
@@ -1430,45 +1750,45 @@
       "fourth_down": {
         "n": 1746,
         "actual_rate": 0.5607101947308133,
-        "mean_predicted": 0.5384520777832813,
-        "log_loss_model": 0.6433819745684705,
+        "mean_predicted": 0.5384520777832786,
+        "log_loss_model": 0.6433819745684708,
         "log_loss_constant_baseline": 0.6917144527325814,
         "baseline_rate_from_training_seasons": 0.5062179956108266,
         "calibration_by_distance": [
           {
             "bin": "1",
             "n": 696,
-            "predicted": 0.6784324258427261,
+            "predicted": 0.678432425842723,
             "actual": 0.6910919540229885
           },
           {
             "bin": "2",
             "n": 258,
-            "predicted": 0.5594995764469756,
+            "predicted": 0.559499576446973,
             "actual": 0.6124031007751938
           },
           {
             "bin": "3-4",
             "n": 347,
-            "predicted": 0.49798868099441085,
+            "predicted": 0.49798868099440774,
             "actual": 0.5360230547550432
           },
           {
             "bin": "5-7",
             "n": 204,
-            "predicted": 0.4326276626359012,
+            "predicted": 0.4326276626358988,
             "actual": 0.4362745098039216
           },
           {
             "bin": "8-10",
             "n": 128,
-            "predicted": 0.3254276688150097,
+            "predicted": 0.32542766881500795,
             "actual": 0.3046875
           },
           {
             "bin": "11+",
             "n": 113,
-            "predicted": 0.18481957175793456,
+            "predicted": 0.18481957175793304,
             "actual": 0.23008849557522124
           }
         ],
@@ -1476,31 +1796,31 @@
           {
             "bin": "lowest fifth",
             "n": 330,
-            "predicted": 0.29458581290225816,
+            "predicted": 0.29458581290225644,
             "actual": 0.30606060606060603
           },
           {
             "bin": "second",
             "n": 368,
-            "predicted": 0.4679295105166571,
+            "predicted": 0.4679295105166543,
             "actual": 0.5108695652173914
           },
           {
             "bin": "third",
             "n": 344,
-            "predicted": 0.5582806708723971,
+            "predicted": 0.558280670872394,
             "actual": 0.6162790697674418
           },
           {
             "bin": "fourth",
             "n": 350,
-            "predicted": 0.6512368425506752,
+            "predicted": 0.6512368425506722,
             "actual": 0.6571428571428571
           },
           {
             "bin": "highest fifth",
             "n": 354,
-            "predicted": 0.7083178079347269,
+            "predicted": 0.7083178079347242,
             "actual": 0.7005649717514124
           }
         ]
@@ -1508,7 +1828,7 @@
       "third_down_same_model": {
         "n": 14309,
         "actual_rate": 0.4028233978614858,
-        "mean_predicted": 0.408291522304772,
+        "mean_predicted": 0.40829152230477117,
         "log_loss_model": 0.6109227625436159,
         "log_loss_constant_baseline": 0.674166898424339,
         "baseline_rate_from_training_seasons": 0.3992203321182665
@@ -1730,12 +2050,12 @@
         ],
         "touchback_yardline_100": 75,
         "empirical_mean_start_yardline_100": 74.26008004300817,
-        "value_of_receiving_a_kickoff_empirical": 0.9934178748605903,
-        "value_of_receiving_a_kickoff_fixed_spot": 0.9695190789004323,
-        "go_minus_best_kick_change_mean_abs": 0.006561104099678009,
-        "go_minus_best_kick_change_max_abs": 0.021609217492328803,
+        "value_of_receiving_a_kickoff_empirical": 0.9934178748605873,
+        "value_of_receiving_a_kickoff_fixed_spot": 0.9695190789004289,
+        "go_minus_best_kick_change_mean_abs": 0.006561104099678003,
+        "go_minus_best_kick_change_max_abs": 0.021609217492329247,
         "states_whose_best_action_flips": 5,
-        "largest_margin_among_flipped_states": 0.012179023606328832,
+        "largest_margin_among_flipped_states": 0.012179023606314177,
         "flipped_states_by_action_pair": {
           "go_to_field_goal": 3,
           "punt_to_field_goal": 2
@@ -1748,9 +2068,9 @@
         ],
         "touchback_yardline_100": 70,
         "empirical_mean_start_yardline_100": 69.79143835616438,
-        "value_of_receiving_a_kickoff_empirical": 1.17637367875646,
-        "value_of_receiving_a_kickoff_fixed_spot": 1.1758691633828857,
-        "go_minus_best_kick_change_mean_abs": 0.00013805590825330302,
+        "value_of_receiving_a_kickoff_empirical": 1.1763736787564565,
+        "value_of_receiving_a_kickoff_fixed_spot": 1.1758691633828828,
+        "go_minus_best_kick_change_mean_abs": 0.0001380559082532593,
         "go_minus_best_kick_change_max_abs": 0.00045499772586343745,
         "states_whose_best_action_flips": 0,
         "largest_margin_among_flipped_states": 0.0,
@@ -1763,12 +2083,12 @@
         ],
         "touchback_yardline_100": 65,
         "empirical_mean_start_yardline_100": 69.1016246111303,
-        "value_of_receiving_a_kickoff_empirical": 1.2014591580472214,
-        "value_of_receiving_a_kickoff_fixed_spot": 1.3592648164518089,
-        "go_minus_best_kick_change_mean_abs": 0.043045471237563734,
+        "value_of_receiving_a_kickoff_empirical": 1.201459158047218,
+        "value_of_receiving_a_kickoff_fixed_spot": 1.3592648164518062,
+        "go_minus_best_kick_change_mean_abs": 0.04304547123756381,
         "go_minus_best_kick_change_max_abs": 0.14211004026852647,
         "states_whose_best_action_flips": 24,
-        "largest_margin_among_flipped_states": 0.10453622509414773,
+        "largest_margin_among_flipped_states": 0.1045362250941595,
         "flipped_states_by_action_pair": {
           "go_to_punt": 3,
           "field_goal_to_go": 21
@@ -2531,138 +2851,138 @@
     "go": [
       {
         "ydstogo": 1,
-        "fitted_fourth_down_at_midfield": 0.7097357250507869,
+        "fitted_fourth_down_at_midfield": 0.709735725050784,
         "third_down_n": 8364,
         "third_down_raw": 0.6874701099952176,
         "fourth_down_n": 2105,
         "fourth_down_raw": 0.6836104513064133,
-        "fitted_fourth_down_same_plays": 0.6996192284932874
+        "fitted_fourth_down_same_plays": 0.6996192284932845
       },
       {
         "ydstogo": 2,
-        "fitted_fourth_down_at_midfield": 0.6023308807828219,
+        "fitted_fourth_down_at_midfield": 0.6023308807828193,
         "third_down_n": 6025,
         "third_down_raw": 0.5694605809128631,
         "fourth_down_n": 764,
         "fourth_down_raw": 0.5654450261780105,
-        "fitted_fourth_down_same_plays": 0.5908146941692916
+        "fitted_fourth_down_same_plays": 0.5908146941692889
       },
       {
         "ydstogo": 3,
-        "fitted_fourth_down_at_midfield": 0.5490276158741922,
+        "fitted_fourth_down_at_midfield": 0.5490276158741887,
         "third_down_n": 5817,
         "third_down_raw": 0.529998280900808,
         "fourth_down_n": 501,
         "fourth_down_raw": 0.49700598802395207,
-        "fitted_fourth_down_same_plays": 0.5373303731454895
+        "fitted_fourth_down_same_plays": 0.5373303731454859
       },
       {
         "ydstogo": 4,
-        "fitted_fourth_down_at_midfield": 0.506278980699315,
+        "fitted_fourth_down_at_midfield": 0.5062789806993122,
         "third_down_n": 6056,
         "third_down_raw": 0.49108322324966974,
         "fourth_down_n": 427,
         "fourth_down_raw": 0.4566744730679157,
-        "fitted_fourth_down_same_plays": 0.4951131015078785
+        "fitted_fourth_down_same_plays": 0.4951131015078758
       },
       {
         "ydstogo": 5,
-        "fitted_fourth_down_at_midfield": 0.47328769260517467,
+        "fitted_fourth_down_at_midfield": 0.47328769260517206,
         "third_down_n": 6341,
         "third_down_raw": 0.44598643747043054,
         "fourth_down_n": 408,
         "fourth_down_raw": 0.4485294117647059,
-        "fitted_fourth_down_same_plays": 0.4625283834129475
+        "fitted_fourth_down_same_plays": 0.462528383412945
       },
       {
         "ydstogo": 6,
-        "fitted_fourth_down_at_midfield": 0.44614123444055237,
+        "fitted_fourth_down_at_midfield": 0.44614123444054976,
         "third_down_n": 6086,
         "third_down_raw": 0.4273743016759777,
         "fourth_down_n": 293,
         "fourth_down_raw": 0.4402730375426621,
-        "fitted_fourth_down_same_plays": 0.4349006423235222
+        "fitted_fourth_down_same_plays": 0.43490064232351966
       },
       {
         "ydstogo": 7,
-        "fitted_fourth_down_at_midfield": 0.4089638663051063,
+        "fitted_fourth_down_at_midfield": 0.4089638663051045,
         "third_down_n": 5843,
         "third_down_raw": 0.3908950881396543,
         "fourth_down_n": 202,
         "fourth_down_raw": 0.4405940594059406,
-        "fitted_fourth_down_same_plays": 0.3967270426449771
+        "fitted_fourth_down_same_plays": 0.3967270426449752
       },
       {
         "ydstogo": 8,
-        "fitted_fourth_down_at_midfield": 0.3712689771092482,
+        "fitted_fourth_down_at_midfield": 0.371268977109247,
         "third_down_n": 5219,
         "third_down_raw": 0.3525579612952673,
         "fourth_down_n": 170,
         "fourth_down_raw": 0.38823529411764707,
-        "fitted_fourth_down_same_plays": 0.3617715907982857
+        "fitted_fourth_down_same_plays": 0.3617715907982846
       },
       {
         "ydstogo": 9,
-        "fitted_fourth_down_at_midfield": 0.34311282528973797,
+        "fitted_fourth_down_at_midfield": 0.3431128252897364,
         "third_down_n": 4445,
         "third_down_raw": 0.31541057367829023,
         "fourth_down_n": 136,
         "fourth_down_raw": 0.3235294117647059,
-        "fitted_fourth_down_same_plays": 0.3347570041533533
+        "fitted_fourth_down_same_plays": 0.3347570041533517
       },
       {
         "ydstogo": 10,
-        "fitted_fourth_down_at_midfield": 0.3164379565602286,
+        "fitted_fourth_down_at_midfield": 0.31643795656022644,
         "third_down_n": 7391,
         "third_down_raw": 0.30050060884859964,
         "fourth_down_n": 399,
         "fourth_down_raw": 0.3132832080200501,
-        "fitted_fourth_down_same_plays": 0.30779065540190603
+        "fitted_fourth_down_same_plays": 0.3077906554019039
       },
       {
         "ydstogo": 11,
-        "fitted_fourth_down_at_midfield": 0.28335315353428947,
+        "fitted_fourth_down_at_midfield": 0.28335315353428725,
         "third_down_n": 2511,
         "third_down_raw": 0.28116288331342093,
         "fourth_down_n": 89,
         "fourth_down_raw": 0.29213483146067415,
-        "fitted_fourth_down_same_plays": 0.2737615957233965
+        "fitted_fourth_down_same_plays": 0.2737615957233943
       },
       {
         "ydstogo": 12,
-        "fitted_fourth_down_at_midfield": 0.2487862716628151,
+        "fitted_fourth_down_at_midfield": 0.2487862716628133,
         "third_down_n": 1928,
         "third_down_raw": 0.2287344398340249,
         "fourth_down_n": 74,
         "fourth_down_raw": 0.3108108108108108,
-        "fitted_fourth_down_same_plays": 0.2416363427335453
+        "fitted_fourth_down_same_plays": 0.24163634273354354
       },
       {
         "ydstogo": 13,
-        "fitted_fourth_down_at_midfield": 0.21921129007546905,
+        "fitted_fourth_down_at_midfield": 0.21921129007546758,
         "third_down_n": 1625,
         "third_down_raw": 0.216,
         "fourth_down_n": 60,
         "fourth_down_raw": 0.21666666666666667,
-        "fitted_fourth_down_same_plays": 0.21267777558614875
+        "fitted_fourth_down_same_plays": 0.21267777558614737
       },
       {
         "ydstogo": 14,
-        "fitted_fourth_down_at_midfield": 0.1975743211031952,
+        "fitted_fourth_down_at_midfield": 0.1975743211031938,
         "third_down_n": 1263,
         "third_down_raw": 0.19081551860649248,
         "fourth_down_n": 60,
         "fourth_down_raw": 0.2,
-        "fitted_fourth_down_same_plays": 0.19254184849403919
+        "fitted_fourth_down_same_plays": 0.1925418484940379
       },
       {
         "ydstogo": 15,
-        "fitted_fourth_down_at_midfield": 0.18010714659896504,
+        "fitted_fourth_down_at_midfield": 0.1801071465989635,
         "third_down_n": 1463,
         "third_down_raw": 0.14832535885167464,
         "fourth_down_n": 77,
         "fourth_down_raw": 0.2597402597402597,
-        "fitted_fourth_down_same_plays": 0.17547508904379744
+        "fitted_fourth_down_same_plays": 0.17547508904379605
       }
     ],
     "go_note": "raw rates: development seasons, plays between the 20-yard lines; fitted_same_plays: the model's fourth-down probability (last season, spread 0) averaged over the field positions of the raw fourth-down plays at that distance",
