@@ -78,6 +78,8 @@ def load_tables(
     out["tables"]["adjust"] = mdp.fit_mode_adjustments(plays, models, cfg)
     out["coach"]["end_fg_max_yardline"] = cfg["coach"]["end_fg_max_yardline"]
     out["coach"]["end_fg_ticks"] = cfg["coach"]["end_fg_ticks"]
+    out["coach"]["two_point_seconds"] = cfg["coach"]["two_point_seconds"]
+    out["coach"]["two_point_leads"] = list(cfg["coach"]["two_point_leads"])
     out["key"] = key
     out["stamp"] = splits.fit_stamp(plays, "game-model tables (count, mode, coach)")
     out["components_stamp"] = models.stamp

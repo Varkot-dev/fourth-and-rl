@@ -1000,7 +1000,12 @@ class Simulator:
             rr = np.where(mine, r[j], 1 - r[j])
             if post == "coach":
                 lead = ss + m.td_points
-                two = (t1[j] <= c.n_ticks // 4) & np.isin(lead, (-5, -2, 1, 5))
+                # In seconds of game time left, so the rule means the same thing whether
+                # the horizon is the whole game or only the end game (tables saved before
+                # these keys existed get the old full-game meaning: the fourth quarter).
+                two_sec = self.coach.get("two_point_seconds", 900)
+                leads = tuple(self.coach.get("two_point_leads", (-5, -2, 1, 5)))
+                two = (t1[j] * c.tick_seconds <= two_sec) & np.isin(lead, leads)
             else:
                 two = np.zeros(len(j), dtype=bool)
                 for code, name in enumerate(("end", "mid", "first")):

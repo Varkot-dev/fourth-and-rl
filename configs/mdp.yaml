@@ -75,6 +75,8 @@ coach:                           # observed fourth-down behavior, for the coach-
   prior_strength: 10.0           # pseudo-counts pulling a thin cell toward its parent cell
   end_fg_max_yardline: 42        # coach heuristic: longest field goal tried as time expires
   end_fg_ticks: 2                # ... when this many ticks or fewer remain
+  two_point_seconds: 900         # coach heuristic: go for two only with this much game time left
+  two_point_leads: [-5, -2, 1, 5]  # ... when the lead after the touchdown is one of these
 
 solve:
   dtype: float32
