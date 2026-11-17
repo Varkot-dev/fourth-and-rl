@@ -1,0 +1,326 @@
+{
+  "seed": 20261117,
+  "models": {
+    "wp_path": "data/models/wp.joblib",
+    "components_fit_seasons": [
+      2010,
+      2023
+    ],
+    "kickoff_seasons": [
+      2025
+    ],
+    "components_cache": "data/models/components_2010_2023.joblib"
+  },
+  "engine": {
+    "clock": {
+      "use_fitted": true,
+      "go_convert": 27,
+      "go_fail": 5,
+      "score": 5,
+      "field_goal": 4,
+      "punt": 9,
+      "kickoff": 2
+    },
+    "tie_value": 0.5,
+    "punt_min_yardline_100": 31,
+    "compress": {
+      "merge_mass": 0.004,
+      "max_span": 8
+    },
+    "predict_chunk_rows": 1000000,
+    "state_chunk_rows": 20000
+  },
+  "seconds_per_play_used": {
+    "go_convert": 27,
+    "go_fail": 5,
+    "score": 5,
+    "field_goal": 4,
+    "punt": 9,
+    "kickoff": 2
+  },
+  "p_extra_point": 0.9418214654282766,
+  "kickoff": {
+    "seasons": [
+      2025
+    ],
+    "n": 2927,
+    "n_used": 2893,
+    "kicking_team_recovers_or_scores": 0.00717458148274684,
+    "return_touchdown": 0.0023915271609156134
+  },
+  "situations": {
+    "reference": {
+      "label": "First quarter, tied",
+      "detail": "10:00 left in Q1, pick'em, 3 timeouts each",
+      "state": {
+        "posteam_spread": 0.0,
+        "posteam_timeouts_remaining": 3,
+        "defteam_timeouts_remaining": 3,
+        "receive_2h_ko": 0,
+        "is_home": 0,
+        "game_seconds_remaining": 3300,
+        "score_differential": 0
+      },
+      "cells": 1380,
+      "share_of_cells_by_best_action": {
+        "go": 0.4144927536231884,
+        "field_goal": 0.22681159420289856,
+        "punt": 0.358695652173913
+      },
+      "share_of_cells_with_margin_under_1_point": 0.2536231884057971,
+      "median_margin": 0.021811914122553927,
+      "longest_distance_where_go_is_best": {
+        "own_20": 4,
+        "own_35": 6,
+        "midfield": 10,
+        "opp_35": 7,
+        "opp_20": 4,
+        "opp_5": 2
+      },
+      "grid_rows_are_distance_1_to_15_columns_are_own_1_to_opp_1": [
+        "GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG",
+        "GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGF.",
+        "GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGFFF..",
+        "GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGFFFFF...",
+        "GGGGGGGGGGGPPPPPPPPPPPPPPPPPPPPPPGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGFFFFFFFFFFFFFFFF....",
+        "GGGGGGGGPPPPPPPPPPPPPPPPPPPPPPPPPPGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGFFFFFFFFFFFFFFFFFFFF.....",
+        "GGGGPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPGPGGGGGGGGGGGGGGGGGGGGGGGGGGGGGFFFFFFFFFFFFFFFFFFFFFFFFFF......",
+        "PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPGGGGGGGGGGGGGGGGGGGFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF.......",
+        "PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPGGGGGGGGGGGGGGGGFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF........",
+        "PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPGGGGGGGGGGGFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF.........",
+        "PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPGGGGGGFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF..........",
+        "PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF...........",
+        "PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF............",
+        "PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF.............",
+        "PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPFFFFFFFFFFFFFFFFFFFFFFFFFFFFF.............."
+      ]
+    },
+    "trail7_q4": {
+      "label": "Trailing by 7, fourth quarter",
+      "detail": "8:00 left in Q4",
+      "state": {
+        "posteam_spread": 0.0,
+        "posteam_timeouts_remaining": 3,
+        "defteam_timeouts_remaining": 3,
+        "receive_2h_ko": 0,
+        "is_home": 0,
+        "game_seconds_remaining": 480,
+        "score_differential": -7
+      },
+      "cells": 1380,
+      "share_of_cells_by_best_action": {
+        "go": 0.8710144927536232,
+        "field_goal": 0.0391304347826087,
+        "punt": 0.08985507246376812
+      },
+      "share_of_cells_with_margin_under_1_point": 0.24492753623188407,
+      "median_margin": 0.02909525580464943,
+      "longest_distance_where_go_is_best": {
+        "own_20": 13,
+        "own_35": 11,
+        "midfield": 12,
+        "opp_35": 13,
+        "opp_20": 13,
+        "opp_5": 5
+      },
+      "grid_rows_are_distance_1_to_15_columns_are_own_1_to_opp_1": [
+        "GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG",
+        "GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG.",
+        "GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG..",
+        "GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG...",
+        "GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG....",
+        "GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG.....",
+        "GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG......",
+        "GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG.......",
+        "GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG........",
+        "GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG.........",
+        "GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG..........",
+        "GGGGGGGGGGGGGGGGGGGGGGGGGGGGGPPPPPPPPPPPPGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG...........",
+        "GGGGGGGGGGGGGGGGGGGGGGGGPPPPPPPPPPPPPPPPPPPPPPPPPPPPGGGGGGGGGGGGGGGGFGFFFFFFFFGGGGGGGGG............",
+        "GGGGGGGGGGGGGGGGGGPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPGGGGGGFFFFFFFFFFFFFFFFFFFFFGG.............",
+        "PGGGGPGGGGGGGGGGPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPGGFFFFFFFFFFFFFFFFFFFFFFFF.............."
+      ]
+    },
+    "lead4_q4": {
+      "label": "Leading by 4, 4:00 left",
+      "detail": "4:00 left in Q4",
+      "state": {
+        "posteam_spread": 0.0,
+        "posteam_timeouts_remaining": 3,
+        "defteam_timeouts_remaining": 3,
+        "receive_2h_ko": 0,
+        "is_home": 0,
+        "game_seconds_remaining": 240,
+        "score_differential": 4
+      },
+      "cells": 1380,
+      "share_of_cells_by_best_action": {
+        "go": 0.22681159420289856,
+        "field_goal": 0.2391304347826087,
+        "punt": 0.5340579710144927
+      },
+      "share_of_cells_with_margin_under_1_point": 0.16666666666666666,
+      "median_margin": 0.03455843011300602,
+      "longest_distance_where_go_is_best": {
+        "own_20": 1,
+        "own_35": 2,
+        "midfield": 6,
+        "opp_35": 6,
+        "opp_20": 2,
+        "opp_5": 3
+      },
+      "grid_rows_are_distance_1_to_15_columns_are_own_1_to_opp_1": [
+        "GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG",
+        "GGGGGPPPPPPPPPPPPPPPPPPPPPPPPPPPPGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG.",
+        "GPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGFFFFFGGGGGGGGGGGGG..",
+        "PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGFFFFFFFFFFFFFFFFGGGFFF...",
+        "PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPGGGGGGGGGGGGGGGGGGGGGGGFFFFFFFFFFFFFFFFFFFFFFFF....",
+        "PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPGGGGGGGGGGGGGGGGFGGFFFFFFFFFFFFFFFFFFFFFFFFFF.....",
+        "PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPGGGGGGGGGGFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF......",
+        "PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPGGGGGFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF.......",
+        "PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPGGFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF........",
+        "PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF.........",
+        "PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPFFFFFFFFFFFFFFFFFFFFFFFFFFFFF..........",
+        "PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPFFFFFFFFFFFFFFFFFFFFFFFFFFFF...........",
+        "PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPFFFFFFFFFFFFFFFFFFFFFFFFFFF............",
+        "PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPFFFFFFFFFFFFFFFFFFFFFFFFFF.............",
+        "PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPFFFFFFFFFFFFFFFFFFFFFFFFF.............."
+      ]
+    },
+    "trail3_2min": {
+      "label": "Trailing by 3, 2:00 left",
+      "detail": "2:00 left in Q4",
+      "state": {
+        "posteam_spread": 0.0,
+        "posteam_timeouts_remaining": 3,
+        "defteam_timeouts_remaining": 3,
+        "receive_2h_ko": 0,
+        "is_home": 0,
+        "game_seconds_remaining": 120,
+        "score_differential": -3
+      },
+      "cells": 1380,
+      "share_of_cells_by_best_action": {
+        "go": 0.6550724637681159,
+        "field_goal": 0.20072463768115942,
+        "punt": 0.14420289855072463
+      },
+      "share_of_cells_with_margin_under_1_point": 0.15579710144927536,
+      "median_margin": 0.03495706462722456,
+      "longest_distance_where_go_is_best": {
+        "own_20": 10,
+        "own_35": 10,
+        "midfield": 15,
+        "opp_35": 8,
+        "opp_20": 5,
+        "opp_5": 4
+      },
+      "grid_rows_are_distance_1_to_15_columns_are_own_1_to_opp_1": [
+        "GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG",
+        "GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG.",
+        "GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG..",
+        "GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG...",
+        "GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGF....",
+        "GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGFFFFFFFFFFFFFFFF.....",
+        "GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGFFFFFFFFFFFFFFFFFFFFFF......",
+        "GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGFFFFFFFFFFFFFFFFFFFFFFFFFFF.......",
+        "GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGFFFFFFFFFFFFFFFFFFFFFFFFFFFFF........",
+        "GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGFFFFFFFFFFFFFFFFFFFFFFFFFFFFF.........",
+        "GGGGGGGGGPPPPPPPPPPPPPPPPPPPPPPPPPPGGGGGGGGGGGGGGGGGGGGGGGGFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF..........",
+        "GGGGPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPGGGGGGGGGGGGGGGGGFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF...........",
+        "PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPGGGGGGGGGGGGGFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF............",
+        "PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPGGGGGGGGGGFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF.............",
+        "PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPGGGGGGFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF.............."
+      ]
+    }
+  },
+  "reference_examples": {
+    "fourth_and_1_at_midfield": {
+      "go_wp": 0.5477824478922193,
+      "fg_wp": 0.43480806616032674,
+      "punt_wp": 0.4825378767959474,
+      "best_action": "go",
+      "margin": 0.06524457109627191,
+      "p_convert": 0.7097357250507804,
+      "p_fg": 0.18523998791902682,
+      "wp_if_convert": 0.599866498537344,
+      "wp_if_fail": 0.4204298432540283
+    },
+    "fourth_and_3_at_opp_40": {
+      "go_wp": 0.5376653988821373,
+      "fg_wp": 0.4984477118984128,
+      "punt_wp": 0.48513786404510534,
+      "best_action": "go",
+      "margin": 0.039217686983724465,
+      "p_convert": 0.5411890999103365,
+      "p_fg": 0.5509453556127655,
+      "wp_if_convert": 0.6249616126892015,
+      "wp_if_fail": 0.43469539671655516
+    },
+    "fourth_and_4_at_own_20": {
+      "go_wp": 0.4489590621900086,
+      "fg_wp": null,
+      "punt_wp": 0.44590352898950414,
+      "best_action": "go",
+      "margin": 0.0030555332005044455,
+      "p_convert": 0.49599894835072283,
+      "p_fg": 0.0,
+      "wp_if_convert": 0.5599569318608916,
+      "wp_if_fail": 0.33972352300657055
+    },
+    "fourth_and_goal_from_2": {
+      "go_wp": 0.5602809767556223,
+      "fg_wp": 0.5607289287100851,
+      "punt_wp": null,
+      "best_action": "field_goal",
+      "margin": 0.00044795195446278857,
+      "p_convert": 0.4595572787898204,
+      "p_fg": 0.9941576959378022,
+      "wp_if_convert": 0.6485883365978661,
+      "wp_if_fail": 0.4851901514127596
+    },
+    "fourth_and_10_at_opp_30": {
+      "go_wp": 0.5165545070415831,
+      "fg_wp": 0.5330875773360316,
+      "punt_wp": null,
+      "best_action": "field_goal",
+      "margin": 0.016533070294448504,
+      "p_convert": 0.29275314604534663,
+      "p_fg": 0.7719976427176514,
+      "wp_if_convert": 0.6485750396051682,
+      "wp_if_fail": 0.46190678957990927
+    }
+  },
+  "checks": {
+    "speed": {
+      "states": 8790,
+      "seconds": 8.75,
+      "next_states_built": 1945690,
+      "distinct_next_states_scored": 1748910,
+      "note": "real fourth downs of 2022-2023, 2 threads, machine shared with other jobs"
+    },
+    "thinning_error": {
+      "states": 2000,
+      "merge_mass": 0.004,
+      "max_abs_wp_difference": 0.000457279582819603,
+      "mean_abs_wp_difference": 2.283359039600524e-05,
+      "same_best_action": 0.9995,
+      "exact_seconds": 9.0,
+      "exact_distinct_next_states": 1346495
+    },
+    "home_away_reference_chart": {
+      "cells": 1380,
+      "same_best_action": 0.9239130434782609,
+      "mean_best_wp_away": 0.4964990030927156,
+      "mean_best_wp_home": 0.4474769798670793,
+      "mean_abs_go_gain_difference": 0.006150371557140252,
+      "note": "is_home 0 versus 1 at spread 0. The level differs (a known M1 weakness); the chart uses is_home = 0."
+    }
+  },
+  "full_table": "data/processed/decision_chart.parquet",
+  "notes": [
+    "One-step lookahead: each action's value is the expected win probability of the next state. Nothing after the next snap is planned.",
+    "fg_wp is null where P(make) is 0 (kicks longer than 68 yards) and punt_wp is null inside the opponent's 31.",
+    "Point estimates. Many cells are decided by less than one point of win probability; see results/m3_bootstrap.json for which calls are robust."
+  ]
+}

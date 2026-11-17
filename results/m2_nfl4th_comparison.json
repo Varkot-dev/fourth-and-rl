@@ -1,0 +1,909 @@
+{
+  "reference": {
+    "source": "nfl4th 1.0.7 via scripts/r/nfl4th_reference.R; these are nfl4th's numbers",
+    "rows": 8465,
+    "rows_compared": 8426,
+    "rows_dropped_overtime_or_missing": 39,
+    "seasons": [
+      2024,
+      2025
+    ]
+  },
+  "our_engine": {
+    "models": {
+      "wp_path": "data/models/wp.joblib",
+      "components_fit_seasons": [
+        2010,
+        2023
+      ],
+      "kickoff_seasons": [
+        2025
+      ],
+      "components_cache": "data/models/components_2010_2023.joblib"
+    },
+    "seconds_per_play": {
+      "go_convert": 27,
+      "go_fail": 5,
+      "score": 5,
+      "field_goal": 4,
+      "punt": 9,
+      "kickoff": 2
+    }
+  },
+  "overall": {
+    "n": 8426,
+    "same_action": 0.7416330405886542,
+    "same_go_or_kick": 0.7561120341799193,
+    "ours_recommends_go": 0.4668882031806314,
+    "nfl4th_recommends_go": 0.4109897934963209,
+    "mean_go_gain_ours_points": -0.15223979872459645,
+    "mean_go_gain_nfl4th_points": -0.6041934391239477,
+    "pearson_correlation_of_go_gain": 0.77103653140861,
+    "spearman_correlation_of_go_gain": 0.7480590132810173
+  },
+  "when_nfl4th_is_decisive": {
+    "threshold_points": 2.0,
+    "n": 3221,
+    "same_action": 0.9068612232226017,
+    "same_go_or_kick": 0.9121390872399876,
+    "ours_recommends_go": 0.38776777398323503,
+    "nfl4th_recommends_go": 0.3402669978267619,
+    "mean_go_gain_ours_points": -0.8441497141196865,
+    "mean_go_gain_nfl4th_points": -1.398503719592375
+  },
+  "when_we_are_decisive": {
+    "threshold_points": 2.0,
+    "n": 3147,
+    "same_action": 0.9183349221480775,
+    "same_go_or_kick": 0.921194788687639,
+    "ours_recommends_go": 0.47982205274864953,
+    "nfl4th_recommends_go": 0.43533523991102635,
+    "mean_go_gain_ours_points": -0.382352274167884,
+    "mean_go_gain_nfl4th_points": -0.8603085023827759
+  },
+  "by_abs_nfl4th_go_boost_points": {
+    "0-0.5": {
+      "n": 2363,
+      "same_action": 0.5543800253914516,
+      "same_go_or_kick": 0.5818874312314855,
+      "ours_recommends_go": 0.4807448159119763,
+      "nfl4th_recommends_go": 0.4968260685569192,
+      "mean_go_gain_ours_points": 0.20300939926475217,
+      "mean_go_gain_nfl4th_points": -0.009871380001234172
+    },
+    "0.5-1": {
+      "n": 1184,
+      "same_action": 0.6494932432432432,
+      "same_go_or_kick": 0.6655405405405406,
+      "ours_recommends_go": 0.5793918918918919,
+      "nfl4th_recommends_go": 0.42567567567567566,
+      "mean_go_gain_ours_points": 0.40820522383998087,
+      "mean_go_gain_nfl4th_points": -0.11652445728432602
+    },
+    "1-2": {
+      "n": 1658,
+      "same_action": 0.7533172496984318,
+      "same_go_or_kick": 0.7659831121833535,
+      "ours_recommends_go": 0.5205066344993968,
+      "nfl4th_recommends_go": 0.41556091676718937,
+      "mean_go_gain_ours_points": 0.28540861859886285,
+      "mean_go_gain_nfl4th_points": -0.2563705723062636
+    },
+    "2-4": {
+      "n": 1910,
+      "same_action": 0.8696335078534031,
+      "same_go_or_kick": 0.8774869109947644,
+      "ours_recommends_go": 0.42879581151832463,
+      "nfl4th_recommends_go": 0.3607329842931937,
+      "mean_go_gain_ours_points": -0.1943000543971093,
+      "mean_go_gain_nfl4th_points": -0.8081998580604712
+    },
+    "4-8": {
+      "n": 1114,
+      "same_action": 0.9622980251346499,
+      "same_go_or_kick": 0.9640933572710951,
+      "ours_recommends_go": 0.3177737881508079,
+      "nfl4th_recommends_go": 0.296229802513465,
+      "mean_go_gain_ours_points": -1.5187810683109637,
+      "mean_go_gain_nfl4th_points": -2.186857464147549
+    },
+    "8+": {
+      "n": 197,
+      "same_action": 0.9543147208121827,
+      "same_go_or_kick": 0.9543147208121827,
+      "ours_recommends_go": 0.38578680203045684,
+      "nfl4th_recommends_go": 0.39086294416243655,
+      "mean_go_gain_ours_points": -3.3298021075259823,
+      "mean_go_gain_nfl4th_points": -2.6637539941683763
+    }
+  },
+  "by_distance": {
+    "1": {
+      "n": 1029,
+      "same_action": 0.8503401360544217,
+      "same_go_or_kick": 0.8542274052478134,
+      "ours_recommends_go": 0.8620019436345967,
+      "nfl4th_recommends_go": 0.9222546161321672,
+      "mean_go_gain_ours_points": 2.819537040296515,
+      "mean_go_gain_nfl4th_points": 2.6935224070582433
+    },
+    "2": {
+      "n": 650,
+      "same_action": 0.7446153846153846,
+      "same_go_or_kick": 0.7461538461538462,
+      "ours_recommends_go": 0.7738461538461539,
+      "nfl4th_recommends_go": 0.8153846153846154,
+      "mean_go_gain_ours_points": 1.5734383732839978,
+      "mean_go_gain_nfl4th_points": 1.245141547084991
+    },
+    "3": {
+      "n": 662,
+      "same_action": 0.6782477341389728,
+      "same_go_or_kick": 0.6858006042296072,
+      "ours_recommends_go": 0.7341389728096677,
+      "nfl4th_recommends_go": 0.6737160120845922,
+      "mean_go_gain_ours_points": 1.3029446066565802,
+      "mean_go_gain_nfl4th_points": 0.7503069250212786
+    },
+    "4-6": {
+      "n": 1922,
+      "same_action": 0.6285119667013528,
+      "same_go_or_kick": 0.6378772112382934,
+      "ours_recommends_go": 0.5863683662851197,
+      "nfl4th_recommends_go": 0.47710718002081165,
+      "mean_go_gain_ours_points": 0.39707857889948983,
+      "mean_go_gain_nfl4th_points": -0.06437397515470435
+    },
+    "7-10": {
+      "n": 2097,
+      "same_action": 0.6862184072484502,
+      "same_go_or_kick": 0.7014783023366714,
+      "ours_recommends_go": 0.3524082021936099,
+      "nfl4th_recommends_go": 0.23223652837386743,
+      "mean_go_gain_ours_points": -0.7375239798931537,
+      "mean_go_gain_nfl4th_points": -1.3374530199320773
+    },
+    "11+": {
+      "n": 2066,
+      "same_action": 0.8683446272991288,
+      "same_go_or_kick": 0.8983543078412392,
+      "ours_recommends_go": 0.09293320425943853,
+      "nfl4th_recommends_go": 0.06485963213939981,
+      "mean_go_gain_ours_points": -2.5585467926276353,
+      "mean_go_gain_nfl4th_points": -3.0204491296445974
+    }
+  },
+  "by_field_position": {
+    "own 1-29": {
+      "n": 1570,
+      "same_action": 0.8152866242038217,
+      "same_go_or_kick": 0.8152866242038217,
+      "ours_recommends_go": 0.29235668789808916,
+      "nfl4th_recommends_go": 0.25414012738853503,
+      "mean_go_gain_ours_points": -1.4762380228159748,
+      "mean_go_gain_nfl4th_points": -1.6851647720976266
+    },
+    "own 30-49": {
+      "n": 2630,
+      "same_action": 0.7482889733840304,
+      "same_go_or_kick": 0.7482889733840304,
+      "ours_recommends_go": 0.47490494296577945,
+      "nfl4th_recommends_go": 0.4467680608365019,
+      "mean_go_gain_ours_points": -0.0670927285928059,
+      "mean_go_gain_nfl4th_points": -0.3094658537214364
+    },
+    "opp 36-50": {
+      "n": 1508,
+      "same_action": 0.6903183023872679,
+      "same_go_or_kick": 0.7606100795755968,
+      "ours_recommends_go": 0.5411140583554377,
+      "nfl4th_recommends_go": 0.5258620689655172,
+      "mean_go_gain_ours_points": 0.6119904975422499,
+      "mean_go_gain_nfl4th_points": 0.358014972750641
+    },
+    "opp 21-35": {
+      "n": 1236,
+      "same_action": 0.7144012944983819,
+      "same_go_or_kick": 0.7273462783171522,
+      "ours_recommends_go": 0.4587378640776699,
+      "nfl4th_recommends_go": 0.34951456310679613,
+      "mean_go_gain_ours_points": -0.31479030687051757,
+      "mean_go_gain_nfl4th_points": -1.2589222238646158
+    },
+    "opp 11-20": {
+      "n": 762,
+      "same_action": 0.7178477690288714,
+      "same_go_or_kick": 0.7178477690288714,
+      "ours_recommends_go": 0.468503937007874,
+      "nfl4th_recommends_go": 0.30183727034120733,
+      "mean_go_gain_ours_points": -0.21433344061727186,
+      "mean_go_gain_nfl4th_points": -1.539729337800061
+    },
+    "opp 1-10": {
+      "n": 720,
+      "same_action": 0.7361111111111112,
+      "same_go_or_kick": 0.7361111111111112,
+      "ours_recommends_go": 0.675,
+      "nfl4th_recommends_go": 0.6027777777777777,
+      "mean_go_gain_ours_points": 1.1679114704379427,
+      "mean_go_gain_nfl4th_points": 0.775118075853629
+    }
+  },
+  "by_quarter": {
+    "Q1": {
+      "n": 1794,
+      "same_action": 0.7614269788182831,
+      "same_go_or_kick": 0.7725752508361204,
+      "ours_recommends_go": 0.5178372352285395,
+      "nfl4th_recommends_go": 0.44091415830546266,
+      "mean_go_gain_ours_points": 0.11611453907431815,
+      "mean_go_gain_nfl4th_points": -0.4095961882240721
+    },
+    "Q2": {
+      "n": 2408,
+      "same_action": 0.7408637873754153,
+      "same_go_or_kick": 0.7504152823920266,
+      "ours_recommends_go": 0.44393687707641194,
+      "nfl4th_recommends_go": 0.3446843853820598,
+      "mean_go_gain_ours_points": -0.35937886416146053,
+      "mean_go_gain_nfl4th_points": -0.9585788038300658
+    },
+    "Q3": {
+      "n": 1809,
+      "same_action": 0.740187949143173,
+      "same_go_or_kick": 0.7529021558872305,
+      "ours_recommends_go": 0.4709784411276949,
+      "nfl4th_recommends_go": 0.3919292426755113,
+      "mean_go_gain_ours_points": -0.1996114035747703,
+      "mean_go_gain_nfl4th_points": -0.6785446202277284
+    },
+    "Q4": {
+      "n": 2415,
+      "same_action": 0.7287784679089027,
+      "same_go_or_kick": 0.7519668737060041,
+      "ours_recommends_go": 0.44886128364389233,
+      "nfl4th_recommends_go": 0.4691511387163561,
+      "mean_go_gain_ours_points": -0.10956550442452172,
+      "mean_go_gain_nfl4th_points": -0.33969912164374266
+    }
+  },
+  "by_score": {
+    "trail 9+": {
+      "n": 1651,
+      "same_action": 0.663840096910963,
+      "same_go_or_kick": 0.6898849182313749,
+      "ours_recommends_go": 0.5451241671714112,
+      "nfl4th_recommends_go": 0.5766202301635373,
+      "mean_go_gain_ours_points": 0.4043509875613357,
+      "mean_go_gain_nfl4th_points": 0.10205077663594034
+    },
+    "trail 4-8": {
+      "n": 1423,
+      "same_action": 0.7666900913562895,
+      "same_go_or_kick": 0.7765284609978917,
+      "ours_recommends_go": 0.573436401967674,
+      "nfl4th_recommends_go": 0.5270555165144062,
+      "mean_go_gain_ours_points": 0.7480789592514515,
+      "mean_go_gain_nfl4th_points": 0.5774776371521652
+    },
+    "trail 1-3": {
+      "n": 860,
+      "same_action": 0.7313953488372092,
+      "same_go_or_kick": 0.7383720930232558,
+      "ours_recommends_go": 0.49186046511627907,
+      "nfl4th_recommends_go": 0.4,
+      "mean_go_gain_ours_points": -0.2804384048137029,
+      "mean_go_gain_nfl4th_points": -1.0869581833551136
+    },
+    "tied": {
+      "n": 1520,
+      "same_action": 0.7947368421052632,
+      "same_go_or_kick": 0.8046052631578947,
+      "ours_recommends_go": 0.475,
+      "nfl4th_recommends_go": 0.40460526315789475,
+      "mean_go_gain_ours_points": -0.41620460459570185,
+      "mean_go_gain_nfl4th_points": -0.9352856173615332
+    },
+    "lead 1-3": {
+      "n": 707,
+      "same_action": 0.7920792079207921,
+      "same_go_or_kick": 0.7977369165487977,
+      "ours_recommends_go": 0.371994342291372,
+      "nfl4th_recommends_go": 0.2828854314002829,
+      "mean_go_gain_ours_points": -1.2352281422857287,
+      "mean_go_gain_nfl4th_points": -1.6656399696673378
+    },
+    "lead 4-8": {
+      "n": 1098,
+      "same_action": 0.7668488160291439,
+      "same_go_or_kick": 0.7759562841530054,
+      "ours_recommends_go": 0.4307832422586521,
+      "nfl4th_recommends_go": 0.290528233151184,
+      "mean_go_gain_ours_points": -0.7001921383381824,
+      "mean_go_gain_nfl4th_points": -1.5718240649824473
+    },
+    "lead 9+": {
+      "n": 1167,
+      "same_action": 0.7052270779777207,
+      "same_go_or_kick": 0.7309340188517567,
+      "ours_recommends_go": 0.2887746358183376,
+      "nfl4th_recommends_go": 0.24250214224507283,
+      "mean_go_gain_ours_points": -0.4275467797047513,
+      "mean_go_gain_nfl4th_points": -0.7037549014322098
+    }
+  },
+  "by_clock": {
+    "rest of the game": {
+      "n": 6685,
+      "same_action": 0.7419596110695588,
+      "same_go_or_kick": 0.7566192969334331,
+      "ours_recommends_go": 0.4893044128646223,
+      "nfl4th_recommends_go": 0.4068810770381451,
+      "mean_go_gain_ours_points": 0.033384825262713407,
+      "mean_go_gain_nfl4th_points": -0.5688511753194869
+    },
+    "Q4, 2:00 to 5:00 left": {
+      "n": 577,
+      "same_action": 0.7244367417677643,
+      "same_go_or_kick": 0.7400346620450606,
+      "ours_recommends_go": 0.42980935875216636,
+      "nfl4th_recommends_go": 0.4748700173310225,
+      "mean_go_gain_ours_points": -0.19439630549975934,
+      "mean_go_gain_nfl4th_points": -0.6133275157919763
+    },
+    "last 2:00 of a half": {
+      "n": 1164,
+      "same_action": 0.7482817869415808,
+      "same_go_or_kick": 0.761168384879725,
+      "ours_recommends_go": 0.35652920962199314,
+      "nfl4th_recommends_go": 0.4029209621993127,
+      "mean_go_gain_ours_points": -1.197408447303546,
+      "mean_go_gain_nfl4th_points": -0.8026407512333706
+    }
+  },
+  "lowest_agreement_groups_with_150_plus_plays": [
+    {
+      "dimension": "by_distance",
+      "group": "4-6",
+      "n": 1922,
+      "same_action": 0.6285119667013528,
+      "same_go_or_kick": 0.6378772112382934,
+      "ours_recommends_go": 0.5863683662851197,
+      "nfl4th_recommends_go": 0.47710718002081165,
+      "mean_go_gain_ours_points": 0.39707857889948983,
+      "mean_go_gain_nfl4th_points": -0.06437397515470435
+    },
+    {
+      "dimension": "by_score",
+      "group": "trail 9+",
+      "n": 1651,
+      "same_action": 0.663840096910963,
+      "same_go_or_kick": 0.6898849182313749,
+      "ours_recommends_go": 0.5451241671714112,
+      "nfl4th_recommends_go": 0.5766202301635373,
+      "mean_go_gain_ours_points": 0.4043509875613357,
+      "mean_go_gain_nfl4th_points": 0.10205077663594034
+    },
+    {
+      "dimension": "by_distance",
+      "group": "3",
+      "n": 662,
+      "same_action": 0.6782477341389728,
+      "same_go_or_kick": 0.6858006042296072,
+      "ours_recommends_go": 0.7341389728096677,
+      "nfl4th_recommends_go": 0.6737160120845922,
+      "mean_go_gain_ours_points": 1.3029446066565802,
+      "mean_go_gain_nfl4th_points": 0.7503069250212786
+    },
+    {
+      "dimension": "by_distance",
+      "group": "7-10",
+      "n": 2097,
+      "same_action": 0.6862184072484502,
+      "same_go_or_kick": 0.7014783023366714,
+      "ours_recommends_go": 0.3524082021936099,
+      "nfl4th_recommends_go": 0.23223652837386743,
+      "mean_go_gain_ours_points": -0.7375239798931537,
+      "mean_go_gain_nfl4th_points": -1.3374530199320773
+    },
+    {
+      "dimension": "by_field_position",
+      "group": "opp 36-50",
+      "n": 1508,
+      "same_action": 0.6903183023872679,
+      "same_go_or_kick": 0.7606100795755968,
+      "ours_recommends_go": 0.5411140583554377,
+      "nfl4th_recommends_go": 0.5258620689655172,
+      "mean_go_gain_ours_points": 0.6119904975422499,
+      "mean_go_gain_nfl4th_points": 0.358014972750641
+    },
+    {
+      "dimension": "by_score",
+      "group": "lead 9+",
+      "n": 1167,
+      "same_action": 0.7052270779777207,
+      "same_go_or_kick": 0.7309340188517567,
+      "ours_recommends_go": 0.2887746358183376,
+      "nfl4th_recommends_go": 0.24250214224507283,
+      "mean_go_gain_ours_points": -0.4275467797047513,
+      "mean_go_gain_nfl4th_points": -0.7037549014322098
+    },
+    {
+      "dimension": "by_field_position",
+      "group": "opp 21-35",
+      "n": 1236,
+      "same_action": 0.7144012944983819,
+      "same_go_or_kick": 0.7273462783171522,
+      "ours_recommends_go": 0.4587378640776699,
+      "nfl4th_recommends_go": 0.34951456310679613,
+      "mean_go_gain_ours_points": -0.31479030687051757,
+      "mean_go_gain_nfl4th_points": -1.2589222238646158
+    },
+    {
+      "dimension": "by_field_position",
+      "group": "opp 11-20",
+      "n": 762,
+      "same_action": 0.7178477690288714,
+      "same_go_or_kick": 0.7178477690288714,
+      "ours_recommends_go": 0.468503937007874,
+      "nfl4th_recommends_go": 0.30183727034120733,
+      "mean_go_gain_ours_points": -0.21433344061727186,
+      "mean_go_gain_nfl4th_points": -1.539729337800061
+    }
+  ],
+  "causes": {
+    "conversion_probability": {
+      "mean_ours": 0.39886831375793497,
+      "mean_nfl4th": 0.3750443634363711,
+      "mean_difference_by_distance": {
+        "1": 0.01054540763696728,
+        "2": 0.02349751025381139,
+        "3": 0.03175901118755818,
+        "4": 0.025576153671209145,
+        "5": 0.02172168800092247,
+        "7": 0.02867415860248592,
+        "10": 0.03972280291266306
+      },
+      "correlation_of_gain_difference_with_probability_difference": 0.14482433351328425
+    },
+    "field_goal_probability_in_range": {
+      "mean_ours": 0.7194322349130824,
+      "mean_nfl4th": 0.7108997849935085,
+      "rows_nfl4th_has_no_field_goal_value_but_we_do": 23
+    },
+    "stakes": {
+      "sd_go_gain_ours_points": 3.0446138856268226,
+      "sd_go_gain_nfl4th_points": 3.2107508482964646,
+      "slope_of_ours_on_nfl4th": 0.7311400481596747,
+      "note": "A slope below 1 means our engine sees smaller differences between going and kicking than nfl4th does (a flatter win-probability model)."
+    },
+    "swap_diagnostic": {
+      "as_is": {
+        "same_action": 0.7416330405886542,
+        "correlation_of_go_gain": 0.77103653140861,
+        "share_recommending_go": 0.4668882031806314,
+        "mean_go_gain_points": -0.15223979872459645
+      },
+      "with_nfl4th_conversion_probability": {
+        "same_action": 0.7605032043674341,
+        "correlation_of_go_gain": 0.7860394424896222,
+        "share_recommending_go": 0.4183479705672917,
+        "mean_go_gain_points": -0.4327930044303072
+      },
+      "with_nfl4th_conversion_and_field_goal_probability": {
+        "same_action": 0.7625207690481842,
+        "correlation_of_go_gain": 0.787571267654797,
+        "share_recommending_go": 0.4192974127699976,
+        "mean_go_gain_points": -0.4307445564453229
+      }
+    },
+    "late_game_win_probability_check_test_seasons": {
+      "lead_1_to_3__0_to_40_seconds": {
+        "n": 18,
+        "actual_win_rate": 1.0,
+        "our_mean_wp": 0.889783081738211,
+        "nflfastr_vegas_wp_mean": 0.9487870666715834
+      },
+      "lead_1_to_3__41_to_120": {
+        "n": 73,
+        "actual_win_rate": 0.958904109589041,
+        "our_mean_wp": 0.8618929267605929,
+        "nflfastr_vegas_wp_mean": 0.921078428830186
+      },
+      "lead_1_to_3__121_to_300": {
+        "n": 138,
+        "actual_win_rate": 0.7536231884057971,
+        "our_mean_wp": 0.7975852270309749,
+        "nflfastr_vegas_wp_mean": 0.8159692313360132
+      },
+      "lead_4_to_8__0_to_40_seconds": {
+        "n": 50,
+        "actual_win_rate": 1.0,
+        "our_mean_wp": 0.9780814391339854,
+        "nflfastr_vegas_wp_mean": 0.9905576109886169
+      },
+      "lead_4_to_8__41_to_120": {
+        "n": 114,
+        "actual_win_rate": 1.0,
+        "our_mean_wp": 0.9658438441793403,
+        "nflfastr_vegas_wp_mean": 0.9795332566687935
+      },
+      "lead_4_to_8__121_to_300": {
+        "n": 213,
+        "actual_win_rate": 0.9530516431924883,
+        "our_mean_wp": 0.9205734402238701,
+        "nflfastr_vegas_wp_mean": 0.9233528476365855
+      },
+      "trail_1_to_3__0_to_40_seconds": {
+        "n": 112,
+        "actual_win_rate": 0.4017857142857143,
+        "our_mean_wp": 0.3906694841295657,
+        "nflfastr_vegas_wp_mean": 0.3333975249635322
+      },
+      "trail_1_to_3__41_to_120": {
+        "n": 187,
+        "actual_win_rate": 0.48663101604278075,
+        "our_mean_wp": 0.4653255855997765,
+        "nflfastr_vegas_wp_mean": 0.44681323243972454
+      },
+      "trail_1_to_3__121_to_300": {
+        "n": 176,
+        "actual_win_rate": 0.4375,
+        "our_mean_wp": 0.4593918766970186,
+        "nflfastr_vegas_wp_mean": 0.4386094706133008
+      },
+      "trail_4_to_8__0_to_40_seconds": {
+        "n": 74,
+        "actual_win_rate": 0.08108108108108109,
+        "our_mean_wp": 0.1661219910695407,
+        "nflfastr_vegas_wp_mean": 0.19213884690386318
+      },
+      "trail_4_to_8__41_to_120": {
+        "n": 265,
+        "actual_win_rate": 0.19622641509433963,
+        "our_mean_wp": 0.23623878973605114,
+        "nflfastr_vegas_wp_mean": 0.25206678790163317
+      },
+      "trail_4_to_8__121_to_300": {
+        "n": 271,
+        "actual_win_rate": 0.25092250922509224,
+        "our_mean_wp": 0.2537110102159677,
+        "nflfastr_vegas_wp_mean": 0.2369954353164043
+      }
+    },
+    "disagreements": {
+      "n": 2177,
+      "by_pair": {
+        "ours_go_nfl4th_field_goal": 639,
+        "ours_go_nfl4th_punt": 624,
+        "ours_field_goal_nfl4th_go": 241,
+        "ours_field_goal_nfl4th_punt": 35,
+        "ours_punt_nfl4th_go": 551,
+        "ours_punt_nfl4th_field_goal": 87
+      },
+      "median_abs_nfl4th_gain_points": 0.5370391280016997,
+      "median_abs_our_gain_points": 0.5504494844880248,
+      "share_where_both_gains_are_under_2_points": 0.7703261368856225
+    },
+    "coach_went": {
+      "note": "Share of plays where the offense actually went, for orientation.",
+      "actual": 0.21288764616166753
+    }
+  },
+  "scenarios_late_lead_grid": {
+    "rows": 480,
+    "rows_where_nfl4th_returned_a_go_value": 240,
+    "note": "nfl4th returned NA for go_wp at yardline_100 50 and 60 in this grid, so only yardline_100 70 and 80 can be compared. Our states use a spread of 0; the reference script passed real team names, so nfl4th may have used a non-zero spread.",
+    "same_go_or_punt": 0.5333333333333333,
+    "ours_recommends_go": 0.39166666666666666,
+    "nfl4th_recommends_go": 0.15833333333333333,
+    "correlation_of_go_gain": -0.3242932400372625,
+    "mean_go_gain_ours_points": -1.7038176987895792,
+    "mean_go_gain_nfl4th_points": -10.323333287709904,
+    "mean_punt_wp_ours": 0.7085255562457226,
+    "mean_punt_wp_nfl4th": 0.6331573935202375
+  },
+  "showcase_rule": "    Leverage = the larger of the two models' |go gain|. Fourth quarter or later of one-score games with a real decision, at most one play per game: the top 4 from the playoffs, then the top 3 regular-season plays where the two models agree and the top 3 where they disagree.",
+  "showcase": [
+    {
+      "game_id": "2025_19_BUF_JAX",
+      "play_id": 3863,
+      "season_type": "POST",
+      "posteam": "BUF",
+      "defteam": "JAX",
+      "qtr": 4,
+      "game_seconds_remaining": 70,
+      "score_differential": -4,
+      "ydstogo": 1,
+      "yardline_100": 11,
+      "description": "(1:10) 70-A.Anderson reported in as eligible. 17-J.Allen up the middle for 11 yards, TOUCHDOWN. The Replay Official reviewed the runner broke the plane ruling, ",
+      "coach": "go",
+      "ours": {
+        "go_wp": 39.4,
+        "fg_wp": 27.1,
+        "punt_wp": null,
+        "recommends": "go",
+        "go_gain_points": 12.3,
+        "p_convert": 65.6
+      },
+      "nfl4th": {
+        "go_wp": 40.8,
+        "fg_wp": 18.0,
+        "punt_wp": null,
+        "recommends": "go",
+        "go_gain_points": 22.8,
+        "p_convert": 68.3
+      }
+    },
+    {
+      "game_id": "2024_21_BUF_KC",
+      "play_id": 4152,
+      "season_type": "POST",
+      "posteam": "KC",
+      "defteam": "BUF",
+      "qtr": 4,
+      "game_seconds_remaining": 217,
+      "score_differential": 0,
+      "ydstogo": 17,
+      "yardline_100": 17,
+      "description": "(3:37) 7-H.Butker 35 yard field goal is GOOD, Center-41-J.Winchester, Holder-14-M.Araiza.",
+      "coach": "field_goal",
+      "ours": {
+        "go_wp": 51.3,
+        "fg_wp": 63.6,
+        "punt_wp": null,
+        "recommends": "field_goal",
+        "go_gain_points": -12.3,
+        "p_convert": 12.0
+      },
+      "nfl4th": {
+        "go_wp": 53.5,
+        "fg_wp": 69.8,
+        "punt_wp": null,
+        "recommends": "field_goal",
+        "go_gain_points": -16.2,
+        "p_convert": 8.0
+      }
+    },
+    {
+      "game_id": "2025_19_GB_CHI",
+      "play_id": 4628,
+      "season_type": "POST",
+      "posteam": "GB",
+      "defteam": "CHI",
+      "qtr": 4,
+      "game_seconds_remaining": 65,
+      "score_differential": -4,
+      "ydstogo": 7,
+      "yardline_100": 69,
+      "description": "(1:05) (Shotgun) 10-J.Love pass short left to 0-M.Golden pushed ob at GB 44 for 13 yards (6-K.Gordon).",
+      "coach": "go",
+      "ours": {
+        "go_wp": 13.9,
+        "fg_wp": null,
+        "punt_wp": 9.9,
+        "recommends": "go",
+        "go_gain_points": 4.0,
+        "p_convert": 41.0
+      },
+      "nfl4th": {
+        "go_wp": 13.1,
+        "fg_wp": null,
+        "punt_wp": 0.7,
+        "recommends": "go",
+        "go_gain_points": 12.4,
+        "p_convert": 38.4
+      }
+    },
+    {
+      "game_id": "2025_21_LA_SEA",
+      "play_id": 3590,
+      "season_type": "POST",
+      "posteam": "LA",
+      "defteam": "SEA",
+      "qtr": 4,
+      "game_seconds_remaining": 496,
+      "score_differential": -4,
+      "ydstogo": 1,
+      "yardline_100": 26,
+      "description": "(8:16) (Shotgun) 9-M.Stafford scrambles up the middle to SEA 23 for 3 yards (0-D.Lawrence).",
+      "coach": "go",
+      "ours": {
+        "go_wp": 43.5,
+        "fg_wp": 33.2,
+        "punt_wp": null,
+        "recommends": "go",
+        "go_gain_points": 10.3,
+        "p_convert": 67.9
+      },
+      "nfl4th": {
+        "go_wp": 36.1,
+        "fg_wp": 30.8,
+        "punt_wp": null,
+        "recommends": "go",
+        "go_gain_points": 5.3,
+        "p_convert": 67.5
+      }
+    },
+    {
+      "game_id": "2024_07_DET_MIN",
+      "play_id": 4067,
+      "season_type": "REG",
+      "posteam": "DET",
+      "defteam": "MIN",
+      "qtr": 4,
+      "game_seconds_remaining": 19,
+      "score_differential": -1,
+      "ydstogo": 14,
+      "yardline_100": 26,
+      "description": "(:19) 39-J.Bates 44 yard field goal is GOOD, Center-49-H.Hatten, Holder-3-J.Fox.",
+      "coach": "field_goal",
+      "ours": {
+        "go_wp": 28.7,
+        "fg_wp": 63.1,
+        "punt_wp": null,
+        "recommends": "field_goal",
+        "go_gain_points": -34.4,
+        "p_convert": 17.5
+      },
+      "nfl4th": {
+        "go_wp": 13.6,
+        "fg_wp": 72.8,
+        "punt_wp": null,
+        "recommends": "field_goal",
+        "go_gain_points": -59.1,
+        "p_convert": 16.8
+      }
+    },
+    {
+      "game_id": "2025_18_KC_LV",
+      "play_id": 3942,
+      "season_type": "REG",
+      "posteam": "KC",
+      "defteam": "LV",
+      "qtr": 4,
+      "game_seconds_remaining": 65,
+      "score_differential": -2,
+      "ydstogo": 10,
+      "yardline_100": 23,
+      "description": "(1:05) 7-H.Butker 41 yard field goal is GOOD, Center-41-J.Winchester, Holder-14-M.Araiza.",
+      "coach": "field_goal",
+      "ours": {
+        "go_wp": 38.7,
+        "fg_wp": 54.9,
+        "punt_wp": null,
+        "recommends": "field_goal",
+        "go_gain_points": -16.2,
+        "p_convert": 28.1
+      },
+      "nfl4th": {
+        "go_wp": 18.7,
+        "fg_wp": 63.5,
+        "punt_wp": null,
+        "recommends": "field_goal",
+        "go_gain_points": -44.8,
+        "p_convert": 23.5
+      }
+    },
+    {
+      "game_id": "2025_15_IND_SEA",
+      "play_id": 4004,
+      "season_type": "REG",
+      "posteam": "SEA",
+      "defteam": "IND",
+      "qtr": 4,
+      "game_seconds_remaining": 22,
+      "score_differential": -1,
+      "ydstogo": 2,
+      "yardline_100": 38,
+      "description": "(:22) 5-J.Myers 56 yard field goal is GOOD, Center-41-C.Stoll, Holder-4-M.Dickson.",
+      "coach": "field_goal",
+      "ours": {
+        "go_wp": 18.2,
+        "fg_wp": 62.6,
+        "punt_wp": 46.5,
+        "recommends": "field_goal",
+        "go_gain_points": -44.4,
+        "p_convert": 59.2
+      },
+      "nfl4th": {
+        "go_wp": 38.3,
+        "fg_wp": 50.5,
+        "punt_wp": 0.1,
+        "recommends": "field_goal",
+        "go_gain_points": -12.2,
+        "p_convert": 58.2
+      }
+    },
+    {
+      "game_id": "2024_05_ARI_SF",
+      "play_id": 3793,
+      "season_type": "REG",
+      "posteam": "ARI",
+      "defteam": "SF",
+      "qtr": 4,
+      "game_seconds_remaining": 100,
+      "score_differential": -2,
+      "ydstogo": 3,
+      "yardline_100": 16,
+      "description": "(1:40) 38-C.Ryland 35 yard field goal is GOOD, Center-46-A.Brewer, Holder-12-B.Gillikin.",
+      "coach": "field_goal",
+      "ours": {
+        "go_wp": 42.9,
+        "fg_wp": 39.3,
+        "punt_wp": null,
+        "recommends": "go",
+        "go_gain_points": 3.7,
+        "p_convert": 49.9
+      },
+      "nfl4th": {
+        "go_wp": 42.0,
+        "fg_wp": 58.0,
+        "punt_wp": null,
+        "recommends": "field_goal",
+        "go_gain_points": -16.0,
+        "p_convert": 45.1
+      }
+    },
+    {
+      "game_id": "2024_13_ARI_MIN",
+      "play_id": 4382,
+      "season_type": "REG",
+      "posteam": "ARI",
+      "defteam": "MIN",
+      "qtr": 4,
+      "game_seconds_remaining": 40,
+      "score_differential": -1,
+      "ydstogo": 10,
+      "yardline_100": 70,
+      "description": "(:40) (Shotgun) 1-K.Murray pass deep right intended for 18-M.Harrison INTERCEPTED by 1-S.Griffin [52-Ji.Ward] at MIN 45. 1-S.Griffin to MIN 45 for no gain (18-M",
+      "coach": "go",
+      "ours": {
+        "go_wp": 25.6,
+        "fg_wp": null,
+        "punt_wp": 28.5,
+        "recommends": "punt",
+        "go_gain_points": -2.9,
+        "p_convert": 31.7
+      },
+      "nfl4th": {
+        "go_wp": 15.2,
+        "fg_wp": null,
+        "punt_wp": 1.0,
+        "recommends": "go",
+        "go_gain_points": 14.1,
+        "p_convert": 27.4
+      }
+    },
+    {
+      "game_id": "2024_13_LAC_ATL",
+      "play_id": 3876,
+      "season_type": "REG",
+      "posteam": "ATL",
+      "defteam": "LAC",
+      "qtr": 4,
+      "game_seconds_remaining": 47,
+      "score_differential": -4,
+      "ydstogo": 12,
+      "yardline_100": 35,
+      "description": "(:47) (Shotgun) 18-K.Cousins pass short middle intended for 5-D.London INTERCEPTED by 3-D.James at LAC 24. 3-D.James to LAC 26 for 2 yards.",
+      "coach": "go",
+      "ours": {
+        "go_wp": 14.6,
+        "fg_wp": 19.2,
+        "punt_wp": 7.6,
+        "recommends": "field_goal",
+        "go_gain_points": -4.6,
+        "p_convert": 23.6
+      },
+      "nfl4th": {
+        "go_wp": 12.1,
+        "fg_wp": null,
+        "punt_wp": 0.1,
+        "recommends": "go",
+        "go_gain_points": 12.0,
+        "p_convert": 23.3
+      }
+    }
+  ]
+}
