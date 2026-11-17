@@ -6,6 +6,9 @@ Scripts: `scripts/solve_mdp.py`, `scripts/validate_simulator.py`,
 `scripts/questions/q1_late_lead_dp.py`. Tests: `tests/test_mdp.py`.
 Every number below comes from `results/m4_mdp_summary.json`,
 `results/m4_simulator_validation.json` or `results/questions/q1_late_lead_dp.json`.
+Since the leakage hardening (section 7) every input of the game model is fitted on
+development seasons (2010 to 2023), and the simulator is validated against 2024 to 2025
+out of sample. Numbers in sections 3 and 4 are the rerun values.
 
 ## 1. Concepts
 
@@ -150,7 +153,7 @@ slice is then one product K @ W. A slice of 3.3 million states costs three such 
   game is over. The data say 99.92% of such teams won.
 - Before the last 5:00: no timeouts, no modes. An in-bounds play lasts a number of ticks
   drawn from the measured histogram. On entering the last 5:00, timeouts are drawn from
-  the measured shares (55% of trailing teams hold three).
+  the measured shares (53.6% of trailing teams hold three, development seasons).
 - Tie after regulation: 0.5.
 
 ### Protect and chase tables (a change from the brief, and why)
@@ -204,13 +207,13 @@ than when ahead by a point. The test allows for it.
 
 ### Stage 1: expected points
 
-- Our "next score" value of a first and 10 against nflfastR's `ep`: correlation 0.9993,
-  RMSE 0.09 points (own 25: 1.19 against 1.18; midfield 2.71 against 2.75). Our transition
-  model alone reproduces the standard expected-points curve.
+- Our "next score" value of a first and 10 against nflfastR's `ep` (2018 to 2023):
+  correlation 0.9993, RMSE 0.08 points (own 25: 1.17 against 1.18; midfield 2.70 against
+  2.75). Our transition model alone reproduces the standard expected-points curve.
 - Counting everything after the score too (the endless game), a first and 10 at the own 25
-  is worth 0.93 points and receiving a kickoff 1.21.
-- Fourth-down chart: go is best in 631 of 1,188 cells. If every later fourth down is played
-  as coaches play, go is best in 589 cells; 44 cells change, none by more than 0.10 points.
+  is worth 0.92 points and receiving a kickoff 1.20.
+- Fourth-down chart: go is best in 622 of 1,188 cells. If every later fourth down is played
+  as coaches play, go is best in 580 cells; 42 cells change, none by more than 0.10 points.
   Assuming league-average future play makes the chart slightly more conservative, and that
   is all it does at the expected-points level. The chart is aggressive (go on fourth and 4
   or less nearly everywhere); the same known caveats as Romer apply, and conversion
@@ -224,55 +227,68 @@ than when ahead by a point. The test allows for it.
 | Random walk football, arXiv 2406.16171 (L = 4, T = 56; and L = 6, T = 30) | max error below 1e-12 |
 | Independent recursive solver on a toy game with every rule, 1,500 random states, optimal and empirical defense | max error below 1e-10 |
 | Invariants: range, monotone in score, terminal values, kneel region, timeouts help their owner | pass |
-| Monte Carlo on the real solution: 60 random states x 4,000 games | 52 uncertain states: rms z 1.03, max 2.67, 92% below 2 |
+| Monte Carlo on the real solution: 60 random states x 4,000 games | 52 uncertain states: rms z 1.12, max 3.62, 94% below 2. The two states above 3 rerun with 40,000 games twice each: z between -0.7 and 1.7, so noise |
 
 ### Simulator against real football (coach-like policy, 40,000 games)
 
-Matches: points per drive 2.014 (real 2.013), plays per drive 5.81 (5.80), touchdown share
-22.5% (22.1%), punts 35.4% (35.6%), turnovers 9.9% (10.2%), regulation ties 5.4% (6.2%).
+Out of sample: every table and model behind the simulator was fitted on 2010 to 2023 and
+the comparison is with real 2024 to 2025 games (570 games, 12,094 drives). The in-sample
+comparison (2021 to 2023) is in the JSON under `in_sample`, labelled.
+
+Matches (out of sample): points per drive 2.005 (real 2.089), plays per drive 5.77
+(5.83), touchdown share 22.5% (23.0%), punts 35.9% (34.2%), turnovers 10.1% (9.9%),
+regulation ties 5.2% (5.6%). In sample the same simulator gives 2.005 against 1.964
+points per drive: the real 2024 and 2025 seasons scored more per drive than 2021 to 2023,
+and the simulator, fitted before them, does not know that.
 
 Mismatches:
 
-- Points per game 46.5 against 44.9, drives per game 22.1 against 21.6.
-- Margin SD 12.1 against 14.1; games decided by 17 or more 17.6% against 26.3%. Identical
+- Points per game 46.9 against 45.7 (in sample 44.3), drives per game 22.4 against 21.2.
+- Margin SD 12.2 against 14.3; games decided by 17 or more 17.9% against 28.1%. Identical
   teams cannot produce blowouts at the real rate.
-- Points per drive from good field position are 0.2 to 0.3 too high (opp 20 to goal: 4.97
-  against 4.71), slightly low from the own 1 to 20 (1.40 against 1.46).
-- "On downs" 6.5% against 5.8%.
-- Leads: mean absolute gap 1.2 points over 24 cells. Worst: lead of 1 to 3 with 2:00 left
-  holds 72.2% simulated, 66.3% real (n = 245, standard error 3.0).
-- Late trailing drives: touchdown rate 28.8% against 31.2%; after the touchdown the leader
-  has 30 seconds or more 80% of the time against 65% (the coach-like trailing team scores
-  too quickly or the leader is left too much time); leader then wins 43.8% against 42.6%.
+- Points per drive by starting position: too high from the opponent's 20 to the goal line
+  (5.05 against 4.74), too low from the own 1 to 20 (1.39 against 1.55).
+- Leads: mean absolute gap 2.2 points over 24 cells out of sample (2.0 in sample; 1.2
+  before the hardening, when the tables had seen the comparison seasons). Every gap with
+  a real standard error is within two of them. Lead of 1 to 3 with 2:00 left holds 73.1%
+  simulated, 68.1% real (n = 108, standard error 4.5).
+- Late trailing drives (down 4 to 8, 1:00 to 5:00 left): touchdown rate 28.3% simulated
+  against 37.6% real out of sample (n = 149, about 2.3 standard errors) and 30.2% real in
+  sample (n = 982). The 2024 and 2025 trailing offenses did better than any earlier
+  season would have predicted; the simulator is calibrated to the earlier ones.
 
 Reading: trust the simulator for drive-level behavior and for close games; do not use it
-for anything that depends on team strength or on the size of blowouts.
+for anything that depends on team strength or on the size of blowouts. It understates how
+often a trailing team scored late in 2024 and 2025, which favors punting slightly in
+question 1 (the "trailing offense better" sensitivity rows show the direction).
 
 ### Burning question 1
 
 Headline case: up 4, 4:00 left, fourth and 2 at the own 40, opponent has three timeouts.
 
-    go   0.780     punt 0.715     go minus punt +6.5 points
+    go   0.778     punt 0.714     go minus punt +6.5 points
 
 The map (up 4, opponent with three timeouts): at 4:00 going beats punting up to
-fourth and 7 to 9 depending on field position; at 3:00 up to 6 or 7; at 2:00 only fourth and 2 or shorter, and with no
+fourth and 7 or 8 depending on field position; at 3:00 up to 6 or 7; at 2:00 only fourth and 2 or shorter, and with no
 opponent timeouts at 2:00 only fourth and 1 (by 1 point). Beyond fourth and 5 the margin
 is under 3 points and should be read as a toss-up. A smaller lead means go more (up 1 at
 4:00: go at every distance to 10), a bigger one less (up 7: to about 6).
 
 Sensitivity (headline case, go minus punt, points): base +6.5; conversion probability
-minus or plus 0.05: +4.3 / +8.9; defense using timeouts at measured rates: +6.8; trailing
-offense worse or better: +2.9 to +11.0; generic plays only: +4.7; both teams playing like
-real coaches afterwards: +4.0. The sign never changes for fourth and 2. The share of the
-whole map where go wins runs from 39% to 97%, so the edge of the go region is not known.
-The break-even conversion probability is 38%; the model says 60%.
+minus or plus 0.05: +4.3 / +8.8; defense using timeouts at measured rates (41% to 93%):
++6.8; trailing offense worse or better: +3.1 to +10.9; generic plays only: +4.8; every
+kickoff at the touchback spot: +6.3; both teams playing like real coaches afterwards:
++4.0. The sign never changes for fourth and 2. The share of the whole map where go wins
+runs from 38% to 97%, so the edge of the go region is not known. The break-even
+conversion probability is 38%; the model says 60%.
 
 Against other methods: the one-step engine gives +1.0 for the headline case and says go in
-24% of the map's cells against the DP's 68%. nfl4th (its numbers) says go in 24% of the
-160 shared cells against the DP's 76%.
+24% of the map's cells against the DP's 67%. nfl4th (its numbers) says go in 24% of the
+160 shared cells against the DP's 74%. The one-step numbers use the win-probability model
+being rewritten and must be refreshed after that rewrite.
 
 Unexpected: more opponent timeouts make going MORE attractive (go wins in 61% of cells with
-none, 74% with three). Timeouts help the trailing team's drive after a punt more than they
+none, 72% with three). Timeouts help the trailing team's drive after a punt more than they
 hurt the leader's attempt to burn clock after a conversion.
 
 ## 4. Worked examples
@@ -307,11 +323,11 @@ The "1 -" each time the ball changes hands is the zero-sum trick.
 
 ### The headline decision taken apart
 
-    P(convert) = 0.605
-    win probability if converted = 0.895
-    win probability if failed    = 0.604
-    go   = 0.605 * 0.895 + 0.395 * 0.604 = 0.780
-    punt = 0.715
+    P(convert) = 0.603
+    win probability if converted = 0.894
+    win probability if failed    = 0.603
+    go   = 0.603 * 0.894 + 0.397 * 0.603 = 0.778
+    punt = 0.714
 
 Punt, from 200,000 simulated games: the opponent starts at its own 18 with 3:50 and scores
 a touchdown on 35.4% of those drives (real, own 1 to 20 with 3:00 to 4:00: 36.0%, n = 86).
@@ -359,3 +375,49 @@ punt, and a conversion gains 18.
 `possession_changed`, `points`, `done` and `result`. Decisions that are not the offense's
 play call (defensive timeouts, the try after a touchdown) are made as the solver assumed.
 Action names: play, play_protect, play_chase, field_goal, punt, kneel.
+
+## 7. Leakage hardening
+
+**What was wrong (audit finding M6).** The clock tables, the protect and chase
+calibration, the coach table and the constants in `configs/mdp.yaml` (timeout shares,
+defensive timeout rates, kneel seconds) were measured on 2018 or 2010 to 2025, with no
+upper bound. The simulator was then "validated" against 2021 to 2025, so the comparison
+was partly in sample, and anything compared with real 2024 to 2025 coaching would have
+been too. The M1 bundle the game was built from was the all-seasons one, with a
+field-goal limit taken from a test-season kick (see the M1 notes, section 6). One set of
+published timeout shares summed to 1.001 and was normalized in code.
+
+**What changed.**
+- `fit_tables`, `fit_mode_adjustments` and `fit_coach_table` call
+  `splits.assert_no_test_seasons` first, and return a stamp of the seasons they saw.
+  `scripts/solve_mdp.py` fits them on `splits.load_dev_plays()` and builds the game from
+  the development bundle (`ComponentModels.load()`). The table cache is keyed by the
+  config and the bundle's stamp, and the combined stamp is saved in the solution's
+  `meta.json`.
+- The measured constants come from `results/research/endgame_clock_stats_dev.json`
+  (`scripts/research/endgame_clock_stats.py --dev-only`). The all-seasons research file is
+  unchanged. A test checks that the config equals the development file. Timeout shares
+  are now rounded at the source so each set sums to exactly 1: trailing team
+  0.063, 0.097, 0.304, 0.536 (was 0.060, 0.094, 0.296, 0.550), leading team 0.031, 0.140,
+  0.347, 0.482 (was 0.029, 0.140, 0.340, 0.492). Defensive timeout rates moved by at most
+  0.01, kneel seconds stayed at 2.
+- `scripts/validate_simulator.py` loads 2024 and 2025 through
+  `splits.load_test_plays(purpose=...)`, checks the solution's stamp with
+  `splits.assert_can_score`, and reports the out-of-sample comparison as the headline
+  and the 2021 to 2023 comparison as in sample.
+- The only test-season content left in the game is the kickoff table of the 2025 rule,
+  used for every kickoff (a logged rule constant). A question 1 sensitivity row replaces
+  it with a fixed start at the touchback spot: +6.3 instead of +6.5.
+
+**How the numbers moved.**
+- Question 1 headline: go 0.780 to 0.778, punt 0.715 to 0.714, go minus punt +6.5 to
+  +6.5 (0.0650 to 0.0646), break-even 38.1% to 38.1%. The share of the map where go wins
+  went from 68.3% to 66.9%; at 4:00 up 4 against three timeouts the longest distance worth
+  going from the own 20 went from 9 to 8 yards. Sensitivity rows moved by at most 0.3
+  points. A test confirms that no cell of the map is an isolated go or punt cell.
+- Expected points: a first and 10 at the own 25 is worth 0.924 instead of 0.932 points;
+  go is best in 622 instead of 631 of 1,188 chart cells.
+- Simulator validation: the drive-level match was 2.014 against 2.013 points per drive
+  when the tables had seen the comparison seasons. Out of sample it is 2.005 against
+  2.089, and the mean leader-win-rate gap is 2.2 points instead of 1.2. That is the
+  honest size of the simulator's error on seasons it has not seen.

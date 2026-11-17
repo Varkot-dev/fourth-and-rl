@@ -193,9 +193,17 @@ were scored on 2024 and 2025 after fitting through 2023: all seasons with trend
 version wins and uses all the data. I also tried letting the trend differ by distance;
 it did not help out of sample and was dropped.
 
-**Fitted values (2025 level).** 30 yards: 96.0%. 40: 87.9%. 50: 75.3%. 55: 65.9%.
-60: 52.7%. 65: 35.7%. Beyond 68 yards (the longest make in the data) the model
-returns 0.
+**Fitted values (2025 level, all-seasons fit).** 30 yards: 96.0%. 40: 87.9%. 50: 75.3%.
+55: 65.9%. 60: 52.7%. 65: 35.7%. The development bundle, which is what every evaluation
+uses, is evaluated at 2023 level: 30: 95.7%, 40: 87.2%, 50: 74.0%, 55: 63.5%, 60: 48.5%,
+65: 29.5%.
+
+**Range limit (changed in the leakage hardening, section 6).** The limit is the longest
+made kick in the rows the model is fitted on, computed inside the fit, never a config
+constant. Up to it P(make) is the fitted curve. Beyond it the curve fades linearly to 0
+over 3 yards: with the development fit (longest make 66 yards) the values are 25.6% at
+66, 16.5% at 67, 9.3% at 68, 3.8% at 69 and 0 from 70. Before, the curve was cut from
+about 20% to 0 in one yard.
 
 **Caution at long range.** Kicks from 58+ are attempted only when the coach thinks his
 kicker can make it (strong leg, dome, end of half). The 60-yard number is for kicks
@@ -276,10 +284,13 @@ noise), and the touchdown share is multiplied by it.
   when it stops (incomplete, out of bounds, score, turnover). The JSON has the table by
   play type and by whether it is the last two minutes of a half. Timeouts are not
   removed.
-- Kickoff: 2025 only (2,927 kickoffs). The touchback spot moved to the 30 in 2024 and
-  the 35 in 2025, and the data show it: the most common start was the 25 from 2016
-  to 2023 (the 20 before that), the 30 in 2024 and the 35 in 2025. Mean start in 2025: 69.1 yards from the end zone
-  (own 31). Onside kicks and other kicking-team recoveries (0.7%) are left out.
+- Kickoff: one table per kickoff rule era (changed in the leakage hardening, section 6):
+  2018 to 2023 (touchback at the 25, 16,741 kickoffs, mean start 74.3 yards from the
+  end zone), 2024 (touchback at the 30, 2,920, mean 69.8) and 2025 (touchback at the
+  35, 2,893, mean 69.1). The most common start was the 25 from 2016 to 2023 (the 20
+  before that), the 30 in 2024 and the 35 in 2025. A real play is valued with its own
+  season's table; hypothetical charts and the solved game use the 2025 table. Onside
+  kicks and other kicking-team recoveries (0.5% to 0.7%) are left out.
 - Extra point 94.6% (10,378 kicks, 2018 on). Two-point try 49.0% (1,083 tries).
 
 ### 3.5 Drive-level targets
@@ -293,14 +304,16 @@ drive 5.80. By starting position, points per drive run from 1.46 (own 1 to 20) t
 
 ## 4. What the held-out check showed
 
-Fit on 2010 to 2023, score on 2024 and 2025. The saved bundle is then refitted on all
-seasons.
+Fit on 2010 to 2023 (the development bundle), score once on 2024 and 2025. Since the
+leakage hardening the development bundle is the one every evaluation uses; the
+all-seasons bundle exists only for forward-looking use (section 6). Every number below
+was unchanged by the hardening except the field-goal row, which was 0.3695 before.
 
 | Model | Held-out n | Log loss, model | Log loss, constant baseline |
 |---|---|---|---|
 | Conversion, fourth downs | 1,746 | 0.6434 | 0.6917 |
 | Conversion, third downs (same model) | 14,309 | 0.6109 | 0.6742 |
-| Field goal | 2,306 | 0.3695 | 0.4244 |
+| Field goal | 2,306 | 0.3698 | 0.4244 |
 | Punt (100 outcomes) | 4,112 | 3.529 | 3.760 (one net distribution), 3.926 (one landing distribution) |
 | Play model, first down or not | 67,658 | 0.5448 | 0.5982 |
 
@@ -311,15 +324,17 @@ Honest reading:
   53.6%, n = 347). Fourth and 1 was close (67.8% vs 69.1%). With 1,746 plays the
   standard error of the overall rate is about 1.2 points, so a 2.3-point gap is about
   two standard errors: suggestive, not proven. Possible reasons: teams got better at
-  short-yardage plays, or coaches got better at picking spots (selection again). The
-  final fit includes those two seasons.
-- **The variants cannot be told apart on fourth downs.** Default 0.6434, fourth downs
-  only 0.6423, third downs only 0.6445, no trend 0.6439, no spread 0.6438. Differences
-  of 0.001 to 0.002 on 1,746 plays are noise. The case for the pooled model is not that
+  short-yardage plays, or coaches got better at picking spots (selection again). Only
+  the all-seasons bundle includes those two seasons; nothing evaluated on them does.
+- **The variants cannot be told apart on fourth downs.** This comparison is now made
+  inside the development seasons (section 6), not on 2024 and 2025. Pooled over the
+  2020 to 2021 and 2022 to 2023 blocks (3,116 fourth downs): default 0.63754, fourth
+  downs only 0.63956, third downs only 0.63765, no trend 0.63765, no spread 0.63753,
+  coarser knots 0.63752. Differences of 0.00001 to 0.002 are noise. The case for the pooled model is not that
   it scores better on attempted fourth downs; it is that it has data where coaches
   rarely go. The held-out fourth downs cannot test that, because they are also plays
   coaches chose.
-- **Field goals from 55+ were under-predicted** (54.9% predicted, 61.8% actual, n =
+- **Field goals from 55+ were under-predicted** (54.7% predicted, 61.8% actual, n =
   207). Long kicks kept improving faster than a trend frozen at 2023.
 - **Punts** are calibrated within about 1 yard of expected landing spot in every field
   bin.
@@ -343,3 +358,79 @@ Honest reading:
 7. What does the play model leave out, and how will you know if it matters? (Penalties,
    game situation, team quality; the drive-level targets in M4.)
 8. What did the held-out seasons show that you did not expect?
+
+## 6. Leakage hardening
+
+An independent audit (`docs/research/leakage_audit.md`) found that a number reported as
+out-of-sample depended on the test seasons, and that several barriers between the
+development and test seasons were conventions rather than code. This section records
+what was wrong, what changed and how the numbers moved. Every number is in
+`results/m1_components.json`.
+
+**What was wrong.**
+- The field-goal range limit was a config constant, 68 yards, the longest make of 2010
+  to 2025. The longest make of the development seasons is 66, so the "fit on 2010 to
+  2023" model carried a fact from the test seasons (audit C1). Six held-out attempts
+  were from 67 to 70 yards and two were made.
+- The three field-goal forms and seven conversion variants were compared on 2024 and
+  2025, and the field-goal form kept was the one that won there (audit M1).
+- The kickoff table was fitted on 2025 and used for 2024 plays, which were played under
+  a different touchback rule; when the configured seasons were missing, `fit_kickoff`
+  silently used the latest season in the data (audit M2).
+- Nothing stopped a test-season row reaching a fit, no saved bundle recorded its
+  seasons, and `ComponentModels.load()` with no path returned the all-seasons bundle
+  (audit M7).
+
+**What changed.**
+- Every fit (`ComponentModels.fit`, the go, field goal, punt and play models,
+  `fit_kickoff`, the clock and extra-point tables) calls
+  `splits.assert_no_test_seasons` first. An exception needs `allow_test_seasons=True`
+  and a written reason, and is logged.
+- A fitted bundle carries a `stamp` (seasons, games, rows, config hash, and which
+  kickoff tables used test seasons and why). `save` keeps it. Scoring code calls
+  `splits.assert_can_score(stamp, rows, what)`.
+- Two bundles with two names: `components_dev.joblib` (development seasons) and
+  `components_all.joblib` (every season through 2025, for forward-looking use only).
+  `ComponentModels.load()` loads the development bundle and refuses a file under that
+  name that saw a test season; the all-seasons bundle loads only through
+  `ComponentModels.load_all(purpose)`.
+- The field-goal limit is derived inside the fit from the rows it receives, with a
+  3-yard fade-out (section 3.2). A test checks the limit never exceeds the longest made
+  kick in the fitted rows.
+- Model selection now uses season-blocked validation inside the development seasons:
+  fit on the seasons before a block, score the block (2020 to 2021, then 2022 to 2023).
+  The rule, fixed before any test score was looked at: keep the configured variant
+  unless another beats it by more than one game-clustered standard error. Results: for
+  the field goal, all seasons with a trend wins both blocks (pooled 0.35816 against
+  0.36041 without a trend and 0.36070 for recent seasons only), so the earlier choice
+  stands, now for a defensible reason. For conversion, the lowest pooled log loss is
+  the coarser-knot variant, ahead of the default by 0.00001 (standard error 0.00016), so
+  the default stays. For the fade-out, 3 yards (0.35816) and 5 yards (0.35814) tie and
+  both beat the hard cap (0.36071); 3 stays.
+- Kickoffs: one table per rule era, each fitted on its own seasons' kickoffs. The 2024
+  and 2025 tables are the one logged exception ("rule constant; no data under this rule
+  exists before the season"). `fit_kickoff` raises instead of falling back.
+- `ComponentModels.p_convert` passes the `spread` argument through to the go model.
+
+**How the numbers moved.**
+- Held-out field-goal log loss: 0.3695 as first reported (68-yard cap from the test
+  seasons), 0.3798 with the development limit as a hard cap (the audit's figure), 0.3698
+  with the development limit and the 3-yard fade-out. The fade-out was chosen inside
+  the development seasons; the 0.3798 is kept in the JSON as a diagnostic only. The six
+  attempts beyond 66 yards get a mean predicted 10.1% (two of six were made).
+- Every other held-out number is unchanged to four decimals (the development fit was
+  already used for them).
+- The development bundle differs from the all-seasons one as expected: at midfield,
+  fourth and 2 converts 60.2% (60.4% before), a 50-yard kick is 74.0% at 2023 level
+  (75.3% at 2025 level), and the fourth-down term is +0.038 log-odds (+0.059 with all
+  seasons).
+
+**Kickoff sensitivity: is the exception harmless?** The single-drive expected-points
+problem was solved with each era's empirical table and again with every kickoff placed
+at that era's touchback spot. Over 1,112 fourth-down states, go minus the better kick
+moves by 0.0066 points on average (0.022 at most) for the old rule and 0.0001 for the
+2024 rule (0.0005 at most, no flips). For the 2025 rule it moves by 0.043 on average
+and 0.142 at most, and 24 best actions flip (21 field goal to go, 3 go to punt), all in
+states whose margin was at most 0.105 points. The 2025 table matters more because only
+20% of 2025 kickoffs started at the touchback spot. The exception is small but not
+zero, which is why it is a logged exception and not a hidden one.
