@@ -1,0 +1,38 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "fourth-and-rl"
+version = "0.1.0"
+description = "NFL fourth-down decisions as a sequential decision problem: win-probability models, dynamic programming and reinforcement learning."
+requires-python = ">=3.11"
+dependencies = [
+    "nflreadpy>=0.1.5",
+    "polars>=1.0",
+    "pyarrow>=15",
+    "numpy>=1.26",
+    "scikit-learn>=1.4",
+    "lightgbm>=4.0",
+    "matplotlib>=3.8",
+    "pyyaml>=6.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "ruff>=0.6"]
+rl = ["gymnasium>=1.0", "torch>=2.2", "stable-baselines3>=2.3", "d3rlpy>=2.5"]
+app = ["plotly>=5.20", "streamlit>=1.35"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/fourth_and_rl"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = ["data: needs the cached play-by-play data (skipped when it is absent)"]
