@@ -14,3 +14,5 @@ league_sizes: [272, 1088, 2176, 4350]
 n_null: 600   # leagues at k = 1 to set the first-crossing critical value
 n_rep: 300    # leagues per size for power (every k applied to the same leagues)
 alpha: 0.05
+# Size recheck at 16 seasons: the main run gave 0.077 at k = 1 with 600 null leagues.
+size_check: {seed: 20261120, n_games: 4350, n_null: 1500, n_rep: 1500}

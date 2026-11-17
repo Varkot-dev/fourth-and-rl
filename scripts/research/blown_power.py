@@ -19,6 +19,7 @@ from fourth_and_rl.paths import ROOT
 
 CONFIG = ROOT / "configs" / "blown_power.yaml"
 OUT_JSON = ROOT / "results" / "research" / "blown_power.json"
+OUT_SIZE = ROOT / "results" / "research" / "blown_power_size_check.json"
 OUT_FIG = ROOT / "assets" / "research" / "blown_power.png"
 
 
@@ -50,6 +51,23 @@ def main() -> None:
     plot(out)
 
 
+def size_check() -> None:
+    """Rerun the k = 1 rejection rate at 16 seasons with more leagues on both sides."""
+    cfg = yaml.safe_load(CONFIG.read_text())
+    sc = cfg["size_check"]
+    t0 = time.time()
+    res = run_power(
+        n_games=sc["n_games"], ks=[1.0], thresholds=cfg["thresholds"],
+        n_null=sc["n_null"], n_rep=sc["n_rep"], n_steps=cfg["n_steps"],
+        gap_shape=cfg["gap_shape"], p0_sd=cfg["p0_sd"],
+        rng=np.random.default_rng(sc["seed"]), alpha=cfg["alpha"],
+    )
+    res["runtime_seconds"] = round(time.time() - t0, 1)
+    res["settings"] = sc
+    OUT_SIZE.write_text(json.dumps(res, indent=2))
+    print("size at k = 1:", res["power_first_crossing"], "+/-", res["power_first_crossing_mc_se"])
+
+
 def plot(out: dict) -> None:
     style.apply()
     fig, axes = plt.subplots(1, 2, figsize=(11, 4.4), sharey=True)
@@ -79,5 +97,7 @@ if __name__ == "__main__":
 
     if "--plot-only" in sys.argv:
         plot(json.loads(OUT_JSON.read_text()))
+    elif "--size-check" in sys.argv:
+        size_check()
     else:
         main()

@@ -44,9 +44,11 @@ Rejection rate (first-crossing / continuous KS):
    real model.
 
 ## Limits
-- The size at 16 seasons is 0.077 against 0.05 (Monte Carlo SE about 0.015, and the
-  critical value is itself estimated from 600 leagues). Rerun with more null leagues
-  before quoting it.
+- The size at 16 seasons was 0.077 in the main run (600 null leagues). A recheck with
+  1,500 null and 1,500 test leagues (`results/research/blown_power_size_check.json`)
+  gives 0.063, Monte Carlo SE 0.006. The critical value is estimated from 1,500 leagues,
+  which adds about 0.006 more, so the combined SE is about 0.008 and 0.063 is within
+  about 1.5 SE of 0.05. Read the size as close to 5%, possibly slightly above.
 - Temperature scaling is one kind of miscalibration. A model that is wrong only in some
   game states (M3b's mid-range fault) may be harder to detect; A3 addresses that.
 - Games are independent here; real games share teams. The simulator is a Brownian lead,

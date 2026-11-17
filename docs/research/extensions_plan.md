@@ -96,6 +96,6 @@ summary" offered in the email.
 - E2. Split-half reliability across seasons; coaches who change teams.
 
 ## Status
-- [x] A1 (2026-11-17): power curves saved; write-up in `docs/research/blown_lead_power.md`. Size at 16 seasons is 0.077, to be rerun with more null leagues.
+- [x] A1 (2026-11-17): power curves saved; write-up in `docs/research/blown_lead_power.md`. Size at 16 seasons rechecked with 1,500 leagues: 0.063 (SE about 0.008), consistent with 5%.
 - [ ] A2 to A5
 - [ ] B, C, D, E
