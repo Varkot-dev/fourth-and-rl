@@ -58,37 +58,20 @@ ALLOWLIST: dict[tuple[str, str], tuple[int | None, str]] = {
         1, "nflfastR EPA comparisons over all seasons (descriptive); its one fitted piece "
            "(run_pass outcome tables) is fitted on development seasons behind "
            "assert_no_test_seasons, and test seasons are read via load_test_plays"),
-    # ---- evaluation scripts of M2 and M3 (they depend on the win-probability model and are
-    #      rerun after its rewrite). They score test-season plays only through
-    #      DecisionEngine.evaluate(..., out_of_sample=True), which checks the fit stamps;
-    #      the components come from the development bundle and every bootstrap refit draws
-    #      only train and calibration seasons, behind the fit guards.
-    ("scripts/compare_nfl4th.py", "load_plays("): (
-        1, "nfl4th comparison on 2024 to 2025 fourth downs, scored out of sample with "
-           "stamp checks; pending conversion to load_test_plays after the WP rewrite"),
-    ("scripts/bootstrap_decisions.py", "load_plays("): (
-        1, "bootstrap draws train and calibration games only (BootstrapPlan); real fourth "
-           "downs scored out of sample with stamp checks; pending conversion to "
-           "load_dev_plays plus load_test_plays after the WP rewrite"),
-    ("scripts/decision_chart.py", "load_plays("): (
-        1, "hypothetical chart states (no season) plus a speed check on 2022 to 2023 plays; "
-           "no outcome is scored"),
-    ("scripts/questions/q1_late_lead_one_step.py", "load_plays("): (
-        1, "hypothetical late-lead states (no season) and a descriptive count of what "
-           "coaches did in comparable real situations"),
+    # ---- M6 offline RL
+    ("scripts/offline_real_data.py", "read_parquet("): (
+        1, "reads back its own cache of 2024 to 2025 decision outcomes, which the same "
+           "script built from splits.load_test_plays(purpose=TEST_PURPOSE) (logged)"),
     # ---- pending: being fixed by the win-probability rewrite
     ("src/fourth_and_rl/wp.py", "load_plays("): (
         None, "pending: being fixed by the win-probability rewrite"),
     ("src/fourth_and_rl/wp.py", "read_parquet("): (
         None, "pending: being fixed by the win-probability rewrite"),
-    ("src/fourth_and_rl/wp_nn.py", "load_plays("): (
-        None, "pending: being fixed by the win-probability rewrite"),
-    ("src/fourth_and_rl/wp_nn.py", "read_parquet("): (
-        None, "pending: being fixed by the win-probability rewrite"),
 }  # fmt: skip
 
-# Files of the win-probability rewrite, matched by name: pending, any count.
-PENDING = (re.compile(r"^scripts/fit_wp[^/]*\.py$"), re.compile(r"^scripts/wp_v2[^/]*\.py$"))
+# Files of the win-probability rewrite, matched by name: pending, any count. (The neural
+# model's script, scripts/fit_wp_nn.py, is converted and is checked below like the rest.)
+PENDING = (re.compile(r"^scripts/fit_wp\.py$"), re.compile(r"^scripts/wp_v2[^/]*\.py$"))
 PENDING_REASON = "pending: being fixed by the win-probability rewrite"
 
 
@@ -139,6 +122,15 @@ def test_allowlist_has_no_stale_entries_and_every_entry_has_a_reason() -> None:
         "scripts/solve_mdp.py",
         "scripts/validate_simulator.py",
         "scripts/questions/q1_late_lead_dp.py",
+        # M2 and M3 scripts: development plays for fits and reference distributions,
+        # splits.load_test_plays(purpose=...) for scoring real 2024 to 2025 plays.
+        "scripts/decision_chart.py",
+        "scripts/compare_nfl4th.py",
+        "scripts/bootstrap_decisions.py",
+        "scripts/questions/q1_late_lead_one_step.py",
+        # The neural win-probability model (version 1 inputs) and its script.
+        "src/fourth_and_rl/wp_nn.py",
+        "scripts/fit_wp_nn.py",
     ],
 )
 def test_fitting_code_never_reads_the_raw_table(rel: str) -> None:

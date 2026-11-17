@@ -9,6 +9,13 @@ Every number below is from `results/m2_decision_chart.json` or
 Worked examples marked "by hand" are arithmetic. Figures: `assets/m2_decision_chart.png`,
 `assets/m2_nfl4th_comparison.png`.
 
+**Status.** The engine now uses win-probability version 2 (`results/m1_wp_metrics.json`),
+the development component bundle (2010 to 2023, with the kickoff tables of each kickoff
+rule era) and a field-goal limit taken from the development seasons. The M2 results were
+computed before those changes, with version 1, so every result number in this note that
+depends on the models is marked "to be updated after the rerun". Arithmetic examples and the description of the
+method are current.
+
 ## 1. Concepts
 
 ### Expected value over outcomes
@@ -30,6 +37,9 @@ limitation; we average over the whole distribution.
 
 Worked example (numbers from `reference_examples.fourth_and_3_at_opp_40`). First quarter,
 tied, fourth and 3 at the opponent's 40.
+
+The numbers in this example were computed with version 1 (to be updated after the rerun); the arithmetic is
+what to learn.
 
 - Go. P(convert) = 0.541. Averaged over where a conversion leaves the ball (and the small
   chance of a touchdown), our WP is 0.625. Averaged over the ways it fails, 0.435.
@@ -63,7 +73,9 @@ state from THEIR point of view and (2) take one minus the answer:
 | receive_2h_ko (first half only) | 1 | 0 |
 | yard line | measured to their target end zone, straight from the component model |
 
-Forgetting one of these is the classic bug in a decision engine, so the test
+Version 2 of the WP model no longer uses `is_home` (home advantage is already in the
+spread), but the engine still flips it, so any model that does use it is asked the right
+question. Forgetting one of these is the classic bug in a decision engine, so the test
 `test_change_of_possession_flips_every_team_specific_input` builds exactly this state
 and inspects what the engine asks the WP model.
 
@@ -73,21 +85,27 @@ tied game: their WP = 0.55 - 0.002 * 30 = 0.49, so the punt is worth 1 - 0.49 = 
 
 ### Scores, kickoffs and the clock
 
-- Touchdown: +6, then the extra point as two branches (good with the fitted probability
-  0.942, giving +7; missed, giving +6), then a kickoff to the other team. A fractional
+- Touchdown: +6, then the extra point as two branches (good with the fitted probability,
+  0.942 in the version 1 era bundle (to be updated after the rerun), giving +7; missed, giving +6), then a kickoff
+  to the other team. A fractional
   "6.94 points" is never used: the WP model splits on whole scores, so an expected score
   would be read as either 6 or 7.
 - Made field goal: +3, then a kickoff. Missed: the other team takes over at the spot of
   the kick (or their 20).
-- Kickoff: the receiving team gets first and 10 at a spot drawn from the fitted kickoff
-  distribution. The return touchdown (0.2% of kickoffs) is closed off with a shortcut:
-  7 points to the receiving team, then the other team at the mean starting spot.
-- Punt: the fitted distribution of the receiving team's starting spot, including the 1%
-  of punts the kicking team recovers and the 0.5% returned for a touchdown.
+- Kickoff: the receiving team gets first and 10 at a spot drawn from the kickoff table of
+  the kickoff rule in force: a real play uses the table of its own season's rule era
+  (before 2024, the 2024 rule, the 2025 rule), and a hypothetical state without a season
+  uses the latest rule (2025). The return touchdown (about 0.2% of kickoffs, to be updated after the rerun) is
+  closed off with a shortcut: 7 points to the receiving team, then the other team at the
+  mean starting spot.
+- Punt: the fitted distribution of the receiving team's starting spot, including the
+  punts the kicking team recovers (about 1%) and those returned for a touchdown (about
+  0.5%) (to be updated after the rerun).
 - Safety on a failed attempt: -2 and we kick to them (the ordinary kickoff distribution
   stands in for the free kick).
 - Clock. Each play takes whole seconds off: converted fourth down 27, failed attempt 5,
-  scoring play 5, field goal 4, punt 9, kickoff 2. These come from
+  scoring play 5, field goal 4, punt 9, kickoff 2 (the development bundle's fitted
+  values, rounded; the rounded numbers are also the config's fallbacks). These come from
   `components.seconds_per_play()` (mean snap-to-snap time of all scrimmage plays; an
   incomplete pass with the clock stopped; the kick means), rounded.
 - End of game: if the play takes at least as many seconds as the half has left and it
@@ -108,39 +126,56 @@ best with margin 0.5. Down 2 instead: field goal = 1.0.
    distribution is thinned: yard lines carrying at least 0.4% of the action's probability
    stay exact, thinner neighbours are merged into one point at their mean (at most 8 yards
    wide). This leaves about 220 next states per play. Measured against the exact
-   calculation on 2,000 real fourth downs: largest change in any action's WP 0.0005, mean
-   0.00002, same best action on 99.95% (`checks.thinning_error`). `merge_mass: 0` in the
+   calculation on 2,000 real fourth downs (version 1 era, to be updated after the rerun): largest change in any
+   action's WP 0.0005, mean 0.00002, same best action on 99.95% (`checks.thinning_error`). `merge_mass: 0` in the
    config turns thinning off.
 2. **One batch, duplicates scored once.** All next states of all rows are built as numpy
    arrays, packed into one integer key each, de-duplicated, and sent to the WP model in
    one call. A chart panel (1,380 cells) builds 290,000 next states of which only about
    700 are distinct, so it takes a fraction of a second. Real plays share little:
    8,790 real fourth downs took 8.8 seconds on two threads on a machine shared with
-   other jobs (`checks.speed`; the time varies with what else is running). The WP model's trees are the cost: about 1.7 million distinct states
-   are scored. This is slower than the "few seconds" target for real plays.
-3. **Which models.** WP: the M1 headline model (trees 2010 to 2021, Platt 2022 to 2023).
-   Components: refitted on 2010 to 2023 only, so no 2024 or 2025 play informs the
-   engine that is compared with nfl4th on 2024 and 2025 and that the bootstrap
-   resamples. One exception, stated plainly: the kickoff starting distribution comes
-   from 2025, because it is a rule (touchback to the 35), not a skill, and earlier
-   seasons used other rules. The M1 bundle fitted on all seasons is not used here.
+   other jobs (`checks.speed`, version 1 era, to be updated after the rerun; the time varies with what else is
+   running). The WP model's trees are the cost: about 1.7 million distinct states are
+   scored. This is slower than the "few seconds" target for real plays.
+3. **Which models.** WP: the M1 headline model, version 2 (trees on 2010 to 2023 that
+   start from a structural baseline with the kneel-out rule, no calibration map;
+   `docs/notes/m1_wp.md`). Components: the development bundle
+   (`data/models/components_dev.joblib`, fitted on 2010 to 2023 only), so no 2024 or 2025
+   play informs the engine that is compared with nfl4th on 2024 and 2025 and that the
+   bootstrap resamples. One exception, stated plainly and logged: the kickoff starting
+   distribution is a rule, not a skill, so the bundle holds one kickoff table per rule
+   era, the 2024 and 2025 tables fitted on that season's own kickoffs. The bundle is
+   reused only while its stamp matches the components config and the current development
+   plays (a fingerprint of the play table); otherwise `decision.load_engine` refits it.
+   The all-seasons bundle is not used here. Scripts read development seasons through
+   `splits.load_dev_plays` and score 2024 to 2025 only through `splits.load_test_plays`
+   with a logged purpose.
 4. **Evenly matched conversion and kicking.** `p_convert` and `p_fg` are for an average
    offense, defense and kicker. The spread enters only through the WP model.
-5. **Field goal out of range is null.** The component model returns P(make) = 0 beyond a
-   68-yard kick; `fg_wp` is null there. **Punt is null inside the opponent's 31**: there
+5. **Field goal out of range is null.** The component model's distance limit is the
+   longest made kick in its fitted rows, 66 yards on the development seasons, after which
+   P(make) fades to 0 over 3 yards: it is 0 for kicks of 70 yards or more (a line of
+   scrimmage at the opponent's 52 or beyond), and `fg_wp` is null there. (The earlier
+   68-yard cap came from a test-season kick and was replaced; see the leakage entry of the
+   decision log.) **Punt is null inside the opponent's 31**: there
    are 71 punts in 16 seasons from there, so the model would be extrapolating.
 6. **Overtime is not modelled.** Overtime states get nulls (39 of the 8,465 reference
    plays are dropped for this or for a missing input). A regulation tie is worth 0.5.
 7. **Seconds per play are averages.** A team protecting a lead would take 40 seconds a
    play and a trailing team would hurry. The engine does not know that. This matters
    late in games and is one reason the full-game DP exists.
-8. **`is_home = 0` in the charts.** At a spread of 0 the M1 model gives the away team a
-   higher WP than the home team. On the reference chart the mean best WP is 0.496 with
-   `is_home = 0` and 0.447 with 1, and the best action is the same in 92.4% of cells
-   (`checks.home_away_reference_chart`). The level shift is an M1 weakness; the 7.6% of
-   cells that change are a warning that close calls depend on such details.
+8. **`is_home = 0` in the charts.** Version 1 used `is_home` and, at a spread of 0, gave
+   the away team a higher WP than the home team: on the reference chart the mean best WP
+   was 0.496 with `is_home = 0` and 0.447 with 1, and the best action the same in 92.4% of
+   cells (`checks.home_away_reference_chart`). Version 2 drops `is_home`, so the check
+   should now show no difference at all (to be updated after the rerun); the charts keep `is_home = 0`.
 
 ## 3. Results
+
+Every number in this section was computed with win-probability version 1, the version 1
+era component bundle and the 68-yard field-goal cap. All of them are to be updated after the rerun of
+`scripts/decision_chart.py` and `scripts/compare_nfl4th.py`. The findings about version 1
+are kept because they are why version 2 exists.
 
 ### The chart (`assets/m2_decision_chart.png`)
 
@@ -200,12 +235,16 @@ opponent's 36 and midfield (69%). Agreement is highest at the extremes: fourth a
    0.711; swapping it as well moves agreement by 0.2 points.
 3. **The win-probability models differ, and that is most of it.** After both swaps 23.7%
    of plays still disagree. The slope of our gain on nfl4th's is 0.73: our engine sees
-   smaller differences between going and kicking than nfl4th does. Our WP model has
-   15-leaf trees with at least 10,000 plays per leaf and a Platt map that shrinks toward
-   50%, which makes it smooth and flat; its clock splits are about 30 seconds apart, so
-   taking 5 or 27 seconds off often changes nothing.
-4. **Late-game win probability is too cautious in ours.** First downs in the fourth
-   quarter of 2024 and 2025 (`causes.late_game_win_probability_check_test_seasons`):
+   smaller differences between going and kicking than nfl4th does. Version 1 of our WP
+   model had 15-leaf trees with at least 10,000 plays per leaf and a Platt map that
+   shrinks toward 50%, which made it smooth and flat; its clock splits were about 30
+   seconds apart, so taking 5 or 27 seconds off often changed nothing. Version 2 uses
+   2,000-play leaves, a structural baseline and no map, so this point has to be checked
+   again after the rerun.
+4. **Late-game win probability was too cautious in version 1.** First downs in the fourth
+   quarter of 2024 and 2025 (this check used to re-score the test labels here; the script
+   now quotes the preregistered M1 evaluation instead, `results/m1_wp_metrics.json`,
+   `test_endgame`, as `causes.late_game_win_probability_from_m1_metrics`):
    teams leading by 1 to 3 with 41 to 120 seconds left won 95.9% (n = 73) and our model
    says 86.2%; with 40 seconds or less they won all 18 and we say 89.0%. Teams trailing
    by 4 to 8 with 40 seconds or less won 8.1% (n = 74) and we say 16.6%. A model that
@@ -257,8 +296,13 @@ similar numbers.
 ## 4. Limits, stated plainly
 
 - One step only. Nothing after the next snap is planned.
-- The WP model is flat in places and too cautious late in close games (point 4). Any
-  recommendation inside the last two minutes of a one-score game should not be trusted.
+- Version 1 of the WP model was flat in places and too cautious late in close games
+  (point 4). Version 2 fixes the leading side of the end game but not the trailing side:
+  on the 2024 to 2025 first downs of the fourth quarter, trailing by 4 to 8 in the last
+  40 seconds is predicted at 16.6% against 8.1% observed (74 plays), and trailing by 1 to
+  3 in the last 40 seconds at 29.7% against 40.2% (112 plays)
+  (`results/m1_wp_metrics.json`, `test_endgame.ours.cells_first_downs`). Recommendations for a
+  trailing team inside the last minute should still not be trusted.
 - The chart panels for trailing teams over-recommend going.
 - Conversion and kicking are league-average; no team strength, weather or kicker.
 - Overtime is not evaluated. Ties are worth 0.5.
@@ -281,6 +325,7 @@ similar numbers.
    second number the more meaningful one?
 8. Swapping in nfl4th's conversion probability closes our go-rate gap but barely changes
    agreement. What does that tell you about where the disagreement comes from?
-9. Our engine values a punt when trailing by 1 with 22 seconds left at 46%. Is that an
-   engine bug? How do you know? What would fix it?
-10. Why were the outcome models refitted without 2024 and 2025 for this milestone?
+9. With version 1, our engine valued a punt when trailing by 1 with 22 seconds left at
+   46%. Was that an engine bug? How do you know? What did version 2 change about it?
+10. Why are the outcome models fitted without 2024 and 2025, and why is the kickoff table
+    the one exception?
