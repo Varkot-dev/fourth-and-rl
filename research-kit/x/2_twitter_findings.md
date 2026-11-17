@@ -275,3 +275,47 @@ A wider keyword sweep for debates outside fourth downs and run versus pass, to j
 
 - Overtime under the 2025 rules (receive or kick): one relevant post, about a captain not knowing the coin-toss rule (@ProFootballTalk, 2026-09-21, https://x.com/ProFootballTalk/status/2101976882627420206). No decision debate found.
 - "Prevent defense" and "playing not to lose": no results at the like threshold used.
+
+### 8.6 Kicking range and short-yardage plays
+
+- @RyanPaganetti, 2026-10-31, https://x.com/RyanPaganetti/status/2116700157282775484 (10K likes, 476K views): "How rare was what happened at the end of Indiana–Minnesota? Before that game, there had never been an NCAA or NFL game in which both teams made a field goal of 60 yards or longer in the final 30 seconds of regulation. First time in the history of the sport of football."
+- @tbhorka, 2025-12-04, https://x.com/tbhorka/status/1996785268834341056: "The sixth 60+ yard field goal of Notre Dame alum Brandon Aubrey’s career. Most in NFL history. The machine."
+- @BrettKollmann, 2026-07-15, https://x.com/BrettKollmann/status/2077459159583457435: "Week 11+ the tush push success rate fell off a cliff. Detroit game was teach tape on how to stop it. Attack center’s off shoulder. Submarine the LG/LT combo. Linebacker over the top to stop initial jump. Edge defender chasing LT’s heels to take out the pusher. Team effort." (quoting @RossTuckerNFL: "1. QB sneak is most efficient short yardage play by a wide margin push or no push.")
+- @RyanPaganetti, 2026-11-01, https://x.com/RyanPaganetti/status/2116912218646163474: "Going for two down nine buys information early. Is it worth it? I’m not so sure. Ohio State scored with 2:12 remaining against USC, cutting a 15 point deficit to nine. They went for two and failed, leaving their estimated win probability under 1% and the game effectively over." [truncated] (college)
+- Read: longer field-goal range moves the go-or-kick line and the value of a late possession, which bears on the model's field-goal curve (the decision log already notes under-prediction from 55 yards and beyond). The sneak posts back the point that the play call, which play-by-play barely records, changes conversion odds.
+- Icing the kicker, onside kicks and the kickoff rule: the keyword search returned no relevant posts.
+
+### 8.7 "Malpractice": coaches blamed by name (owner's question, 2026-11-17)
+
+The owner asked whether the data backs up calls that are labelled malpractice, and which coach has cost his team the most wins, naming Todd Bowles. A note for the build session is in `docs/research/inbox/coach_cost_idea.md`. Posts found:
+
+Todd Bowles, 4th-and-goal from the 1 while up 14 (decision 6 in section 1; posts date it 2026-10-08):
+- @SharpFootball, 2026-10-08, https://x.com/SharpFootball/status/2108391871718273445 (1.9K likes): "I don't know how he does it, but Todd Bowles somehow gets every critical decision wrong it's amazing how predictable he is at picking the worst thing to go with, without fail"
+- @JJarvNFLbets, 2026-10-08, https://x.com/JJarvNFLbets/status/2108390024031133877: "One of the worst decisions by a coach that I’ve ever seen by Todd Bowles. You can go up 3 scores with 8 minutes left - fireable offense, win or lose!!!!"
+- @junior_miller, 2026-10-08, https://x.com/junior_miller/status/2108394048956350642 (121 replies): "We have seen coaching malpractice tonight. From Christian Parker's defense, to Bowles not kicking the FG to make it a three possession game (in the 4th quarter!) to Shotty going for two (at home against an 0-4 team). Is there a serious lack of good coaches these days in the" [truncated]
+- @FTFonFS1, 2026-10-09, https://x.com/FTFonFS1/status/2108652650375921851: "“Todd Bowles not kicking that field goal is quite simply one of the most indefensibly awful coaching decisions I’ve ever seen. I like Todd Bowles. It was shocking to see him make a mistake in that direction.” @getnickwright explains:"
+- Against that, the one analyst who posted numbers (@RyanPaganetti, decision 6) called it "an unneeded risk that slightly lowered the Bucs total odds to win the game". Using his figures (about 54.5% to win 99%, 45.5% to win 96%, against 98.5% for the kick), going was worth roughly 97.6% against 98.5%, a cost of about one point of win probability. That subtraction is mine, not his.
+
+Bowles on other days:
+- @SneakyJoeSports, 2025-11-17, https://x.com/SneakyJoeSports/status/1990496624779698683 (5.1K likes, 2.2M views): "Yesterday when Todd Bowles kneeled the ball with 38 seconds left I was reminded that Tampa's coach is a giant coward that opted not to call a timeout, in which a missed 48 yard DET FG would've given his team a chance to tie A PLAYOFF GAME with roughly 30 seconds to play."
+- @EMT_Ashlie, 2025-11-23, https://x.com/EMT_Ashlie/status/1992797169523491211 (12K likes, 2.3M views): "Bowles trotting out Baker who was clearly already injured to try a 70 yard bomb of a hail Mary might be the single dumbest decision he's mad as the Bucs HC, and that's saying something"
+- The other direction: @LedyardNFLDraft, 2025-09-15, https://x.com/LedyardNFLDraft/status/1967776426700181611: "Todd Bowles used to be one of the worst game management head coaches. Last year, lots of growth. Tonight, great management of the clock late in the game to make sure the team had timeouts and options in goal-to-go. Changed everything"
+
+"Malpractice" used elsewhere in this file: @EmmanuelAcho on Campbell (decision 1), where the public models said go or toss-up; @MatrixPrime_ "SOMEONE NEEDS TO BE FIRED" on the same play (2026-10-25, https://x.com/MatrixPrime_/status/2114495074105233652).
+
+Pre-snap penalties blamed on coaching: the keyword search (false start, delay of game, pre-snap penalties, with coach or discipline) returned no relevant posts at the like threshold used. The nearest material is the referee and flag posts in 8.4.
+
+Read: in the two cases where numbers exist, the label and the measured cost do not match. One "malpractice" call was the model's recommendation, and one "fireable offense" cost about a point. Whether that holds in general is exactly what a per-coach ledger would show.
+
+### 8.8 What this scan suggests for scope (my ranking, for the owner to accept or reject)
+
+Ordered by how much argument exists on X and how little new machinery each needs:
+
+1. **Coach cost ledger and the malpractice check** (8.7). Largest named-coach audience; extends plan section 3.6.
+2. **Referees and flags: real or noise?** (8.4). The single most-engaged post found (3.8M views). Needs penalties by game and crew, plus the bootstrap already built.
+3. **Two-point tries when down 8 or 14** (8.1). A direct, repeated public question ("why not just go for 2 every time?").
+4. **Defensive timeouts and clock use** (8.3). Same end-game model as burning question 1, seen from the other sideline.
+5. **Kneel, decline the score, intentional safety** (8.2). Huge views when they happen, but rare and mostly college; already on the "maybe later" list.
+6. **Field-goal range drift** (8.6). Not a question of its own; a check on the kick model.
+
+Not supported by what was found: overtime strategy, prevent defense, icing the kicker, onside kicks.
