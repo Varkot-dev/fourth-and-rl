@@ -1,0 +1,120 @@
+# M8 "Does the model know our defense is terrible?" Read by fourth_and_rl.team_strength.
+# Every constant that shapes a result is here. Seasons come from configs/splits.yaml.
+seed: 20261117
+
+samples:
+  # Short-yardage conversion: third and fourth downs, 1 to 3 yards to go, runs and passes.
+  conversion_downs: [3, 4]
+  conversion_min_ydstogo: 1
+  conversion_max_ydstogo: 3
+  # Drives: regulation only, and only drives that start with more than this many seconds
+  # left in the half (end-of-half drives are played differently: kneels, hurry-ups).
+  drive_min_half_seconds: 120
+  # Offense points on a drive by its result (from nflverse fixed_drive_result).
+  drive_points: {Touchdown: 7, Field goal: 3, Opp touchdown: -7, Safety: -2}
+
+bases:
+  # Residual bases (league curves the ratings are measured against). The base for season s
+  # is fitted on seasons strictly before s; seasons after the last development season use
+  # the base fitted on the development seasons. The first season has no prior season, so it
+  # is used only to fit the base of the second one, and ratings start in the second season.
+  drive_points_degree: 3        # polynomial in start yard line for expected points per drive
+
+filter:
+  # Kalman filter of offense and defense ratings (one filter per metric). State: 32 offense
+  # and 32 defense ratings. Each game gives one noisy observation per offense:
+  #   mean residual of that offense's plays (or drives) = offense rating + defense rating.
+  # Between weeks every rating may drift (variance q_frac * tau^2 per week). At the season
+  # break ratings are multiplied by rho and their variance moves back toward tau^2:
+  #   x <- rho * x,  P <- rho^2 P + (1 - rho^2) tau^2 I.
+  # tau (separately for offense and defense), rho and q_frac are tuned on development seasons
+  # by season-blocked validation over the grids below. tau = 0 means "no team effect".
+  grids:
+    # Widened once after a first development-season look put two drive constants on the
+    # edge of the original grid (recorded in docs/notes/m8_team_strength.md).
+    conversion:
+      tau_off: [0.0, 0.01, 0.02, 0.03, 0.04, 0.05]
+      tau_def: [0.0, 0.01, 0.02, 0.03]
+      rho: [0.5, 0.75, 0.9, 1.0]
+      q_frac: [0.0, 0.01, 0.03]
+    drive:
+      tau_off: [0.0, 0.2, 0.3, 0.4, 0.5]
+      tau_def: [0.0, 0.1, 0.15, 0.2, 0.3]
+      rho: [0.5, 0.75, 0.9]
+      q_frac: [0.0, 0.01, 0.03, 0.06, 0.1]
+  # Fixed (not tuned) prior SD of a league-wide level that absorbs season-to-season drift
+  # in scoring, so that it is not credited to teams (about the size of one season's change
+  # in league conversion rate or points per drive).
+  league_sd: {conversion: 0.02, drive: 0.3}
+  # Season blocks for validation (development seasons with ratings, 2011 is warm-up only).
+  validation_blocks: [[2012, 2014], [2015, 2017], [2018, 2020], [2021, 2023]]
+
+models:
+  # Fits of the effect models start here (2011 ratings start from nothing).
+  first_fit_season: 2012
+  drive_yardline_knots: [1, 10, 20, 35, 50, 65, 80, 99]
+  l2: 1.0e-4                    # tiny ridge on the logistic fits, for solver stability
+  # Variants compared on development seasons. The primary variant of each model is the one
+  # with the lowest season-blocked out-of-fold log loss; it is written to the evaluation
+  # plan before the test seasons are scored.
+  conversion_variants:
+    spread_only: []
+    conversion_ratings: [off_conv, def_conv]
+    drive_ratings: [off_drive, def_drive]
+    all_ratings: [off_conv, def_conv, off_drive, def_drive]
+  drive_variants:
+    spread_only: []
+    drive_ratings: [off_drive, def_drive]
+    all_ratings: [off_conv, def_conv, off_drive, def_drive]
+  # Diagnostic only (never a candidate): ratings without the spread, to show how much of a
+  # rating's apparent effect the spread already carries.
+  diagnostic_no_spread: [off_conv, def_conv, off_drive, def_drive]
+  # A richer variant must beat the simpler one by at least this much out-of-fold log loss
+  # (per play or drive) to be chosen; otherwise the simpler one is kept.
+  min_improvement: 0.0002
+
+evaluation:
+  n_boot: 2000                  # game-bootstrap resamples for log-loss differences
+  interval: 0.95
+
+decision:
+  # How ratings enter the one-step engine (see team_strength.TeamAwareEngine):
+  #   conversion: logit P(convert) moves by (team model - spread-only model) linear predictors;
+  #   giving the ball back: each next state where a team starts with the ball gets the change
+  #   in its next drive's touchdown and field-goal chances (team drive model minus
+  #   spread-only drive model), valued through the win-probability model.
+  # The drive adjustment is applied only where more than this many seconds are left in the
+  # half at the next state (the drive model is fitted on drives that start before the last
+  # two minutes, and a drive takes about this long).
+  drive_min_half_seconds: 360
+  # Seconds a drive takes, by outcome (measured on development drives by the script and
+  # stored in the fitted bundle; these are fallbacks for toy data).
+  drive_seconds_fallback: {td: 170, fg: 160, none: 120}
+  state_chunk_rows: 3000        # engine chunk size (the sensitivity array is large)
+  n_boot: 200                   # resamples of the effect models for "does the flip survive"
+  survive_share: 0.83           # a flip "survives" if this share of resamples flip the same way
+  chart:
+    yardlines: [1, 99]
+    distances: [1, 10]
+    situations:
+      - key: q1_tied
+        label: "First quarter, tied"
+        state: {game_seconds_remaining: 3300, score_differential: 0}
+      - key: q4_trail7
+        label: "Trailing by 7, 8:00 left"
+        state: {game_seconds_remaining: 480, score_differential: -7}
+    defaults: {posteam_timeouts_remaining: 3, defteam_timeouts_remaining: 3,
+               receive_2h_ko: 0, is_home: 0}
+  # Pairings: "top" and "bottom" are the average end-of-season ratings of the top five or
+  # bottom five units of each development season (2012 to 2023) by drive rating.
+  pairings:
+    - {key: strong_vs_weak, label: "Strong offense vs weak defense",
+       our_offense: top, our_defense: average, their_offense: average, their_defense: worst}
+    - {key: weak_vs_strong, label: "Weak offense vs strong defense",
+       our_offense: bottom, our_defense: average, their_offense: average, their_defense: best}
+    - {key: average, label: "Average vs average",
+       our_offense: average, our_defense: average, their_offense: average, their_defense: average}
+    - {key: great_offense_bad_defense, label: "Great offense, terrible defense, vs average",
+       our_offense: top, our_defense: worst, their_offense: average, their_defense: average}
+  lions_seasons: [2023, 2024, 2025]
+  lions_team: DET

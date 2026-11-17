@@ -131,6 +131,10 @@ def test_allowlist_has_no_stale_entries_and_every_entry_has_a_reason() -> None:
         # The neural win-probability model (version 1 inputs) and its script.
         "src/fourth_and_rl/wp_nn.py",
         "scripts/fit_wp_nn.py",
+        # M8 team ratings and question 3 (development file, logged test loads only).
+        "src/fourth_and_rl/team_strength.py",
+        "scripts/m8_team_strength.py",
+        "scripts/questions/q3_team_aware.py",
     ],
 )
 def test_fitting_code_never_reads_the_raw_table(rel: str) -> None:
