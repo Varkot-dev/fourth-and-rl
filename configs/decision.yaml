@@ -1,0 +1,69 @@
+# M2 one-step decision engine. Read by fourth_and_rl.decision.load_config.
+seed: 20261117   # nothing in M2 is random; recorded for consistency with the other configs
+
+# Which fitted models make up "the headline engine" (decision.load_engine).
+models:
+  wp_path: data/models/wp.joblib            # M1 headline: trees 2010-2021, Platt 2022-2023
+  components_fit_seasons: [2010, 2023]      # no 2024-2025 plays in the outcome models ...
+  kickoff_seasons: [2025]                   # ... except the kickoff rule (touchback to the 35)
+  components_cache: data/models/components_2010_2023.joblib
+
+engine:
+  # Seconds taken off the game clock by one play, rounded to whole seconds.
+  # With use_fitted: true they are read from components.seconds_per_play():
+  #   go_convert  <- mean_scrimmage_play (27.0 s, snap to next snap, all plays)
+  #   go_fail     <- incomplete pass, clock stopped (5.1 s: the play itself)
+  #   score       <- same as go_fail (the clock stops on a touchdown)
+  #   field_goal, punt, kickoff <- their own means (4.1, 9.5, 2.3 s)
+  # The numbers below are the fallback when a fitted value is missing (toy models in tests).
+  clock:
+    use_fitted: true
+    go_convert: 27
+    go_fail: 5
+    score: 5
+    field_goal: 4
+    punt: 9
+    kickoff: 2
+  tie_value: 0.5              # value of regulation ending tied (overtime is not modelled)
+  punt_min_yardline_100: 31   # punt_wp is null closer in: 71 punts in 16 seasons from there
+  # Speed: outcome distributions are thinned before scoring. Yard lines holding at least
+  # merge_mass of an action's probability stay exact; thinner neighbours are merged into
+  # one point at their mean. merge_mass: 0 scores every yard line (about 4 times slower).
+  compress:
+    merge_mass: 0.004
+    max_span: 8
+  predict_chunk_rows: 1000000
+  state_chunk_rows: 20000
+
+# The decision chart: one panel per situation. Keys are wp.state_frame arguments.
+chart:
+  yardlines: [1, 99]
+  distances: [1, 15]
+  situations:
+    - key: reference
+      label: "First quarter, tied"
+      detail: "10:00 left in Q1, pick'em, 3 timeouts each"
+      state: {game_seconds_remaining: 3300, score_differential: 0}
+    - key: trail7_q4
+      label: "Trailing by 7, fourth quarter"
+      detail: "8:00 left in Q4"
+      state: {game_seconds_remaining: 480, score_differential: -7}
+    - key: lead4_q4
+      label: "Leading by 4, 4:00 left"
+      detail: "4:00 left in Q4"
+      state: {game_seconds_remaining: 240, score_differential: 4}
+    - key: trail3_2min
+      label: "Trailing by 3, 2:00 left"
+      detail: "2:00 left in Q4"
+      state: {game_seconds_remaining: 120, score_differential: -3}
+  defaults: {posteam_spread: 0.0, posteam_timeouts_remaining: 3,
+             defteam_timeouts_remaining: 3, receive_2h_ko: 0, is_home: 0}
+
+# Comparison with nfl4th (results/reference/, produced by scripts/r/nfl4th_reference.R).
+compare:
+  reference_real: results/reference/nfl4th_real_fourth_downs.csv
+  reference_scenarios: results/reference/nfl4th_scenarios.csv
+  go_boost_bins: [0, 0.5, 1, 2, 4, 8, 100]   # |nfl4th go_boost| in win-probability points
+  decisive_boost: 2.0                        # "nfl4th is decisive" means |go_boost| >= this
+  n_showcase: 10                             # plays shown side by side
+  showcase_min_qtr: 4                        # ... picked from the fourth quarter on
