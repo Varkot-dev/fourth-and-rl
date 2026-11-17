@@ -4,9 +4,15 @@
 # the fitted bundle so later, random steps (bootstrap refits) can reuse it.
 seed: 20261117
 
-# Seasons held out by scripts/fit_components.py to check every model out of sample.
-# The saved bundle is then refitted on all seasons.
-holdout_seasons: [2024, 2025]
+# Which seasons may be fitted on is NOT decided here: configs/splits.yaml is the single
+# source. scripts/fit_components.py fits the development bundle (components_dev.joblib) on
+# the development seasons, scores it once on the test seasons, and separately fits the
+# all-seasons bundle (components_all.joblib) for forward-looking use only.
+
+# Model selection inside the development seasons (no test season is involved): each
+# variant is fitted on the seasons before a block and scored on the block.
+selection:
+  validation_blocks: [[2020, 2021], [2022, 2023]]
 
 # Count-based distributions (yards gained, punts, turnovers, clock, extra points) use
 # only seasons from this one on, so they describe the current game. The logistic models
@@ -28,7 +34,10 @@ field_goal:
   miss_spot_yards: 8       # after a miss the opponent takes over 8 yards behind the line of scrimmage
   miss_min_own_yardline: 20  # ... but never inside their own 20
   season_trend: true       # linear trend in the log-odds, evaluated at the last season fitted
-  max_kick_distance: 68    # longest made kick in 2010-2025; P(make) is 0 beyond it
+  # The range limit is NOT a constant here: FieldGoalModel.fit sets it to the longest made
+  # kick in the rows it is given. Beyond that distance the fitted curve fades to 0 over
+  # tail_yards yards (0 = hard cap at the longest made kick).
+  tail_yards: 3
 
 punt:
   bandwidth: 2.0           # Gaussian kernel width in yards of field position
@@ -40,7 +49,16 @@ play:
   min_turnover_n: 50
 
 kickoff:
-  seasons: [2025]          # touchback spot moved to the 30 in 2024 and the 35 in 2025
+  # The kickoff start table is treated as a rule constant: one table per rule era, fitted
+  # on that era's own kickoffs. The 2024 and 2025 tables are the one logged exception to
+  # "nothing is fitted on test seasons" (no kickoff under those rules exists earlier).
+  # A real play is evaluated with the table of its season; hypothetical situations use the
+  # latest era. touchback_yardline_100 is the receiving team's spot after a touchback, from
+  # the rule book, used only by the fixed-spot sensitivity check.
+  rule_eras:
+    - {name: touchback_at_25, seasons: [2018, 2023], touchback_yardline_100: 75}
+    - {name: dynamic_kickoff_2024, seasons: [2024, 2024], touchback_yardline_100: 70}
+    - {name: dynamic_kickoff_2025, seasons: [2025, 2025], touchback_yardline_100: 65}
 
 drives:
   recent_first_season: 2021

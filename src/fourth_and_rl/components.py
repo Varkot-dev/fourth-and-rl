@@ -23,6 +23,8 @@ milestone can refit all of them on bootstrap samples of games.
 from __future__ import annotations
 
 import copy
+import hashlib
+import json
 from pathlib import Path
 from typing import Any
 
@@ -33,9 +35,22 @@ import yaml
 from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import SplineTransformer
 
+from fourth_and_rl import splits
 from fourth_and_rl.paths import CONFIGS, DATA
 
-MODEL_PATH = DATA / "models" / "components.joblib"
+# Two bundles, two names (docs/research/leakage_audit.md, barrier 3).
+#   DEV_MODEL_PATH  fitted on development seasons only; everything scored on test seasons
+#                   and everything the solved game is built from uses this one.
+#   ALL_MODEL_PATH  fitted on every season through the last test season, with a logged
+#                   exception; for forward-looking artifacts only (a future app).
+DEV_MODEL_PATH = DATA / "models" / "components_dev.joblib"
+ALL_MODEL_PATH = DATA / "models" / "components_all.joblib"
+MODEL_PATH = DEV_MODEL_PATH  # kept for compatibility: the default bundle is the dev bundle
+
+# The one standing exception to "nothing fitted on test seasons": kickoff start tables are
+# fitted on each rule era's own kickoffs, because no kickoff under a new rule exists before
+# the season the rule starts.
+KICKOFF_RULE_REASON = "rule constant; no data under this rule exists before the season"
 
 # Yards gained on one play are stored on a fixed grid from G_MIN to G_MAX.
 # G_MAX = 100 means "longer than any gain we could observe": a touchdown from anywhere.
@@ -108,6 +123,25 @@ def _num(df: pl.DataFrame, name: str, default: float = 0.0) -> np.ndarray:
 
 def _flag(df: pl.DataFrame, expr: pl.Expr) -> np.ndarray:
     return df.select(expr.fill_null(False).alias("x"))["x"].to_numpy()
+
+
+def _guard(
+    plays: pl.DataFrame, what: str, allow_test_seasons: bool = False, reason: str | None = None
+) -> None:
+    """Refuse test-season and holdout rows in a fit (`splits.assert_no_test_seasons`).
+
+    Every function in this module that estimates something from plays calls this first.
+    A frame without a `season` column cannot be checked and is let through; such a frame
+    also gets no fit stamp, so nothing fitted on it can be scored as out-of-sample.
+    """
+    if "season" in plays.columns and plays.height:
+        splits.assert_no_test_seasons(plays, what, allow_test_seasons, reason)
+
+
+def config_hash(config: dict) -> str:
+    """Short, stable fingerprint of a config dictionary (for stamps and cache keys)."""
+    text = json.dumps(config, sort_keys=True, default=str)
+    return hashlib.sha1(text.encode()).hexdigest()[:16]
 
 
 def _season_filter(plays: pl.DataFrame, first_season: int | None) -> pl.DataFrame:
@@ -421,7 +455,10 @@ class GoModel:
         self.feature_names_ += [f"yardline_spline_{i}" for i in range(basis.shape[1])]
         return np.column_stack([*cols, basis])
 
-    def fit(self, plays: pl.DataFrame) -> GoModel:
+    def fit(
+        self, plays: pl.DataFrame, *, allow_test_seasons: bool = False, reason: str | None = None
+    ) -> GoModel:
+        _guard(plays, "conversion (go) model", allow_test_seasons, reason)
         s = _scrimmage(plays, 3, 4)
         fourth = (s["down"] == 4).astype(float)
         converted = (s["first_down"] | s["off_td"]) & ~s["turnover"]
@@ -547,8 +584,16 @@ class FieldGoalModel:
     With x = (kick distance - 40) / 10 and t = (season - 2018) / 10:
         log-odds = a + b1*x + b2*x^2 + b3*x^3 + b4*t
     evaluated at the last season fitted. The cubic lets the curve fall off a cliff past
-    55 yards, as the data does. Blocked kicks count as misses. P(make) is 0 beyond
-    `max_kick_distance`.
+    55 yards, as the data does. Blocked kicks count as misses.
+
+    The range limit is learned from the fitted rows, never from a config constant:
+    `max_kick_distance` is the longest MADE kick among the rows `fit` received. Up to that
+    distance P(make) is the fitted curve. Beyond it the fitted curve continues but is
+    multiplied by a straight-line taper that reaches 0 at `max_kick_distance + tail_yards
+    + 1`, so the probability fades out over `tail_yards` yards instead of dropping from
+    about 0.2 to 0 in one yard. `tail_yards = 0` is the old hard cap. The constructor's
+    `max_kick_distance`, if given, is only an upper bound: it can lower the limit, never
+    raise it above the longest made kick in the fitted data.
     """
 
     def __init__(
@@ -557,15 +602,18 @@ class FieldGoalModel:
         miss_spot_yards: int = 8,
         miss_min_own_yardline: int = 20,
         season_trend: bool = True,
-        max_kick_distance: int = 68,
+        max_kick_distance: int | None = None,
         first_season: int | None = None,
+        tail_yards: int = 3,
     ) -> None:
         self.snap_to_kick_yards = snap_to_kick_yards
         self.miss_spot_yards = miss_spot_yards
         self.miss_min_own_yardline = miss_min_own_yardline
         self.season_trend = season_trend
-        self.max_kick_distance = max_kick_distance
+        self.max_kick_bound = max_kick_distance
+        self.max_kick_distance = 0  # set by fit: the longest made kick in the fitted rows
         self.first_season = first_season
+        self.tail_yards = int(tail_yards)
 
     def _features(self, distance: np.ndarray, t: np.ndarray) -> np.ndarray:
         x = (np.asarray(distance, dtype=float) - 40.0) / 10.0
@@ -577,7 +625,21 @@ class FieldGoalModel:
             self.feature_names_.append("season_per_decade")
         return np.column_stack(cols)
 
-    def fit(self, plays: pl.DataFrame) -> FieldGoalModel:
+    def _taper(self, distance: np.ndarray) -> np.ndarray:
+        """1 up to the longest made kick, then a straight line down to 0 over the tail."""
+        tail = getattr(self, "tail_yards", 0)  # bundles saved before the tail: hard cap
+        beyond = np.asarray(distance, dtype=float) - self.max_kick_distance
+        return np.clip(1.0 - beyond / (tail + 1.0), 0.0, 1.0)
+
+    @property
+    def longest_possible_kick(self) -> int:
+        """The longest kick distance with P(make) above 0."""
+        return int(self.max_kick_distance + getattr(self, "tail_yards", 0))
+
+    def fit(
+        self, plays: pl.DataFrame, *, allow_test_seasons: bool = False, reason: str | None = None
+    ) -> FieldGoalModel:
+        _guard(plays, "field goal model", allow_test_seasons, reason)
         df = _season_filter(plays, self.first_season).filter(
             (pl.col("play_type") == "field_goal")
             & pl.col("yardline_100").is_between(1, 99)
@@ -590,6 +652,10 @@ class FieldGoalModel:
         made = (df["field_goal_result"] == "made").to_numpy()
         self.n_ = int(made.size)
         self.longest_made_ = int(distance[made].max()) if made.any() else 0
+        bound = getattr(self, "max_kick_bound", None)
+        self.max_kick_distance = (
+            self.longest_made_ if bound is None else min(self.longest_made_, int(bound))
+        )
         self.reference_season_ = float(season.max())
         model = _fit_logit(self._features(distance, _season_t(season)), made)
         self.intercept_ = float(model.intercept_[0])
@@ -598,7 +664,7 @@ class FieldGoalModel:
         grid = np.arange(100) + self.snap_to_kick_yards  # index = yardline_100
         t_ref = np.full(grid.size, _season_t(self.reference_season_))
         raw = model.predict_proba(self._features(grid, t_ref))[:, 1]
-        raw[grid > self.max_kick_distance] = 0.0
+        raw = raw * self._taper(grid)
         fixed = np.minimum.accumulate(raw)  # non-increasing in distance
         self.monotone_fix_ = float(np.abs(fixed - raw).max())
         self.table_ = fixed
@@ -615,7 +681,7 @@ class FieldGoalModel:
         distance = yl + self.snap_to_kick_yards
         x = self._features(distance, np.full(np.shape(distance), _season_t(float(season))))
         logit = self.intercept_ + x @ np.array([self.coef_[k] for k in self.feature_names_])
-        p = np.where(distance > self.max_kick_distance, 0.0, 1.0 / (1.0 + np.exp(-logit)))
+        p = self._taper(distance) / (1.0 + np.exp(-logit))
         return _as_result(p.reshape(np.shape(yl)), yardline_100)
 
     def miss_yardline(self, yardline_100: int) -> int:
@@ -656,7 +722,10 @@ class PuntModel:
         self.landing_below = landing_below
         self.first_season = first_season
 
-    def fit(self, plays: pl.DataFrame) -> PuntModel:
+    def fit(
+        self, plays: pl.DataFrame, *, allow_test_seasons: bool = False, reason: str | None = None
+    ) -> PuntModel:
+        _guard(plays, "punt model", allow_test_seasons, reason)
         df = add_next_state(_season_filter(plays, self.first_season)).filter(
             (pl.col("play_type") == "punt") & pl.col("yardline_100").is_between(1, 99)
         )
@@ -772,7 +841,10 @@ class PlayModel:
         self.min_turnover_n = min_turnover_n
         self.first_season = first_season
 
-    def fit(self, plays: pl.DataFrame) -> PlayModel:
+    def fit(
+        self, plays: pl.DataFrame, *, allow_test_seasons: bool = False, reason: str | None = None
+    ) -> PlayModel:
+        _guard(plays, "generic play model", allow_test_seasons, reason)
         s = _scrimmage(_season_filter(plays, self.first_season), 1, 3)
         self.n_ = int(s["down"].size)
         self.context_ = _ContextTable(3, self.min_cell_n, self.min_turnover_n).fit(
@@ -803,18 +875,64 @@ class PlayModel:
 # --------------------------------------------------------------------------------------
 
 
-def fit_kickoff(plays: pl.DataFrame, seasons: list[int] | None) -> tuple[np.ndarray, dict]:
+def kickoff_rule_eras(config: dict) -> list[dict[str, Any]]:
+    """The kickoff rule eras of a components config, oldest first.
+
+    Each era is {"name", "first", "last", "touchback_yardline_100"}. A config written
+    before the eras existed (`kickoff: {seasons: [...]}`) becomes one era over those
+    seasons, so older saved bundles and configs keep working.
+    """
+    k = config.get("kickoff", {}) or {}
+    eras = []
+    for e in k.get("rule_eras", []):
+        first, last = (int(x) for x in e["seasons"])
+        eras.append({
+            "name": str(e["name"]), "first": first, "last": last,
+            "touchback_yardline_100": e.get("touchback_yardline_100"),
+        })  # fmt: skip
+    if not eras and k.get("seasons"):
+        seasons = [int(x) for x in k["seasons"]]
+        eras.append({"name": "configured_seasons", "first": min(seasons), "last": max(seasons),
+                     "touchback_yardline_100": None})  # fmt: skip
+    return sorted(eras, key=lambda e: e["first"])
+
+
+def fit_kickoff(
+    plays: pl.DataFrame,
+    seasons: list[int] | None,
+    *,
+    allow_test_seasons: bool = False,
+    reason: str | None = None,
+) -> tuple[np.ndarray, dict]:
     """Distribution of the receiving team's yardline_100 at its first snap after a
     kickoff (index 0 = kick returned for a touchdown), given that the receiving team
-    ends up with the ball. If none of `seasons` is in the data, the last season is used.
+    ends up with the ball.
+
+    `seasons` lists the seasons to use; None means every season in `plays`. There is no
+    fallback: if none of the listed seasons has a kickoff in `plays`, or no kickoff ends
+    with the receiving team in possession, a ValueError is raised. Listed seasons that are
+    absent while others are present are recorded under `missing_seasons`. The rows actually
+    used pass through the test-season guard like every other fit.
     """
     df = add_next_state(plays).filter(pl.col("play_type") == "kickoff")
-    if "season" in df.columns and df.height:
-        available = set(df["season"].unique().to_list())
-        use = [s for s in (seasons or []) if s in available] or [max(available)]
-        df = df.filter(pl.col("season").is_in(use))
+    missing: list[int] = []
+    if "season" in df.columns:
+        available = {int(s) for s in df["season"].unique().to_list()}
+        if seasons is None:
+            use = sorted(available)
+        else:
+            wanted = sorted({int(s) for s in seasons})
+            use = [s for s in wanted if s in available]
+            missing = [s for s in wanted if s not in available]
+            if not use:
+                raise ValueError(
+                    f"fit_kickoff: no kickoffs from the requested seasons {wanted} in the data "
+                    f"(seasons with kickoffs: {sorted(available)}). There is no fallback season."
+                )
+            df = df.filter(pl.col("season").is_in(use))
     else:
         use = []
+    _guard(df, "kickoff start table", allow_test_seasons, reason)
     # On a kickoff row the posteam is the receiving team.
     return_td = _flag(df, _OFF_TD)
     scored = _num(df, "touchdown") == 1
@@ -826,19 +944,34 @@ def fit_kickoff(plays: pl.DataFrame, seasons: list[int] | None) -> tuple[np.ndar
     start = _num(df, "next_yardline_100")[received].astype(int)
     hist = np.bincount(start, minlength=100).astype(float)[:100]
     hist[0] = return_td.sum()
+    if hist.sum() == 0:
+        raise ValueError("fit_kickoff: no kickoff with a known starting spot to fit on")
     info = {
         "seasons": [int(s) for s in use],
+        "missing_seasons": missing,
         "n": int(df.height),
         "n_used": int(hist.sum()),
-        "kicking_team_recovers_or_scores": float(kicking_team.mean()) if df.height else 0.0,
-        "return_touchdown": float(return_td.mean()) if df.height else 0.0,
+        "kicking_team_recovers_or_scores": float(kicking_team.mean()),
+        "return_touchdown": float(return_td.mean()),
     }
-    if hist.sum() == 0:
-        hist[75] = 1.0
     return hist / hist.sum(), info
 
 
-def fit_seconds(plays: pl.DataFrame, first_season: int | None) -> dict[str, Any]:
+def constant_kickoff(touchback_yardline_100: int) -> np.ndarray:
+    """A kickoff table with every drive starting at the touchback spot (no returns, no
+    return touchdowns). Used only as a sensitivity check against the empirical tables."""
+    out = np.zeros(100)
+    out[int(touchback_yardline_100)] = 1.0
+    return out
+
+
+def fit_seconds(
+    plays: pl.DataFrame,
+    first_season: int | None,
+    *,
+    allow_test_seasons: bool = False,
+    reason: str | None = None,
+) -> dict[str, Any]:
     """Mean game-clock seconds from one snap to the next, by play type and by whether
     the clock is likely to keep running after the play.
 
@@ -846,6 +979,7 @@ def fit_seconds(plays: pl.DataFrame, first_season: int | None) -> dict[str, Any]
     turned the ball over. "Two-minute" means the snap came with 120 seconds or less left
     in the half. Timeouts are not removed, so "clock runs" means are a little low.
     """
+    _guard(plays, "seconds-per-play table", allow_test_seasons, reason)
     df = add_next_state(_season_filter(plays, first_season)).filter(
         pl.col("play_type").is_in(["run", "pass", "punt", "field_goal", "kickoff"])
         & pl.col("game_seconds_remaining").is_not_null()
@@ -902,8 +1036,15 @@ def fit_seconds(plays: pl.DataFrame, first_season: int | None) -> dict[str, Any]
     }
 
 
-def fit_conversions(plays: pl.DataFrame, first_season: int | None) -> dict[str, Any]:
+def fit_conversions(
+    plays: pl.DataFrame,
+    first_season: int | None,
+    *,
+    allow_test_seasons: bool = False,
+    reason: str | None = None,
+) -> dict[str, Any]:
     """Extra-point and two-point success rates."""
+    _guard(plays, "extra-point and two-point rates", allow_test_seasons, reason)
     df = _season_filter(plays, first_season)
     xp = df.filter(
         (pl.col("play_type") == "extra_point") & pl.col("extra_point_result").is_not_null()
@@ -953,6 +1094,9 @@ def drive_targets(plays: pl.DataFrame, first_season: int | None = None) -> dict[
     the drive. `points` are the offense's points on the drive (6 per touchdown plus the
     actual extra point or two-point result, 3 per field goal). `opp_touchdown` (a
     turnover returned for a score) and `safety` are kept as their own outcomes.
+
+    This is a description of the rows it is given, not a fit, so it has no season guard:
+    the caller decides which seasons to describe and labels the result.
     """
     df = _season_filter(plays, first_season).filter(pl.col("fixed_drive").is_not_null())
     off_td = _OFF_TD.fill_null(False)
@@ -1021,45 +1165,179 @@ class ComponentModels:
     """All play-outcome models behind one interface.
 
     Usage:
-        models = ComponentModels().fit(plays, seed=20261117)
-        models.save()
-        models = ComponentModels.load()
+        models = ComponentModels().fit(dev_plays, seed=20261117)
+        models.save()                      # development fit -> components_dev.joblib
+        models = ComponentModels.load()    # the development bundle
+
+    Leakage barriers. `fit` and every sub-model fit refuse test-season rows unless called
+    with `allow_test_seasons=True` and a written `reason` (logged). After a fit, `stamp`
+    records the seasons, games, rows and config the bundle was fitted on; `save` keeps it
+    and `splits.assert_can_score(models.stamp, rows, what)` refuses to score seasons the
+    bundle has seen. A bundle saved before stamps existed loads with `stamp = None`.
     """
+
+    stamp: dict | None = None  # class default, so bundles saved before stamps still load
 
     def __init__(self, config: dict | None = None) -> None:
         self.config = copy.deepcopy(config) if config is not None else load_config()
 
-    def fit(self, plays: pl.DataFrame, seed: int | None = None) -> ComponentModels:
+    def fit(
+        self,
+        plays: pl.DataFrame,
+        seed: int | None = None,
+        *,
+        allow_test_seasons: bool = False,
+        reason: str | None = None,
+    ) -> ComponentModels:
         """Fit every component on `plays` (the state table, or any subset of games).
 
         `seed` is recorded on the bundle. Nothing in the fit is random, so two fits on
-        the same plays give identical models whatever the seed.
+        the same plays give identical models whatever the seed. Test-season rows raise
+        `splits.LeakageError` unless `allow_test_seasons=True` comes with a `reason`.
         """
+        _guard(plays, "component models", allow_test_seasons, reason)
+        ok = {"allow_test_seasons": allow_test_seasons, "reason": reason}
         cfg = self.config
         era = cfg.get("era_first_season")
         plays = add_next_state(plays)
         self.seed = cfg.get("seed") if seed is None else seed
-        self.go = GoModel(era_first_season=era, **cfg.get("go", {})).fit(plays)
-        self.field_goal = FieldGoalModel(**cfg.get("field_goal", {})).fit(plays)
-        self.punt = PuntModel(first_season=era, **cfg.get("punt", {})).fit(plays)
-        self.play = PlayModel(first_season=era, **cfg.get("play", {})).fit(plays)
-        self.kickoff, self.kickoff_info = fit_kickoff(plays, cfg.get("kickoff", {}).get("seasons"))
-        self.seconds = fit_seconds(plays, era)
-        self.conversions = fit_conversions(plays, era)
+        self.go = GoModel(era_first_season=era, **cfg.get("go", {})).fit(plays, **ok)
+        self.field_goal = FieldGoalModel(**cfg.get("field_goal", {})).fit(plays, **ok)
+        self.punt = PuntModel(first_season=era, **cfg.get("punt", {})).fit(plays, **ok)
+        self.play = PlayModel(first_season=era, **cfg.get("play", {})).fit(plays, **ok)
+        self.seconds = fit_seconds(plays, era, **ok)
+        self.conversions = fit_conversions(plays, era, **ok)
         if "season" in plays.columns:
             self.seasons = [int(plays["season"].min()), int(plays["season"].max())]
         else:
             self.seasons = []
         self.n_plays = plays.height
+        self.stamp = None
+        if {"season", "game_id"} <= set(plays.columns):
+            self.stamp = splits.fit_stamp(plays, "component models")
+            self.stamp["config_hash"] = config_hash(cfg)
+            self.stamp["test_seasons_allowed"] = bool(allow_test_seasons)
+            self.stamp["reason"] = reason
+            self.stamp["kickoff_rule_tables"] = {}
+        self.kickoff_tables: dict[str, np.ndarray] = {}
+        self.kickoff_era_info: dict[str, dict] = {}
+        self._fit_kickoff_tables(plays, None, allow_test_seasons, reason)
+        if not self.kickoff_tables:
+            raise ValueError(
+                "no kickoff rule era of the config has kickoffs in the data: "
+                f"{[(e['name'], e['first'], e['last']) for e in kickoff_rule_eras(cfg)]}"
+            )
         return self
+
+    # ---- kickoff rule tables ----
+    def _fit_kickoff_tables(
+        self,
+        plays: pl.DataFrame,
+        seasons: list[int] | None,
+        allow_test_seasons: bool,
+        reason: str | None,
+    ) -> list[str]:
+        """Fit one kickoff table per rule era that has kickoffs in `plays` (restricted to
+        `seasons` if given), and make the latest era fitted so far the default table."""
+        eras = kickoff_rule_eras(self.config)
+        fitted: list[str] = []
+        if "season" not in plays.columns or not eras:
+            # No seasons to tell the eras apart: one table from every kickoff given.
+            table, info = fit_kickoff(
+                plays, None, allow_test_seasons=allow_test_seasons, reason=reason
+            )
+            self.kickoff_tables["all_kickoffs_given"] = table
+            self.kickoff_era_info["all_kickoffs_given"] = {**info, "first": None, "last": None}
+            fitted.append("all_kickoffs_given")
+        else:
+            kick = plays.filter(pl.col("play_type") == "kickoff")
+            present = {int(s) for s in kick["season"].unique().to_list()}
+            if seasons is not None:
+                present &= {int(s) for s in seasons}
+            for era in eras:
+                use = sorted(s for s in present if era["first"] <= s <= era["last"])
+                if not use:
+                    continue
+                table, info = fit_kickoff(
+                    plays, use, allow_test_seasons=allow_test_seasons, reason=reason
+                )
+                self.kickoff_tables[era["name"]] = table
+                self.kickoff_era_info[era["name"]] = {**info, **era}
+                fitted.append(era["name"])
+                if self.stamp is not None:
+                    self.stamp.setdefault("kickoff_rule_tables", {})[era["name"]] = {
+                        "seasons": use,
+                        "n_used": info["n_used"],
+                        "uses_test_seasons": bool(set(use) & set(splits.test_seasons())),
+                        "reason": reason,
+                    }
+        if self.kickoff_tables:
+            latest = self._latest_kickoff_era()
+            self.kickoff = self.kickoff_tables[latest]
+            self.kickoff_info = {**self.kickoff_era_info[latest], "era": latest}
+        return fitted
+
+    def _latest_kickoff_era(self) -> str:
+        info = self.kickoff_era_info
+        return max(info, key=lambda name: (info[name].get("last") or 0))
+
+    def add_kickoff_rule_tables(
+        self,
+        plays: pl.DataFrame,
+        seasons: list[int] | None = None,
+        *,
+        allow_test_seasons: bool = False,
+        reason: str | None = None,
+    ) -> list[str]:
+        """Add (or replace) the kickoff tables of the rule eras that have kickoffs in
+        `plays`, each fitted on that era's own kickoffs. Returns the era names fitted.
+
+        This is how a development bundle gets the tables of the 2024 and 2025 kickoff
+        rules: the caller passes the test-season plays with `allow_test_seasons=True` and
+        `reason=KICKOFF_RULE_REASON`, and the exception is logged and written on the stamp
+        (`stamp["kickoff_rule_tables"]`). Nothing else in the bundle is touched. The
+        default table (`kickoff_start()` without a season) becomes the latest era's.
+        """
+        if not hasattr(self, "kickoff_tables"):  # a bundle saved before the eras existed
+            self.kickoff_tables, self.kickoff_era_info = {}, {}
+        return self._fit_kickoff_tables(add_next_state(plays), seasons, allow_test_seasons, reason)
+
+    def kickoff_era(self, season: int | None = None) -> str | None:
+        """Name of the kickoff rule era used for a play of `season` (None = the latest
+        era in the bundle). A season before the first era uses the first era's table and a
+        season after the last uses the last one. A season whose own era is configured but
+        was never fitted into this bundle raises KeyError: no silent substitute."""
+        info = getattr(self, "kickoff_era_info", None)
+        if not info:
+            return None
+        if season is None:
+            return self._latest_kickoff_era()
+        season = int(season)
+        for era in kickoff_rule_eras(self.config):
+            if era["first"] <= season <= era["last"]:
+                if era["name"] not in info:
+                    raise KeyError(
+                        f"this bundle has no kickoff table for the rule era of season {season} "
+                        f"({era['name']}); add it with add_kickoff_rule_tables"
+                    )
+                return era["name"]
+        dated = {k: v for k, v in info.items() if v.get("first") is not None}
+        if not dated:
+            return self._latest_kickoff_era()
+        first = min(dated, key=lambda name: dated[name]["first"])
+        return first if season < dated[first]["first"] else self._latest_kickoff_era()
 
     # ---- fourth down: go ----
     def p_convert(
-        self, yardline_100: int | np.ndarray, ydstogo: int | np.ndarray
+        self,
+        yardline_100: int | np.ndarray,
+        ydstogo: int | np.ndarray,
+        spread: float | np.ndarray = 0.0,
     ) -> float | np.ndarray:
         """P(first down or touchdown) when going for it on fourth down. Non-increasing
-        in `ydstogo`. Scalars give a float, arrays give an array."""
-        return self.go.p_convert(yardline_100, ydstogo)
+        in `ydstogo`. `spread` is the points the offense was favored by before the game
+        (0, the default, is an evenly matched game). Scalars give a float, arrays an array."""
+        return self.go.p_convert(yardline_100, ydstogo, spread=spread)
 
     def go_outcomes(self, yardline_100: int, ydstogo: int) -> dict[str, Any]:
         """Outcome distribution of going for it on fourth down.
@@ -1126,10 +1404,17 @@ class ComponentModels:
         return self.play.outcomes(down, ydstogo, yardline_100)
 
     # ---- everything else ----
-    def kickoff_start(self) -> np.ndarray:
+    def kickoff_start(self, season: int | None = None) -> np.ndarray:
         """Length-100 distribution of the receiving team's yardline_100 at its first
-        snap after a kickoff. Index 0 = kickoff returned for a touchdown. Sums to 1."""
-        return self.kickoff.copy()
+        snap after a kickoff. Index 0 = kickoff returned for a touchdown. Sums to 1.
+
+        `season` picks the table of that season's kickoff rule (see `kickoff_era`).
+        Without it the latest rule in the bundle is used, which is what hypothetical
+        situations (charts, the solved game) want."""
+        tables = getattr(self, "kickoff_tables", None)
+        if season is None or not tables:
+            return self.kickoff.copy()
+        return tables[self.kickoff_era(season)].copy()
 
     def seconds_per_play(self) -> dict[str, Any]:
         """Mean seconds between snaps (see `fit_seconds`)."""
@@ -1141,15 +1426,89 @@ class ComponentModels:
     def p_two_point(self) -> float:
         return float(self.conversions["p_two_point"])
 
+    def fitted_on_test_seasons(self) -> bool:
+        """True if the main fit (everything but the kickoff rule tables) saw a test season.
+        A bundle without a stamp is treated as if it had."""
+        if self.stamp is None:
+            return True
+        return bool(set(self.stamp["seasons"]) & set(splits.test_seasons()))
+
     def save(self, path: Path | str | None = None) -> Path:
-        path = Path(path) if path is not None else MODEL_PATH
+        """Save the bundle with its stamp. Without a path, a development fit goes to
+        `DEV_MODEL_PATH` and a fit that saw test seasons to `ALL_MODEL_PATH`. Writing a
+        bundle that saw test seasons (or has no stamp) under the development name raises."""
+        if path is None:
+            path = ALL_MODEL_PATH if self.fitted_on_test_seasons() else DEV_MODEL_PATH
+        path = Path(path)
+        if path.resolve() == DEV_MODEL_PATH.resolve() and self.fitted_on_test_seasons():
+            raise splits.LeakageError(
+                f"refusing to save a bundle with stamp {self.stamp} as the development bundle"
+            )
         path.parent.mkdir(parents=True, exist_ok=True)
         joblib.dump(self, path)
         return path
 
     @classmethod
     def load(cls, path: Path | str | None = None) -> ComponentModels:
-        obj = joblib.load(Path(path) if path is not None else MODEL_PATH)
+        """Load a saved bundle. Without a path this is the DEVELOPMENT bundle
+        (`DEV_MODEL_PATH`), and it is checked to hold no test-season fit. The all-seasons
+        bundle is never a default: use `load_all(purpose)` or pass its path."""
+        target = Path(path) if path is not None else DEV_MODEL_PATH
+        if not target.exists():
+            raise FileNotFoundError(
+                f"no component bundle at {target}. Run: python scripts/fit_components.py"
+            )
+        obj = joblib.load(target)
         if not isinstance(obj, cls):
-            raise TypeError(f"{path} does not hold a ComponentModels bundle")
+            raise TypeError(f"{target} does not hold a ComponentModels bundle")
+        if target.resolve() == DEV_MODEL_PATH.resolve() and obj.fitted_on_test_seasons():
+            raise splits.LeakageError(
+                f"{target} should be the development bundle but its stamp is {obj.stamp}"
+            )
         return obj
+
+    @classmethod
+    def load_all(cls, purpose: str) -> ComponentModels:
+        """Load the all-seasons bundle, for forward-looking artifacts only. `purpose`
+        must say what it is used for; nothing it produces may be reported on the test
+        seasons (`splits.assert_can_score` on its stamp refuses them)."""
+        if not purpose or len(purpose.strip()) < 15:
+            raise splits.LeakageError("load_all needs a written purpose (15+ characters)")
+        obj = cls.load(ALL_MODEL_PATH)
+        obj.loaded_for = purpose
+        return obj
+
+
+def fit_dev_bundle(
+    config: dict | None = None,
+    dev_plays: pl.DataFrame | None = None,
+    test_plays: pl.DataFrame | None = None,
+    seed: int | None = None,
+) -> ComponentModels:
+    """The development bundle: every model fitted on development seasons only, plus the
+    kickoff tables of the test seasons' rule eras as the one logged exception
+    (`KICKOFF_RULE_REASON`). Loads the plays through `splits` when they are not given."""
+    dev = splits.load_dev_plays() if dev_plays is None else dev_plays
+    models = ComponentModels(config).fit(dev, seed=seed)
+    if test_plays is None:
+        test_plays = splits.load_test_plays(
+            "kickoff start tables of the 2024 and 2025 rules (kickoff rows only; rule constant)"
+        )
+    models.add_kickoff_rule_tables(
+        test_plays, allow_test_seasons=True, reason=KICKOFF_RULE_REASON
+    )
+    return models
+
+
+def dev_bundle_is_current(models: ComponentModels, config: dict | None = None) -> bool:
+    """True if `models` is a stamped development fit of the given (default: current)
+    components config that also holds a kickoff table for every configured rule era."""
+    cfg = load_config() if config is None else config
+    if models.stamp is None or models.fitted_on_test_seasons():
+        return False
+    if models.stamp.get("config_hash") != config_hash(cfg):
+        return False
+    if set(models.stamp["seasons"]) != set(splits.dev_seasons()):
+        return False
+    have = set(getattr(models, "kickoff_tables", {}))
+    return {e["name"] for e in kickoff_rule_eras(cfg)} <= have
