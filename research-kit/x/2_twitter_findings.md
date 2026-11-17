@@ -183,7 +183,7 @@ Smaller ones seen in passing: Lions convert 4th-and-2 at Baltimore (2025-09-22);
 
 ## 6. What I could not find or could not access
 
-- **Run versus pass was thin.** Searches for "establish the run", "run on first down", "run the ball more" and "passing is more efficient" returned mostly fan complaints, betting picks and college posts. I found no high-engagement analyst thread with numbers in the last two seasons. A search of specific analyst accounts would do better than keywords.
+- **Run versus pass by keyword was thin.** Searches for "establish the run", "run on first down", "run the ball more" and "passing is more efficient" returned mostly fan complaints, betting picks and college posts. A second pass over named analyst accounts found the real debate; it is in section 7. Accounts searched there: @SharpFootball, @SethWalder, @benbbaldwin, @BenjaminSolak, @SheilKapadia, @PFF_Moo, @FO_ASchatz, @LeeSharpeNFL (the last three returned nothing relevant). The article that started the debate (linked by @TheWARmonger_ to a @DownToBlack post) was not opened.
 - **"Win probability is broken"** returned mostly prediction-market and betting spam; the useful posts were the 99% screenshots above.
 - **Several planned searches were not run**: "fourth down analytics", "go for it analytics", "Campbell go for it", "fourth down up 4" as an exact phrase, and the "Latest" tab for every group. Only "Top" was used.
 - **No defense of the Ravens' punt and no detailed defense of Payton's call** turned up; the pro side for those two is under-sampled.
@@ -192,3 +192,43 @@ Smaller ones seen in passing: Lions convert 4th-and-2 at Baltimore (2025-09-22);
 - **Game facts are unverified.** Scores, clocks and outcomes come from posts. Decisions 3, 4, 6, 7 and 8 have gaps noted in place.
 - **Access problems**: the Claude in Chrome extension was not connected, so the app's built-in browser was used after the owner signed in. X showed one "Something went wrong" page mid-session, which cleared on the next page load. No captcha or rate-limit notice appeared.
 - **The nfl4th bot does not post every decision on X** (Baldwin says the full feed is on another site), so the absence of a bot post for a play means nothing.
+
+## 7. Run versus pass: second pass over analyst accounts (added 2026-11-17)
+
+The live version of burning question 2 is a debate from the week of 2026-10-27, referred to by everyone in it as "EPA go brrrr".
+
+### The "pass more" side, with numbers
+
+- @SethWalder, 2026-10-28, https://x.com/SethWalder/status/2115610463643857263: "Mark me solidly in the "throw [much more] because EPA go brrrr" category. I think it's the No. 1 thing where we lose the forest through the trees in football: NFL run-pass split is sub-optimal and it stares us in the face!"
+- @SethWalder, 2026-10-28, https://x.com/SethWalder/status/2115610534506848280: "We don't know the optimal pass rate but we do know it's higher than where we are now. The average pass play is .11 EPA per play higher than the average run play. 24 teams have a higher EPA on pass plays than run plays -- 11 by .2 or more! Those are huge differences!"
+- @SethWalder, 2026-10-28, https://x.com/SethWalder/status/2115610620544340047: "As teams pass more, passing efficiency will drop and rushing efficiency will rise. But until they reach an approximate equilibrium we know that it is sub-optimal."
+- @SethWalder, 2026-10-28, https://x.com/SethWalder/status/2115610710336229510: "How far could a team with a good quarterback push it? We don’t know where the limit is because no one has pushed the envelope enough yet. And for the teams with the best quarterbacks, it costs them points."
+- @SethWalder, 2026-10-28, https://x.com/SethWalder/status/2115610844889223265 (43 replies, 157K views): "I do think at some point in the near future some team with a good QB will try passing 80-85% in neutral game states and there’s a good chance it will look obvious in retrospect."
+- @SethWalder, 2026-10-28, https://x.com/SethWalder/status/2115627299202633819, asked whether the Bengals should pass even more: "I do. I know that’s a hot take off the conversation from a couple weeks ago. But given the fact that Cincy is +.19 on pass plays and -.07 on run plays, have to imagine if we replace five runs with passes that would increase EPA/P. Probably!"
+
+### The "the run sets up the pass" side
+
+- @BrettKollmann, 2026-10-27, https://x.com/BrettKollmann/status/2115273573757751729 (1.1K likes, 203K views): "I firmly believe that the reason we got into that "throw every down because EPA go brrrrr" era a while back is because we didn't stop to consider that the reason why passing EPA went brrrr in the first place is because the run game set it up to go brrrr."
+- @Nate_Tice, 2026-10-27, https://x.com/Nate_Tice/status/2115209944454808055: "I think we've gotten away from it, but relevant to the "throw every down cause EPA go brrrr" talking point." (quoting @TheWARmonger_: "Great piece here. I stopped arguing this point because it got so tiresome, but Chris nails it:")
+- @maxtoscano1, 2026-10-29, https://x.com/maxtoscano1/status/2115871596753957057: "We did passing EPA go brrr already Defenses adjusted, passing went down, and the offenses with the most explosiveness and efficiency have had run games that scare DCs for several years. The exact mechanics of how this happened are on tape. Go watch the Bengals!"
+- @Imperial_Eagle2 (reply to Walder), 2026-10-28, https://x.com/Imperial_Eagle2/status/2115647589076922791: "If they defense know that you're going to throw the ball ~80% of the time, especially on downs that aren't near the first down marker or goal line, you will find that it's actually very hard to consistently throw well. Running delivers consistent gains and forces defense down" [truncated]
+- @omardouk (reply), 2026-10-29, https://x.com/omardouk/status/2115731365069005174: "Cowboys threw 50 something times and got smoked Ask any offensive lineman how hard it is to pass block almost every play..why do analytics ppl hate xontext"
+- @JoshNorris, 2026-11-01 (link not captured), on Tampa Bay's back-to-back wins "with a combined 64 passing yards on 7 completions": "but in those games: 324 and 258 rushing yards a perfect end note to the "throw every down because EPA go brrrrr" conversation this week"
+
+### The methodological objection (the one the project can address)
+
+- @3firsts (reply to Walder), 2026-10-28 (link not captured): "First, teams care about expected win % more than EPA. But even then, the success of a given pass/run mix is endogenous to the mix in that game, in the teams prior games, and in the league at large. We just cannot causally say that passing more or less than status quo is dominent"
+- @sambruchhaus, 2026-10-29, https://x.com/sambruchhaus/status/2115861986634612875: "What goes unsaid about the "EPA go BRRR" conversation is that the coaching pipeline from HS to Pro is more hardened than other sports Because there is so much interplay between HS, NCAA, NFL, coaches believethe "principles" carry over The NFL is legit another sport than NCAA!"
+
+### Clock context: when running is about time, not yards
+
+- @SharpFootball, 2026-10-29, https://x.com/SharpFootball/status/2116004732196004103: "Packers trying to run out the clock to win a game: 1st down: 39 yard bomb - incomplete <clock stops> 2nd down: screen pass - runs out of bounds <clock stops> 3rd down: intentional ground, 15 yard penalty <clock stops> 1 minute and 2 seconds" [as displayed]
+- @SharpFootball, 2026-09-09, https://x.com/SharpFootball/status/2097872404689060057: "the Patriots RBs: 17 RB runs for 32 yards that's 1.9 YPC on first downs, 10 RB runs for 2.4 YPC simply welcoming 3rd downs with that 1st down run strategy and effectiveness"
+- @SharpFootball, 2026-10-20, https://x.com/SharpFootball/status/2112573365915472131, arguing a team ran too little: "shockingly bad strategy from the Falcons cost them the game first half plays: 4 Bijan runs: 12.8 YPC, +0.55 EPA, 100% success 2 BRob runs: 0.5 YPC, -1.35 EPA, 0% success 14 Penix att: 4.2 YPA, -0.34 EPA, 14% success 12 total rushes all game! #1 fewest in NFL" [truncated]
+
+### What nobody in the thread answers
+
+1. **Where is the equilibrium?** Walder says the optimal pass rate is unknown but "higher than where we are now"; Kollmann and Toscano say defenses already adjusted. Neither side posts the marginal value of the next run versus the next pass, which is what the plan's run-or-pass decision model measures.
+2. **Is an average-EPA gap evidence at all?** @3firsts's endogeneity point: the averages come from the current mix, so they cannot say what happens at a different mix.
+3. **EPA or win probability?** Same reply: "teams care about expected win % more than EPA". Late-lead running (87.4% run share in the last 2:00 when leading by 1 to 8, per `docs/research/endgame_clock.md`) is a clock decision that EPA averages count as inefficiency.
+4. **Does the gap survive by down, distance and situation?** Walder's .11 is a league-wide average; Sharp's posts are single-game splits. Nobody posts the gap in neutral situations by down and distance.
