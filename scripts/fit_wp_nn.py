@@ -28,7 +28,7 @@ import polars as pl
 import torch
 from scipy.stats import spearmanr
 
-from fourth_and_rl import data, style, wp, wp_nn
+from fourth_and_rl import data, splits, style, wp, wp_nn
 from fourth_and_rl.io import read_json, write_json
 from fourth_and_rl.paths import ASSETS, DATA, RESULTS
 
@@ -544,6 +544,12 @@ def main() -> None:
     platt = wp.Calibrator("platt").fit(model.raw_score(calib_ok), calib_ok[wp.LABEL].to_numpy())
 
     # Test seasons: every model on the rows used in results/m1_wp_metrics.json.
+    # Each model must not have been fitted on any season it is about to be scored on.
+    for name, fitted in (("network", model), ("trees", trees)):
+        splits.assert_can_score(fitted.stamp, test, f"M1 {name} on the test seasons")
+    for name, ens in (("seed ensemble", seeds_ens), ("bagged ensemble", bagged)):
+        for member in ens.members:
+            splits.assert_can_score(member.stamp, test, f"M1 {name} member on the test seasons")
     seed_test = seeds_ens.predict_members(test)
     bag_test = bagged.predict_members(test)
     mlp_score = model.raw_score(test)

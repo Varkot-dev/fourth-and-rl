@@ -13,7 +13,7 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from fourth_and_rl import wp, wp_nn  # noqa: E402
+from fourth_and_rl import splits, wp, wp_nn  # noqa: E402
 from fourth_and_rl.paths import DATA  # noqa: E402
 
 SMALL = {"hidden": [16], "batch_size": 256, "max_epochs": 25, "patience": 5, "lr": 0.01}
@@ -25,8 +25,13 @@ def true_wp(frame: pl.DataFrame) -> np.ndarray:
     return 1.0 / (1.0 + np.exp(-z))
 
 
-def logistic_league(n_games: int, seed: int, plays_per_game: int = 12) -> pl.DataFrame:
-    """Independent plays with a label drawn from `true_wp`, grouped into games."""
+def logistic_league(
+    n_games: int, seed: int, plays_per_game: int = 12, season: int = 2010
+) -> pl.DataFrame:
+    """Independent plays with a label drawn from `true_wp`, grouped into games.
+
+    `season` defaults to a development season, because fits refuse test seasons.
+    """
     rng = np.random.default_rng(seed)
     n = n_games * plays_per_game
     gsr = rng.integers(1, 3600, n).astype(float)
@@ -35,6 +40,7 @@ def logistic_league(n_games: int, seed: int, plays_per_game: int = 12) -> pl.Dat
         {
             "game_id": np.repeat([f"g{seed}_{g}" for g in range(n_games)], plays_per_game),
             "play_id": np.tile(np.arange(plays_per_game), n_games),
+            "season": np.full(n, season, dtype=np.int32),
             "down": rng.integers(1, 5, n).astype(float),
             "ydstogo": rng.integers(1, 11, n).astype(float),
             "yardline_100": rng.integers(1, 100, n).astype(float),
@@ -202,6 +208,35 @@ def test_bootstrap_ensemble_members_see_different_games(toy):
     assert not np.array_equal(bagged.predict_members(test), plain.predict_members(test))
 
 
+# ----------------------------------------------------------------------- leakage guards
+
+
+def test_fit_refuses_test_seasons_and_stamps_the_model(tmp_path, toy, monkeypatch):
+    monkeypatch.setattr(splits, "ACCESS_LOG", tmp_path / "access.jsonl")
+    train, calib, test = toy
+    quick = {**SMALL, "max_epochs": 2}
+    leaky = logistic_league(40, 9, season=splits.test_seasons()[0])
+    with pytest.raises(splits.LeakageError):
+        wp_nn.NNWPModel(quick).fit(pl.concat([train, leaky]), calib, seed=1)
+    with pytest.raises(splits.LeakageError):  # the early-stopping frame is guarded too
+        wp_nn.NNWPModel(quick).fit(train, leaky, seed=1)
+    with pytest.raises(splits.LeakageError):
+        wp_nn.WPEnsemble(quick, k=1).fit(leaky, calib, seed=1)
+    with pytest.raises(KeyError):
+        wp_nn.NNWPModel(quick).fit(train.drop("season"), seed=1)
+    model = wp_nn.NNWPModel(quick).fit(train, calib, seed=1)
+    assert model.stamp["seasons"] == [2010] and model.stamp["n_games"] == 650
+    again = wp_nn.NNWPModel.load(model.save(tmp_path / "nn.joblib"))
+    assert again.stamp == model.stamp
+    with pytest.raises(splits.LeakageError):  # toy test frame is the same season
+        splits.assert_can_score(again.stamp, test, "a season the network was fitted on")
+    splits.assert_can_score(again.stamp, logistic_league(10, 4, season=2012), "unseen")
+    ens = wp_nn.WPEnsemble(quick, k=1).fit(train, calib, seed=1)
+    path = ens.save(tmp_path / "ens.joblib")
+    assert wp_nn.WPEnsemble.load(path).stamp == ens.stamp
+    assert not (tmp_path / "access.jsonl").exists()
+
+
 # -------------------------------------------------------------------------- real data
 
 
@@ -229,6 +264,8 @@ def test_saved_models_agree_with_the_reported_numbers(plays):
     import json
 
     reported = json.loads(results.read_text())
+    if reported.get("features") != wp.FEATURES:
+        pytest.skip("saved networks use an older feature list; rerun scripts/fit_wp_nn.py")
     test = plays.filter(pl.col("season").is_in([2024, 2025]))
     test = test.filter(
         pl.Series(wp.scoreable(test))

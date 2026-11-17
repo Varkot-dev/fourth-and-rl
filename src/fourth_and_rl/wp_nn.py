@@ -24,7 +24,7 @@ import torch
 import yaml
 from torch import nn
 
-from fourth_and_rl import wp
+from fourth_and_rl import splits, wp
 from fourth_and_rl.paths import CONFIGS
 
 DEFAULT_SEED = wp.DEFAULT_SEED
@@ -164,6 +164,7 @@ class NNWPModel:
         self.best_epoch = 0
         self.fit_seconds = 0.0
         self.history: list[dict[str, float]] = []
+        self.stamp: dict | None = None  # seasons and games the model was fitted on
 
     # -- fitting
 
@@ -187,8 +188,22 @@ class NNWPModel:
         train: pl.DataFrame,
         calib: pl.DataFrame | None = None,
         seed: int = DEFAULT_SEED,
+        allow_test_seasons: bool = False,
+        reason: str | None = None,
+        what: str = "NNWPModel.fit",
     ) -> NNWPModel:
-        """Train the network. Rows with no label or an incomplete state are dropped."""
+        """Train the network. Rows with no label or an incomplete state are dropped.
+
+        Both frames need a `season` column: the fit refuses rows from the test seasons
+        (`splits.LeakageError`) unless `allow_test_seasons=True` comes with a written
+        `reason`, which is logged. `stamp` records the seasons the model saw.
+        """
+        frames = [train] + ([calib] if calib is not None and calib.height > 0 else [])
+        for label, frame in zip(("training rows", "early-stopping rows"), frames, strict=False):
+            for col in ("season", "game_id"):
+                if col not in frame.columns:
+                    raise KeyError(f"fit needs the column {col!r} in the {label}")
+            splits.assert_no_test_seasons(frame, f"{what} ({label})", allow_test_seasons, reason)
         p = self.params
         start = time.perf_counter()
         torch.set_num_threads(self.n_threads)
@@ -275,6 +290,10 @@ class NNWPModel:
             self.calibrator = wp.Calibrator(p["calibration"]).fit(score, y_stop_np)
         else:
             self.calibrator = wp.Calibrator("none")
+        self.stamp = splits.fit_stamp(
+            pl.concat([f.select("season", "game_id") for f in frames]), what
+        )
+        self.stamp.update(allow_test_seasons=bool(allow_test_seasons), reason=reason)
         self.fit_seconds = time.perf_counter() - start
         return self
 
@@ -322,6 +341,7 @@ class NNWPModel:
             "best_epoch": self.best_epoch,
             "fit_seconds": self.fit_seconds,
             "history": self.history,
+            "stamp": self.stamp,
         }
 
     @classmethod
@@ -338,6 +358,7 @@ class NNWPModel:
         model.calibrator = blob["calibrator"]
         for key in ("seed", "n_train_rows", "n_stop_rows", "best_epoch", "fit_seconds", "history"):
             setattr(model, key, blob[key])
+        model.stamp = blob.get("stamp")  # None for files saved before stamps existed
         return model
 
     def save(self, path: str | Path) -> Path:
@@ -379,11 +400,18 @@ class WPEnsemble:
         self.members: list[NNWPModel] = []
         self.seed: int | None = None
 
+    @property
+    def stamp(self) -> dict | None:
+        """The fit stamp shared by the members (all are fitted on the same seasons)."""
+        return self.members[0].stamp if self.members else None
+
     def fit(
         self,
         train: pl.DataFrame,
         calib: pl.DataFrame | None = None,
         seed: int = DEFAULT_SEED,
+        allow_test_seasons: bool = False,
+        reason: str | None = None,
     ) -> WPEnsemble:
         self.members, self.seed = [], int(seed)
         for i in range(self.k):
@@ -392,7 +420,10 @@ class WPEnsemble:
             if self.bootstrap:
                 data = resample_games(train, np.random.default_rng(member_seed))
             self.members.append(
-                NNWPModel(self.params, self.n_threads).fit(data, calib, seed=member_seed)
+                NNWPModel(self.params, self.n_threads).fit(
+                    data, calib, seed=member_seed, allow_test_seasons=allow_test_seasons,
+                    reason=reason, what="WPEnsemble member",
+                )
             )
         return self
 
