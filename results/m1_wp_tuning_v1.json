@@ -1,0 +1,175 @@
+{
+  "fit_seasons": [
+    2010,
+    2018
+  ],
+  "validation_seasons": [
+    2019,
+    2021
+  ],
+  "validation_rows": 134072,
+  "note": "Uncalibrated booster. Calibration and test seasons are not used here.",
+  "fixed": {
+    "n_estimators": 300,
+    "learning_rate": 0.06,
+    "colsample_bytree": 0.8,
+    "subsample": 0.8,
+    "subsample_freq": 1,
+    "reg_lambda": 10.0,
+    "max_bin": 127,
+    "monotone_constraints_method": "intermediate"
+  },
+  "leaf_grid": [
+    {
+      "min_child_samples": 400,
+      "num_leaves": 15,
+      "log_loss": 0.4317829004070618,
+      "brier": 0.14272812728928264,
+      "ece": 0.009170491337885172,
+      "mean_pred": 0.5041123615113735,
+      "win_rate": 0.5048779760128886,
+      "fit_seconds": 5.2
+    },
+    {
+      "min_child_samples": 400,
+      "num_leaves": 31,
+      "log_loss": 0.4314693810297925,
+      "brier": 0.1426856007824433,
+      "ece": 0.008847069655759052,
+      "mean_pred": 0.5042937863981306,
+      "win_rate": 0.5048779760128886,
+      "fit_seconds": 5.7
+    },
+    {
+      "min_child_samples": 2000,
+      "num_leaves": 15,
+      "log_loss": 0.4289926858204759,
+      "brier": 0.14203007812522897,
+      "ece": 0.006923076624627253,
+      "mean_pred": 0.5042558137838619,
+      "win_rate": 0.5048779760128886,
+      "fit_seconds": 5.5
+    },
+    {
+      "min_child_samples": 2000,
+      "num_leaves": 31,
+      "log_loss": 0.4291970101934068,
+      "brier": 0.14213576229121366,
+      "ece": 0.007719956038553818,
+      "mean_pred": 0.5042752633760983,
+      "win_rate": 0.5048779760128886,
+      "fit_seconds": 6.6
+    },
+    {
+      "min_child_samples": 5000,
+      "num_leaves": 15,
+      "log_loss": 0.42894424454823615,
+      "brier": 0.14196386799868296,
+      "ece": 0.007229854530267573,
+      "mean_pred": 0.5041107183435811,
+      "win_rate": 0.5048779760128886,
+      "fit_seconds": 5.6
+    },
+    {
+      "min_child_samples": 5000,
+      "num_leaves": 31,
+      "log_loss": 0.4289315601434498,
+      "brier": 0.14199492131456512,
+      "ece": 0.00802471101485983,
+      "mean_pred": 0.5042436688497297,
+      "win_rate": 0.5048779760128886,
+      "fit_seconds": 6.8
+    },
+    {
+      "min_child_samples": 10000,
+      "num_leaves": 15,
+      "log_loss": 0.4282692286144193,
+      "brier": 0.1416877494943003,
+      "ece": 0.00948555673814709,
+      "mean_pred": 0.5042495321758377,
+      "win_rate": 0.5048779760128886,
+      "fit_seconds": 6.0
+    },
+    {
+      "min_child_samples": 10000,
+      "num_leaves": 31,
+      "log_loss": 0.4281929577633271,
+      "brier": 0.14168796006279938,
+      "ece": 0.010301735982842819,
+      "mean_pred": 0.5043513424634776,
+      "win_rate": 0.5048779760128886,
+      "fit_seconds": 6.4
+    },
+    {
+      "min_child_samples": 20000,
+      "num_leaves": 15,
+      "log_loss": 0.4291201824355017,
+      "brier": 0.1415849125249582,
+      "ece": 0.01243776937152085,
+      "mean_pred": 0.504269295937105,
+      "win_rate": 0.5048779760128886,
+      "fit_seconds": 5.5
+    },
+    {
+      "min_child_samples": 20000,
+      "num_leaves": 31,
+      "log_loss": 0.4291201824355017,
+      "brier": 0.1415849125249582,
+      "ece": 0.01243776937152085,
+      "mean_pred": 0.504269295937105,
+      "win_rate": 0.5048779760128886,
+      "fit_seconds": 11.7
+    }
+  ],
+  "best_leaf_setting": {
+    "min_child_samples": 10000,
+    "num_leaves": 31
+  },
+  "tree_count_grid": [
+    {
+      "min_child_samples": 10000,
+      "num_leaves": 31,
+      "n_estimators": 150,
+      "log_loss": 0.42854450508079095,
+      "brier": 0.1417428084505295,
+      "ece": 0.009656366335644914,
+      "mean_pred": 0.5042892021775489,
+      "win_rate": 0.5048779760128886,
+      "fit_seconds": 5.2
+    },
+    {
+      "min_child_samples": 10000,
+      "num_leaves": 31,
+      "n_estimators": 300,
+      "log_loss": 0.4281929577633271,
+      "brier": 0.14168796006279938,
+      "ece": 0.010301735982842819,
+      "mean_pred": 0.5043513424634776,
+      "win_rate": 0.5048779760128886,
+      "fit_seconds": 6.7
+    },
+    {
+      "min_child_samples": 10000,
+      "num_leaves": 31,
+      "n_estimators": 600,
+      "log_loss": 0.4284598995474228,
+      "brier": 0.14181438710851485,
+      "ece": 0.01084253457699422,
+      "mean_pred": 0.5043231188931393,
+      "win_rate": 0.5048779760128886,
+      "fit_seconds": 12.5
+    }
+  ],
+  "config_in_use": {
+    "n_estimators": 300,
+    "learning_rate": 0.06,
+    "num_leaves": 15,
+    "min_child_samples": 10000,
+    "colsample_bytree": 0.8,
+    "subsample": 0.8,
+    "subsample_freq": 1,
+    "reg_lambda": 10.0,
+    "max_bin": 127,
+    "monotone_constraints_method": "intermediate"
+  }
+}

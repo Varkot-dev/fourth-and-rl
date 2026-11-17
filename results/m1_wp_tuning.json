@@ -1,14 +1,22 @@
 {
-  "fit_seasons": [
+  "seasons": [
     2010,
-    2018
-  ],
-  "validation_seasons": [
+    2011,
+    2012,
+    2013,
+    2014,
+    2015,
+    2016,
+    2017,
+    2018,
     2019,
-    2021
+    2020,
+    2021,
+    2022,
+    2023
   ],
-  "validation_rows": 134072,
-  "note": "Uncalibrated booster. Calibration and test seasons are not used here.",
+  "fold_size": 2,
+  "note": "Development seasons only, season-blocked cross-validation. The test seasons are not read by this step, which exits when the grid is done.",
   "fixed": {
     "n_estimators": 300,
     "learning_rate": 0.06,
@@ -21,155 +29,164 @@
   },
   "leaf_grid": [
     {
-      "min_child_samples": 400,
+      "min_child_samples": 1000,
       "num_leaves": 15,
-      "log_loss": 0.4317829004070618,
-      "brier": 0.14272812728928264,
-      "ece": 0.009170491337885172,
-      "mean_pred": 0.5041123615113735,
-      "win_rate": 0.5048779760128886,
-      "fit_seconds": 5.2
+      "log_loss": 0.44863660007423395,
+      "brier": 0.14902181675550705,
+      "ece": 0.008168870752501663,
+      "mean_pred": 0.5053383530092708,
+      "win_rate": 0.5052600147373525,
+      "last_5_minutes_log_loss": 0.24521575621021632,
+      "last_2_minutes_log_loss": 0.23308397165181557,
+      "endgame_mean_abs_gap": 0.004170156513937205,
+      "memorization_gap": 0.00609819633526438,
+      "fit_seconds": 9.0
     },
     {
-      "min_child_samples": 400,
+      "min_child_samples": 1000,
       "num_leaves": 31,
-      "log_loss": 0.4314693810297925,
-      "brier": 0.1426856007824433,
-      "ece": 0.008847069655759052,
-      "mean_pred": 0.5042937863981306,
-      "win_rate": 0.5048779760128886,
-      "fit_seconds": 5.7
+      "log_loss": 0.448881472514534,
+      "brier": 0.14910735257457441,
+      "ece": 0.008626126711141236,
+      "mean_pred": 0.5053438728216578,
+      "win_rate": 0.5052600147373525,
+      "last_5_minutes_log_loss": 0.24520734425534305,
+      "last_2_minutes_log_loss": 0.23272443889645483,
+      "endgame_mean_abs_gap": 0.004246073671288586,
+      "memorization_gap": 0.007981647255899957,
+      "fit_seconds": 10.0
     },
     {
       "min_child_samples": 2000,
       "num_leaves": 15,
-      "log_loss": 0.4289926858204759,
-      "brier": 0.14203007812522897,
-      "ece": 0.006923076624627253,
-      "mean_pred": 0.5042558137838619,
-      "win_rate": 0.5048779760128886,
-      "fit_seconds": 5.5
+      "log_loss": 0.44862519027541103,
+      "brier": 0.1490284351066399,
+      "ece": 0.007965733410117401,
+      "mean_pred": 0.5053218371636101,
+      "win_rate": 0.5052600147373525,
+      "last_5_minutes_log_loss": 0.24542451729218157,
+      "last_2_minutes_log_loss": 0.23379340719481598,
+      "endgame_mean_abs_gap": 0.0047705384371995235,
+      "memorization_gap": 0.005723850724009748,
+      "fit_seconds": 9.5
     },
     {
       "min_child_samples": 2000,
       "num_leaves": 31,
-      "log_loss": 0.4291970101934068,
-      "brier": 0.14213576229121366,
-      "ece": 0.007719956038553818,
-      "mean_pred": 0.5042752633760983,
-      "win_rate": 0.5048779760128886,
-      "fit_seconds": 6.6
+      "log_loss": 0.4488288762513451,
+      "brier": 0.14910451686853451,
+      "ece": 0.008222209710929188,
+      "mean_pred": 0.5053310695461697,
+      "win_rate": 0.5052600147373525,
+      "last_5_minutes_log_loss": 0.24558161815723842,
+      "last_2_minutes_log_loss": 0.23364464378640196,
+      "endgame_mean_abs_gap": 0.0045639252359352634,
+      "memorization_gap": 0.0072572111287760544,
+      "fit_seconds": 10.5
     },
     {
       "min_child_samples": 5000,
       "num_leaves": 15,
-      "log_loss": 0.42894424454823615,
-      "brier": 0.14196386799868296,
-      "ece": 0.007229854530267573,
-      "mean_pred": 0.5041107183435811,
-      "win_rate": 0.5048779760128886,
-      "fit_seconds": 5.6
+      "log_loss": 0.4485154053505066,
+      "brier": 0.14899862044981893,
+      "ece": 0.007404482702708372,
+      "mean_pred": 0.5053616110691127,
+      "win_rate": 0.5052600147373525,
+      "last_5_minutes_log_loss": 0.2464288596201853,
+      "last_2_minutes_log_loss": 0.23620689717309737,
+      "endgame_mean_abs_gap": 0.006631930511600936,
+      "memorization_gap": 0.004845433487153804,
+      "fit_seconds": 9.5
     },
     {
       "min_child_samples": 5000,
       "num_leaves": 31,
-      "log_loss": 0.4289315601434498,
-      "brier": 0.14199492131456512,
-      "ece": 0.00802471101485983,
-      "mean_pred": 0.5042436688497297,
-      "win_rate": 0.5048779760128886,
-      "fit_seconds": 6.8
-    },
+      "log_loss": 0.448643221908576,
+      "brier": 0.1490479563051641,
+      "ece": 0.007628764287905524,
+      "mean_pred": 0.505330283800195,
+      "win_rate": 0.5052600147373525,
+      "last_5_minutes_log_loss": 0.24646271339665926,
+      "last_2_minutes_log_loss": 0.2361410992898041,
+      "endgame_mean_abs_gap": 0.006966624798556095,
+      "memorization_gap": 0.005777936234276447,
+      "fit_seconds": 10.4
+    }
+  ],
+  "best_leaf_setting_by_log_loss": {
+    "min_child_samples": 5000,
+    "num_leaves": 15
+  },
+  "leaf_setting_in_use": {
+    "min_child_samples": 2000,
+    "num_leaves": 15
+  },
+  "tree_count_grid_at_setting_in_use": [
     {
-      "min_child_samples": 10000,
+      "min_child_samples": 2000,
       "num_leaves": 15,
-      "log_loss": 0.4282692286144193,
-      "brier": 0.1416877494943003,
-      "ece": 0.00948555673814709,
-      "mean_pred": 0.5042495321758377,
-      "win_rate": 0.5048779760128886,
+      "n_estimators": 150,
+      "learning_rate": 0.12,
+      "log_loss": 0.44871575407970016,
+      "brier": 0.14906705195949618,
+      "ece": 0.007996220528937522,
+      "mean_pred": 0.50527675123217,
+      "win_rate": 0.5052600147373525,
+      "last_5_minutes_log_loss": 0.24566089519836973,
+      "last_2_minutes_log_loss": 0.23407401267965197,
+      "endgame_mean_abs_gap": 0.004868058273341372,
+      "memorization_gap": 0.005753602020889204,
       "fit_seconds": 6.0
     },
     {
-      "min_child_samples": 10000,
-      "num_leaves": 31,
-      "log_loss": 0.4281929577633271,
-      "brier": 0.14168796006279938,
-      "ece": 0.010301735982842819,
-      "mean_pred": 0.5043513424634776,
-      "win_rate": 0.5048779760128886,
-      "fit_seconds": 6.4
-    },
-    {
-      "min_child_samples": 20000,
+      "min_child_samples": 2000,
       "num_leaves": 15,
-      "log_loss": 0.4291201824355017,
-      "brier": 0.1415849125249582,
-      "ece": 0.01243776937152085,
-      "mean_pred": 0.504269295937105,
-      "win_rate": 0.5048779760128886,
-      "fit_seconds": 5.5
-    },
-    {
-      "min_child_samples": 20000,
-      "num_leaves": 31,
-      "log_loss": 0.4291201824355017,
-      "brier": 0.1415849125249582,
-      "ece": 0.01243776937152085,
-      "mean_pred": 0.504269295937105,
-      "win_rate": 0.5048779760128886,
-      "fit_seconds": 11.7
-    }
-  ],
-  "best_leaf_setting": {
-    "min_child_samples": 10000,
-    "num_leaves": 31
-  },
-  "tree_count_grid": [
-    {
-      "min_child_samples": 10000,
-      "num_leaves": 31,
-      "n_estimators": 150,
-      "log_loss": 0.42854450508079095,
-      "brier": 0.1417428084505295,
-      "ece": 0.009656366335644914,
-      "mean_pred": 0.5042892021775489,
-      "win_rate": 0.5048779760128886,
-      "fit_seconds": 5.2
-    },
-    {
-      "min_child_samples": 10000,
-      "num_leaves": 31,
-      "n_estimators": 300,
-      "log_loss": 0.4281929577633271,
-      "brier": 0.14168796006279938,
-      "ece": 0.010301735982842819,
-      "mean_pred": 0.5043513424634776,
-      "win_rate": 0.5048779760128886,
-      "fit_seconds": 6.7
-    },
-    {
-      "min_child_samples": 10000,
-      "num_leaves": 31,
       "n_estimators": 600,
-      "log_loss": 0.4284598995474228,
-      "brier": 0.14181438710851485,
-      "ece": 0.01084253457699422,
-      "mean_pred": 0.5043231188931393,
-      "win_rate": 0.5048779760128886,
-      "fit_seconds": 12.5
+      "learning_rate": 0.03,
+      "log_loss": 0.4485675993560422,
+      "brier": 0.14901055030640817,
+      "ece": 0.007962258407224422,
+      "mean_pred": 0.5052924045377889,
+      "win_rate": 0.5052600147373525,
+      "last_5_minutes_log_loss": 0.24538445343936482,
+      "last_2_minutes_log_loss": 0.23363687476468958,
+      "endgame_mean_abs_gap": 0.004743543256599506,
+      "memorization_gap": 0.005691786988124495,
+      "fit_seconds": 15.2
     }
   ],
   "config_in_use": {
     "n_estimators": 300,
     "learning_rate": 0.06,
     "num_leaves": 15,
-    "min_child_samples": 10000,
+    "min_child_samples": 2000,
     "colsample_bytree": 0.8,
     "subsample": 0.8,
     "subsample_freq": 1,
     "reg_lambda": 10.0,
     "max_bin": 127,
     "monotone_constraints_method": "intermediate"
+  },
+  "how_each_value_was_chosen": {
+    "structure": "Trees start from the normal-approximation baseline (init_score). Study: candidate `base` against `v1_no_platt` (log loss 0.44913 against 0.44973) and `scores_no_base_leaf2000` against `scores_leaf2000` (0.44944 against 0.44863).",
+    "baseline_sigma_and_tau": "Fitted by maximum likelihood on the training rows of every fit (two numbers). Fixing tau instead was worse: 30 seconds without the rules (`base_sharp`, 0.44968), and 60, 120 or 240 seconds with them (`rules_tau*`: 0.44869 to 0.44929, larger end-game gaps, and the 13-second check further from passing).",
+    "baseline_kneel_rule": "On. Where the leader with the ball can kneel out (kneel_slack >= 0), the baseline is certain. On development seasons those rows were won 3,313 times in 3,314 (study, final_checks and docs/notes/m1_wp.md). Candidate `rules_kneel_leaf2000` against `scores_leaf2000`: log loss equal (0.44863), end-game gap 0.0048 against 0.0051, kneel-out check passed (minimum 1.000 against 0.924).",
+    "baseline_possession_value": "Off. A fitted value for having the ball (about 1.6 points) did not help once the trees were in place (`rules_both_leaf2000` 0.44880, `rules_poss_leaf2000` 0.44874).",
+    "features": "is_home dropped, kneel_slack, possessions and possessions_per_minute added. See decisions below.",
+    "min_child_samples": "2000. Study leaf sweep (5000, 2000, 1000, 500, 200) and the tuning grid. 2000 had the best overall log loss of the sweep; 1000 is slightly better on the end-game cells and slightly worse overall, with a larger memorization gap.",
+    "num_leaves": "15. Tuning grid (15 against 31 at each leaf size).",
+    "n_estimators_and_learning_rate": "300 trees at 0.06, kept from version 1 (its tuning picked 300 of 150, 300, 600). Rechecked by the tuning grid at 150 trees and 0.12, and 600 trees and 0.03.",
+    "colsample_bytree_subsample_reg_lambda": "0.8, 0.8 (every round) and 10. Not tuned: common settings kept from version 1 so the number of looks at the data stays small. Stated, not chosen by a score.",
+    "max_bin": "127. Not tuned; halves the fit time against LightGBM's 255.",
+    "monotone_constraints_method": "intermediate. Not tuned; LightGBM's middle setting between the fast basic method and the slow advanced one.",
+    "monotone_constraints": "Set by reasoning, not by a score: more points, a better spread and more timeouts for the team with the ball can never hurt it; more defensive timeouts never help.",
+    "SPREAD_DECAY": "4.0, kept from version 1, where it was set by hand with no recorded comparison. It only shapes one of several spread features, and the trees can undo it. Not tuned.",
+    "TIME_FLOOR_SECONDS": "30, kept. Study: a 5-second floor made no difference with the baseline in place (`base_floor5` 0.44933 against `base_no_home` 0.44930; `kneel_floor5_leaf2000` 0.44881 against `kneel_leaf2000` 0.44877).",
+    "kneel_constants": "40-second play clock, 2 seconds per kneel, 120-second cap: rules and measurements in docs/research/endgame_clock.md, not fitted to outcomes.",
+    "KNEEL_SLACK_FLOOR": "-600 seconds. Stated: more than ten minutes from a kneel-out is all the same for this feature, and capping it keeps the trees' bins on the end game.",
+    "possessions_per_minute_offset": "30 seconds added to the clock, the same as TIME_FLOOR_SECONDS, so the feature stays finite at 0:00. Not tuned.",
+    "BASELINE_LOGIT_CAP": "9 (about 1 in 8,000). Stated, keeps log-odds finite; not tuned.",
+    "calibration": "none. See decisions.calibration.",
+    "seed": "Fixed project seed."
   }
 }
