@@ -1,0 +1,46 @@
+# M1 play-outcome ("component") models. Read by fourth_and_rl.components.load_config.
+
+# All fits are deterministic (no random numbers are drawn). The seed is recorded with
+# the fitted bundle so later, random steps (bootstrap refits) can reuse it.
+seed: 20261117
+
+# Seasons held out by scripts/fit_components.py to check every model out of sample.
+# The saved bundle is then refitted on all seasons.
+holdout_seasons: [2024, 2025]
+
+# Count-based distributions (yards gained, punts, turnovers, clock, extra points) use
+# only seasons from this one on, so they describe the current game. The logistic models
+# (conversion, field goal) use every season in the table and carry a season trend.
+era_first_season: 2018
+
+go:
+  max_ydstogo: 30          # longer distances are treated as 30
+  season_trend: true       # linear trend in the log-odds, evaluated at the last season fitted
+  fourth_by_distance: false # true lets the fourth-down effect change with distance
+  use_spread: true         # pregame spread as a team-strength control; predictions are at spread 0
+  fit_downs: [3, 4]        # downs used for the conversion regression
+  distance_knots: [1, 2, 3, 4, 6, 8, 10, 13, 17, 22, 30]  # dense where the curve bends
+  yardline_knots: [1, 5, 10, 20, 40, 60, 80, 99]
+  min_turnover_n: 100      # failures needed before a distance group gets its own turnover share
+
+field_goal:
+  snap_to_kick_yards: 18   # kick distance = yardline_100 + 18 (checked against kick_distance)
+  miss_spot_yards: 8       # after a miss the opponent takes over 8 yards behind the line of scrimmage
+  miss_min_own_yardline: 20  # ... but never inside their own 20
+  season_trend: true       # linear trend in the log-odds, evaluated at the last season fitted
+  max_kick_distance: 68    # longest made kick in 2010-2025; P(make) is 0 beyond it
+
+punt:
+  bandwidth: 2.0           # Gaussian kernel width in yards of field position
+  min_effective_n: 400     # widen the kernel until it covers this many punts
+  landing_below: 50        # inside this yardline_100, smooth the landing spot, not the net yards
+
+play:
+  min_cell_n: 300          # plays needed before a (down, distance, field) cell stands alone
+  min_turnover_n: 50
+
+kickoff:
+  seasons: [2025]          # touchback spot moved to the 30 in 2024 and the 35 in 2025
+
+drives:
+  recent_first_season: 2021
