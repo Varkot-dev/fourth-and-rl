@@ -135,6 +135,10 @@ def test_allowlist_has_no_stale_entries_and_every_entry_has_a_reason() -> None:
         "src/fourth_and_rl/team_strength.py",
         "scripts/m8_team_strength.py",
         "scripts/questions/q3_team_aware.py",
+        # M10 predictability (development file, one logged test load; extra columns via
+        # run_pass.load_extra).
+        "src/fourth_and_rl/predictability.py",
+        "scripts/m10_predictability.py",
     ],
 )
 def test_fitting_code_never_reads_the_raw_table(rel: str) -> None:

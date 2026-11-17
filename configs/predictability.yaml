@@ -1,0 +1,86 @@
+# M10: how much does being predictable cost an offense?
+# Read by fourth_and_rl.predictability.load_config. Every constant used by
+# scripts/m10_predictability.py is written here. Play classification, the neutral filter
+# and the situation cells come from configs/run_pass.yaml (question 2) unchanged.
+
+seed: 20261117
+threads: 2                 # torch and LightGBM threads (the machine is shared)
+n_boot: 500                # game-level bootstrap resamples (whole games with replacement)
+level: 0.95
+
+# ---- seasons (all inside the development seasons of configs/splits.yaml)
+first_history_season: 2010 # tendencies start here; its plays are history only
+first_train_season: 2011   # first season whose plays train a call model
+first_forward_season: 2013 # first season scored by a model fitted only on earlier seasons
+# Season-blocked validation for the model comparison: each block is predicted by models
+# trained on the seasons before it (the last of those is used for early stopping).
+validation_blocks: [[2020, 2021], [2022, 2023]]
+
+# ---- the offense's tendencies from earlier games only
+tendency:
+  game_decay: 0.92         # weight of a game one game further back
+  season_carry: 0.5        # extra weight factor applied at each season boundary
+  prior_plays: 40          # shrink a rate toward the prior with this many pseudo-plays
+  prior_pass_rate: 0.58    # all called plays
+  prior_pass_rate_neutral_early: 0.50
+  prior_pass_epa: 0.05     # nflfastR EPA per called pass
+  prior_run_epa: -0.07     # nflfastR EPA per called run
+  prior_allowed_epa: 0.0   # EPA per play allowed by a defense
+
+# ---- features
+situation_features: [down, ydstogo, yardline_100, goal_to_go, score_differential, qtr,
+                     half_seconds_remaining, game_seconds_remaining,
+                     posteam_timeouts_remaining, defteam_timeouts_remaining, posteam_spread,
+                     total_line, is_home, wind, temp, dome, season, week, postseason]
+tendency_features: [tend_pass_rate, tend_pass_rate_ne, tend_pass_epa, tend_run_epa,
+                    tend_n_eff, opp_def_epa_allowed]
+history_features: [g_n_prev, g_pass_share_prev, g_prev_pass, g_prev2_pass, g_prev_yards,
+                   g_prev_success, g_pass_epa_prev, g_run_epa_prev, g_drive_index,
+                   d_n_prev, d_prev_pass, d_prev_yards, d_prev_incomplete, d_prev_first_down,
+                   d_pass_share_prev]
+formation_features: [shotgun, no_huddle]   # sensitivity only: seen by the defense pre-snap
+
+# Model variants. The primary one (used for the cost analysis) is fixed here, before
+# any test-season row is read.
+variants:
+  situation: {kind: gbm, groups: [situation, tendency]}
+  situation_history: {kind: gbm, groups: [situation, tendency, history]}
+  situation_history_formation: {kind: gbm, groups: [situation, tendency, history, formation]}
+  nn_situation: {kind: seq, groups: [situation, tendency], use_history: false}
+  nn_sequence: {kind: seq, groups: [situation, tendency], use_history: true}
+primary: situation_history
+
+gbm:
+  learning_rate: 0.05
+  num_leaves: 31
+  min_child_samples: 200
+  subsample: 0.8
+  subsample_freq: 1
+  colsample_bytree: 0.8
+  reg_lambda: 1.0
+  n_estimators: 3000       # upper bound; early stopping on the last training season
+  early_stopping_rounds: 100
+
+seq:
+  history_len: 40          # the offense's earlier called plays in the same game
+  hidden: 32               # GRU hidden size
+  mlp: 64
+  epochs: 8                # upper bound; the best epoch on the last training season is kept
+  batch_size: 512
+  lr: 0.002
+  weight_decay: 0.00001
+
+# ---- the cost of predictability
+cost:
+  downs: [1, 2, 3]         # neutral plays on these downs
+  p_edges: [0.0, 0.2, 0.35, 0.5, 0.65, 0.8, 1.0]   # bins of P(the call actually made)
+  score_edges: [-8, -3, 0, 1, 4]    # lower edges of score buckets inside the neutral range
+  n_boot: 200              # resamples for the fixed-effects curves (each one is a full refit)
+  fe_iterations: 2000       # alternating projections, until no effect moves by fe_tolerance
+  fe_tolerance: 1.0e-10
+  boot_fe_iterations: 300   # bootstrap refits, warm-started from the full-sample fit
+  boot_fe_tolerance: 1.0e-8
+  min_team_plays: 150      # team-seasons with fewer neutral plays are not ranked
+
+first_down:
+  ydstogo: 10              # first and 10 only
