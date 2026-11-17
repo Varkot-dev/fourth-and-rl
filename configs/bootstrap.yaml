@@ -1,0 +1,38 @@
+# M3 game-level bootstrap. Read by fourth_and_rl.bootstrap.load_config.
+seed: 20261117
+n_boot: 101              # B. Odd, so the 6th and 96th sorted values bound a 90% interval
+n_threads: 2
+
+# The decision rule of Brill, Yurko and Wyner (arXiv 2311.03490, Section 4.2).
+# boot% = share of replicates whose best action equals the point estimate's best action.
+thresholds:
+  confident: 0.83        # boot% >= 0.83
+  lean: 0.67             # 0.67 <= boot% < 0.83; below 0.67 is "uncertain" (too close to call)
+gain_interval: [0.05, 0.95]   # order statistics of the replicate gains (90% interval)
+
+# What is resampled. Games are drawn with replacement inside each group of seasons, the
+# same groups as the headline win-probability fit. 2024 and 2025 are never drawn.
+train_seasons: [2010, 2021]   # trees of the win-probability model
+calib_seasons: [2022, 2023]   # its Platt calibration map (refitted in every replicate)
+within_game: none             # "none": whole games (default). "drives": also resample
+                              # drives inside each drawn game, as the paper does
+game_fraction: 1.0            # draw this share of the games (1.0 = the standard bootstrap)
+calibration: platt            # calibration map refitted on the drawn calibration games
+kickoff_seasons: [2025]       # fixed kickoff-rule table, not resampled
+
+models_dir: data/models/boot  # one folder per seed and within_game setting (not committed)
+
+# Seasons whose real fourth downs are evaluated and saved for the coach evaluation.
+evaluate_seasons: [2024, 2025]
+decisions_path: data/processed/fourth_down_decisions.parquet
+
+# Burning question 1 (scripts/questions/q1_late_lead_one_step.py).
+q1:
+  leads: [1, 3, 4, 7]
+  seconds: [120, 240, 360]
+  yardlines: [50, 99]         # own half: yardline_100 from 50 (midfield) to 99 (own 1)
+  distances: [1, 10]
+  headline: {lead: 4, seconds: 240}
+  defteam_timeouts: [3, 0]    # 3 is the main map; 0 is saved to the JSON for comparison
+  # "Comparable" real fourth downs for what coaches did (all seasons in the table).
+  coaches: {lead: [1, 8], seconds: [90, 420], yardline_100: [50, 99]}
