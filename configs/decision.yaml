@@ -4,9 +4,13 @@ seed: 20261117   # nothing in M2 is random; recorded for consistency with the ot
 # Which fitted models make up "the headline engine" (decision.load_engine).
 models:
   wp_path: data/models/wp.joblib            # M1 headline: trees 2010-2021, Platt 2022-2023
-  components_fit_seasons: [2010, 2023]      # no 2024-2025 plays in the outcome models ...
-  kickoff_seasons: [2025]                   # ... except the kickoff rule (touchback to the 35)
-  components_cache: data/models/components_2010_2023.joblib
+  # The play-outcome models are the development bundle written by scripts/fit_components.py
+  # (development seasons only; must equal configs/splits.yaml train + calibration seasons).
+  # Its only test-season content is the kickoff table of each rule era (2024 and 2025 rules),
+  # fitted on that season's own kickoffs as a logged rule constant. A real play is valued
+  # with its own season's kickoff table; hypothetical charts use the latest rule.
+  components_fit_seasons: [2010, 2023]
+  components_cache: data/models/components_dev.joblib
 
 engine:
   # Seconds taken off the game clock by one play, rounded to whole seconds.

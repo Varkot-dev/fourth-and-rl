@@ -32,8 +32,9 @@ import numpy as np
 import polars as pl
 import yaml
 
+from fourth_and_rl import splits
 from fourth_and_rl import wp as wp_mod
-from fourth_and_rl.components import ComponentModels, fit_kickoff
+from fourth_and_rl.components import KICKOFF_RULE_REASON, ComponentModels
 from fourth_and_rl.paths import CONFIGS, ROOT
 
 ACTIONS: tuple[str, str, str] = ("go", "field_goal", "punt")
@@ -144,6 +145,14 @@ class DecisionEngine:
     `punt_outcomes`, `p_field_goal`, `fg_miss_yardline`, `kickoff_start` and
     `p_extra_point`). `config` overrides the defaults documented in
     configs/decision.yaml.
+
+    Kickoffs. When `states` has a `season` column and the components know kickoff rule
+    eras (`components.kickoff_era`), each row is valued with the kickoff table of its own
+    season's rule; hypothetical states without a season use the latest rule.
+
+    Leakage. `stamp` is the components' fit stamp (None for objects without one).
+    `evaluate(states, out_of_sample=True)` (or `evaluate_out_of_sample`) refuses to score
+    real plays from seasons that either model was fitted on.
     """
 
     def __init__(
@@ -157,13 +166,10 @@ class DecisionEngine:
         self.max_span = int(self.config["compress"]["max_span"])
         self.tie_value = float(self.config["tie_value"])
         self.p_xp = float(components.p_extra_point())
-        ko = np.asarray(components.kickoff_start(), dtype=float)
-        self._ko_return_td = float(ko[0])
-        self._ko_field = ko.copy()
-        self._ko_field[0] = 0.0
-        field_mass = self._ko_field.sum()
-        self._ko_mean_start = int(round(float(self._ko_field @ np.arange(100)) / field_mass))
+        self.stamp: dict | None = getattr(components, "stamp", None)
+        self._ko_era: str | None = "unset"
         self._ko_cache: dict[int, tuple[np.ndarray, np.ndarray]] = {}
+        self._set_kickoff(None)
         self._go_cache: dict[tuple[int, int], tuple[np.ndarray, ...]] = {}
         self._kick_cache: dict[int, tuple[np.ndarray, ...]] = {}
         self.last_stats: dict[str, int] = {}
@@ -197,6 +203,39 @@ class DecisionEngine:
                 if kick and np.isfinite(kick["mean_seconds"]):
                     out[name] = float(kick["mean_seconds"])
         return {k: max(1, int(round(v))) for k, v in out.items()}
+
+    # ---------------------------------------------------------------------- kickoffs
+
+    def _kickoff_eras(self, states: pl.DataFrame) -> np.ndarray | None:
+        """Kickoff rule era of each row, or None when every row uses the default table."""
+        if "season" not in states.columns or not hasattr(self.components, "kickoff_era"):
+            return None
+        if not getattr(self.components, "kickoff_tables", None):
+            return None
+        seasons = states["season"].cast(pl.Float64).fill_null(np.nan).to_numpy()
+        names = {}
+        for season in np.unique(seasons[~np.isnan(seasons)]):
+            names[float(season)] = self.components.kickoff_era(int(season))
+        default = self.components.kickoff_era(None)
+        return np.array([names.get(float(x), default) if not np.isnan(x) else default
+                         for x in seasons], dtype=object)  # fmt: skip
+
+    def _set_kickoff(self, era: str | None) -> None:
+        """Use the kickoff table of rule era `era` (None = the components' default)."""
+        if era == self._ko_era:
+            return
+        c = self.components
+        if era is None:
+            ko = np.asarray(c.kickoff_start(), dtype=float)
+        else:
+            ko = np.asarray(c.kickoff_tables[era], dtype=float)
+        self._ko_era = era
+        self._ko_return_td = float(ko[0])
+        self._ko_field = ko.copy()
+        self._ko_field[0] = 0.0
+        field_mass = self._ko_field.sum()
+        self._ko_mean_start = int(round(float(self._ko_field @ np.arange(100)) / field_mass))
+        self._ko_cache = {}
 
     # ---------------------------------------------------------------------- templates
 
@@ -301,8 +340,24 @@ class DecisionEngine:
         n = states.height
         chunk = int(self.config["state_chunk_rows"])
         self.last_stats = {"states": n, "next_states": 0, "unique_next_states": 0}
-        parts = [self._values_chunk(states.slice(i, chunk)) for i in range(0, max(n, 1), chunk)]
-        return {k: np.concatenate([p[k] for p in parts]) for k in parts[0]}
+        eras = self._kickoff_eras(states)
+        if eras is None or len(set(eras.tolist())) <= 1:
+            self._set_kickoff(None if eras is None or n == 0 else eras[0])
+            parts = [self._values_chunk(states.slice(i, chunk))
+                     for i in range(0, max(n, 1), chunk)]  # fmt: skip
+            out = {k: np.concatenate([p[k] for p in parts]) for k in parts[0]}
+            self._set_kickoff(None)
+            return out
+        out: dict[str, np.ndarray] = {}
+        for era in sorted(set(eras.tolist())):
+            idx = np.nonzero(eras == era)[0]
+            self._set_kickoff(era)
+            sub = states[idx]
+            parts = [self._values_chunk(sub.slice(i, chunk)) for i in range(0, sub.height, chunk)]
+            for k in parts[0]:
+                out.setdefault(k, np.full(n, np.nan))[idx] = np.concatenate([p[k] for p in parts])
+        self._set_kickoff(None)
+        return out
 
     def _values_chunk(self, states: pl.DataFrame) -> dict[str, np.ndarray]:
         n = states.height
@@ -539,8 +594,33 @@ class DecisionEngine:
         value = p[inv]
         return np.where(theirs, 1.0 - value, value)
 
-    def evaluate(self, states: pl.DataFrame) -> pl.DataFrame:
+    def assert_can_score(self, states: pl.DataFrame, what: str) -> None:
+        """Raise `LeakageError` if either model was fitted on a season of `states`.
+
+        Hypothetical states without a `season` column have nothing to check and pass. A
+        win-probability model without a stamp is not checked here (its own module owns
+        that guard); components without a stamp always fail, since their training seasons
+        are unknown.
+        """
+        if "season" not in states.columns or states.height == 0:
+            return
+        splits.assert_can_score(self.stamp, states, f"{what} (play-outcome models)")
+        wp_stamp = getattr(self.wp_model, "stamp", None)
+        if wp_stamp is not None:
+            splits.assert_can_score(wp_stamp, states, f"{what} (win-probability model)")
+
+    def evaluate_out_of_sample(self, states: pl.DataFrame, what: str) -> pl.DataFrame:
+        """`evaluate` for real plays reported as out-of-sample: checks the stamps first."""
+        self.assert_can_score(states, what)
+        return self.evaluate(states)
+
+    def evaluate(
+        self, states: pl.DataFrame, out_of_sample: bool = False, what: str = "decision engine"
+    ) -> pl.DataFrame:
         """Add the decision columns to a frame of fourth-down states.
+
+        With `out_of_sample=True` (use it whenever real plays are scored and reported as
+        out-of-sample) the models' fit stamps are checked against the rows' seasons first.
 
         `states` needs the columns in `wp.STATE_COLUMNS` (real plays have them;
         `wp.state_frame(down=4, ...)` builds hypothetical ones). Everything is from the
@@ -557,6 +637,8 @@ class DecisionEngine:
         null inside `punt_min_yardline_100`, where almost no punts exist to learn from.
         Overtime states and states with missing inputs get nulls throughout.
         """
+        if out_of_sample:
+            self.assert_can_score(states, what)
         v = self.action_values(states)
         table = np.column_stack([v["go_wp"], v["fg_wp"], v["punt_wp"]])
         best, best_wp, margin, gain = summarize_actions(table)
@@ -605,10 +687,11 @@ def fit_evaluation_components(
     """Component models for judging later seasons: fitted on `fit_seasons` only.
 
     `plays` must already have the next-state columns (`components.add_next_state`) if
-    it is a resample of games. The kickoff starting distribution is the one exception
-    to the season rule: it is taken from `kickoff_seasons` of the full table, because
-    it describes the kickoff rule in force (touchback to the 35 in 2025), not a skill
-    to be learned, and earlier seasons were played under a different rule.
+    it is a resample of games. The kickoff start tables are the one exception to the
+    season rule: the tables of the rule eras of `kickoff_seasons` are fitted on those
+    seasons' own kickoffs (logged as `components.KICKOFF_RULE_REASON`), because they
+    describe the kickoff rule in force, not a skill to be learned, and no earlier season
+    was played under that rule.
     """
     lo, hi = int(fit_seasons[0]), int(fit_seasons[1])
     models = ComponentModels(config).fit(plays.filter(pl.col("season").is_between(lo, hi)))
@@ -618,8 +701,17 @@ def fit_evaluation_components(
 def set_kickoff(
     models: ComponentModels, plays: pl.DataFrame, kickoff_seasons: list[int]
 ) -> ComponentModels:
-    """Replace the bundle's kickoff distribution with the one from `kickoff_seasons`."""
-    models.kickoff, models.kickoff_info = fit_kickoff(plays, list(kickoff_seasons))
+    """Add the kickoff tables of the rule eras of `kickoff_seasons`, each fitted on its own
+    seasons' kickoffs (the logged rule-constant exception). Only kickoff rows are read.
+    The bundle's default table becomes the latest era's."""
+    from fourth_and_rl.components import add_next_state
+
+    seasons = [int(s) for s in kickoff_seasons]
+    # The next-state lookup needs whole games, so add it before selecting seasons.
+    kick = add_next_state(plays).filter(pl.col("season").is_in(seasons))
+    models.add_kickoff_rule_tables(
+        kick, seasons, allow_test_seasons=True, reason=KICKOFF_RULE_REASON
+    )
     return models
 
 
@@ -630,29 +722,45 @@ def load_engine(
 ) -> DecisionEngine:
     """The headline engine used by every M2 and M3 result.
 
-    Win probability: the saved M1 headline model (trees on 2010 to 2021, Platt map on
-    2022 to 2023). Components: fitted on the seasons in `models.components_fit_seasons`
-    (2010 to 2023), cached under data/models/. Neither has seen 2024 or 2025 except
-    for the kickoff rule (see `fit_evaluation_components`).
+    Win probability: the saved M1 headline model (`models.wp_path`). Components: the
+    development bundle (`components.DEV_MODEL_PATH`, fitted on the development seasons,
+    with the kickoff tables of every rule era). The cached bundle is reused only if its
+    stamp matches the current components config and the configured fit seasons
+    (`components.dev_bundle_is_current`); otherwise, or with `refit`, it is refitted from
+    the development file (plus the test seasons' kickoff rows for the rule tables) and
+    saved. `plays`, if given, must be the full state table and saves reading it again;
+    only its development seasons and the kickoff rows of the test seasons are fitted.
+
+    The engine is checked to be able to score the test seasons out of sample.
     """
+    from fourth_and_rl import components as cm
+
     cfg = config or load_config()
     m = cfg["models"]
     wp_model = wp_mod.WPModel.load(ROOT / m["wp_path"])
-    cache = ROOT / m["components_cache"]
-    if cache.exists() and not refit:
-        comps = ComponentModels.load(cache)
-    else:
-        if plays is None:
-            from fourth_and_rl import data
-
-            plays = data.load_plays()
-        from fourth_and_rl.components import add_next_state
-
-        comps = fit_evaluation_components(
-            add_next_state(plays), m["components_fit_seasons"], m["kickoff_seasons"]
+    cache = ROOT / m.get("components_cache", str(cm.DEV_MODEL_PATH.relative_to(ROOT)))
+    lo, hi = (int(x) for x in m["components_fit_seasons"])
+    if set(range(lo, hi + 1)) != set(splits.dev_seasons()):
+        raise ValueError(
+            f"components_fit_seasons {m['components_fit_seasons']} must be the development "
+            f"seasons {splits.dev_seasons()}: the engine uses the development bundle"
         )
+    comps = ComponentModels.load(cache) if cache.exists() and not refit else None
+    if comps is None or not cm.dev_bundle_is_current(comps):
+        if plays is None:
+            dev, test = None, None
+        else:
+            dev = plays.filter(pl.col("season").is_in(list(splits.dev_seasons())))
+            # Whole test-season games (the next-state lookup needs them); only their
+            # kickoff rows are fitted, as the rule tables.
+            test = plays.filter(pl.col("season").is_in(list(splits.test_seasons())))
+        comps = cm.fit_dev_bundle(dev_plays=dev, test_plays=test)
         comps.save(cache)
-    return DecisionEngine(wp_model, comps, cfg.get("engine"))
+    engine = DecisionEngine(wp_model, comps, cfg.get("engine"))
+    engine.assert_can_score(
+        pl.DataFrame({"season": list(splits.test_seasons())}), "load_engine: the headline engine"
+    )
+    return engine
 
 
 def chart_states(

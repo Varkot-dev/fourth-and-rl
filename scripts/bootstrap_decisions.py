@@ -291,7 +291,7 @@ def main() -> None:
 
     # ---- real fourth downs
     r = slice(chart.height, states.height)
-    evaluated = engine.evaluate(real)
+    evaluated = engine.evaluate(real, out_of_sample=True, what="M3 real fourth downs")
     nn = lambda x: pl.Series(np.asarray(x, dtype=float)).fill_nan(None)  # noqa: E731
     keep = [c for c in ID_COLUMNS if c in real.columns] + wp.STATE_COLUMNS
     decisions = evaluated.select(

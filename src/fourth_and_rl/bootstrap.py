@@ -15,6 +15,7 @@ split_half_agreement. Teaching notes: docs/notes/m3_bootstrap.md.
 from __future__ import annotations
 
 import hashlib
+import json
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -24,7 +25,8 @@ import polars as pl
 import yaml
 
 from fourth_and_rl import wp as wp_mod
-from fourth_and_rl.components import ComponentModels, add_next_state
+from fourth_and_rl.components import ComponentModels, add_next_state, config_hash
+from fourth_and_rl.components import load_config as load_components_config
 from fourth_and_rl.decision import DecisionEngine, set_kickoff, summarize_actions
 from fourth_and_rl.paths import CONFIGS, ROOT
 
@@ -189,8 +191,10 @@ def fit_replicate(
 
     Win probability: trees on the drawn training games, calibration map on the drawn
     calibration games (so the noise of a two-season calibration set is part of the
-    bootstrap). Components: all drawn games together. The kickoff distribution is the
-    fixed rule-of-the-day table (see `decision.fit_evaluation_components`).
+    bootstrap). Components: all drawn games together (development seasons only; the fit
+    guards refuse anything else). The kickoff tables of `kickoff_seasons` are the fixed
+    rule-era tables, fitted on those seasons' own kickoffs and not resampled (see
+    `decision.set_kickoff`).
     """
     draw = plan.draw(replicate)
     drive_seed = int(draw["_drive_seed"][0]) if "_drive_seed" in draw else None
@@ -210,6 +214,33 @@ def replicate_paths(boot_dir: Path, replicate: int) -> dict[str, Path]:
         "wp": boot_dir / f"{stem}_wp.joblib",
         "components": boot_dir / f"{stem}_components.joblib",
         "draw": boot_dir / f"{stem}_draw.npz",
+        "key": boot_dir / f"{stem}_key.json",
+    }
+
+
+def replicate_key(
+    plan: BootstrapPlan,
+    replicate: int,
+    wp_config: dict,
+    components_config: dict | None,
+    kickoff_seasons: list[int],
+    calibration: str,
+) -> dict[str, Any]:
+    """Everything a saved replicate depends on. A saved replicate is reused only when its
+    key file equals this, so a changed config refits it instead of silently reusing it."""
+    comps_cfg = components_config if components_config is not None else load_components_config()
+    return {
+        "replicate": int(replicate),
+        "seed": plan.seed,
+        "train_seasons": list(plan.train_seasons),
+        "calib_seasons": list(plan.calib_seasons),
+        "within_game": plan.within_game,
+        "game_fraction": plan.game_fraction,
+        "games": {name: block.n_games for name, block in plan.blocks.items()},
+        "wp_config_hash": config_hash(wp_config),
+        "components_config_hash": config_hash(comps_cfg),
+        "kickoff_seasons": sorted(int(x) for x in kickoff_seasons),
+        "calibration": calibration,
     }
 
 
@@ -229,11 +260,19 @@ def ensure_replicate(
     n_threads: int = 2,
     calibration: str = "platt",
 ) -> bool:
-    """Fit and save one replicate unless its files already exist. Returns True if it
-    was fitted now. The components file is written last and marks the replicate done."""
+    """Fit and save one replicate unless an up-to-date copy exists. Returns True if it was
+    fitted now. "Up to date" means the saved key file equals `replicate_key` for these
+    settings (file existence alone is not enough). The key file is written last and marks
+    the replicate done."""
     paths = replicate_paths(directory, replicate)
+    key = replicate_key(plan, replicate, wp_config, components_config, kickoff_seasons,
+                        calibration)  # fmt: skip
     if all(p.exists() for p in paths.values()):
-        return False
+        try:
+            if json.loads(paths["key"].read_text()) == key:
+                return False
+        except (OSError, ValueError):
+            pass
     directory.mkdir(parents=True, exist_ok=True)
     model, comps, draw = fit_replicate(
         plan, replicate, wp_config, components_config, kickoff_seasons, n_threads, calibration
@@ -241,6 +280,7 @@ def ensure_replicate(
     np.savez_compressed(paths["draw"], **draw)
     model.save(paths["wp"])
     comps.save(paths["components"])
+    paths["key"].write_text(json.dumps(key, indent=1, sort_keys=True) + "\n")
     return True
 
 

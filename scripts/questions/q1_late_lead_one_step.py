@@ -184,7 +184,7 @@ def main() -> None:
     n_boot = int(cfg["n_boot"])
     directory = bootstrap.boot_dir(cfg)
     missing = [b for b in range(n_boot)
-               if not bootstrap.replicate_paths(directory, b)["components"].exists()]  # fmt: skip
+               if not bootstrap.replicate_paths(directory, b)["key"].exists()]  # fmt: skip
     if missing:
         raise SystemExit(f"{len(missing)} bootstrap replicates are missing; run "
                          "scripts/bootstrap_decisions.py first")  # fmt: skip

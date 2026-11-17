@@ -18,7 +18,7 @@ within_game: none             # "none": whole games (default). "drives": also re
                               # drives inside each drawn game, as the paper does
 game_fraction: 1.0            # draw this share of the games (1.0 = the standard bootstrap)
 calibration: platt            # calibration map refitted on the drawn calibration games
-kickoff_seasons: [2025]       # fixed kickoff-rule table, not resampled
+kickoff_seasons: [2024, 2025] # kickoff-rule tables (one per rule era), not resampled
 
 models_dir: data/models/boot  # one folder per seed and within_game setting (not committed)
 

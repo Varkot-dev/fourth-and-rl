@@ -275,8 +275,9 @@ def main() -> None:
     plays = data.load_plays()
     engine = decision.load_engine(plays, cfg)
     joined = load_joined(plays, cfg)
+    engine.assert_can_score(joined, "nfl4th comparison on real fourth downs")
     values = engine.action_values(joined)
-    evaluated = engine.evaluate(joined).with_columns(
+    evaluated = engine.evaluate(joined, out_of_sample=True, what="nfl4th comparison").with_columns(
         pl.Series("wp_if_fg_make", values["wp_if_fg_make"]),
         pl.Series("wp_if_fg_miss", values["wp_if_fg_miss"]),
     )
