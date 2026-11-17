@@ -30,3 +30,24 @@ the concepts it used, the decisions made and why, and what the results showed.
   285 from 2021, and 284 in 2022 (one cancelled game).
 - Field goals made: 84.5%. Fourth-down conversions when going for it: 51.5%.
 - Fourth-down go rate rose from 12.6% in 2010 to 23.3% in 2025.
+
+## Where the rest of the notes are
+
+From M1 on, each milestone's teaching notes have their own file under `docs/notes/`:
+
+| Milestone | Notes |
+|---|---|
+| M1 win probability (versions 1 and 2) | `docs/notes/m1_wp.md` |
+| M1 neural network and deep ensemble | `docs/notes/m1_wp_nn.md` |
+| M1 play-outcome models | `docs/notes/m1_components.md` |
+| M2 decision engine | `docs/notes/m2_decision.md` |
+| M3 bootstrap | `docs/notes/m3_bootstrap.md` |
+| M3b blown leads | `docs/notes/m3b_blown_leads.md` |
+| M4 MDP and dynamic programming | `docs/notes/m4_mdp.md` |
+| M5 reinforcement learning | `docs/notes/m5_rl.md` |
+| M6 offline reinforcement learning | `docs/notes/m6_offline.md` |
+| Question 2, run versus pass | `docs/notes/q2_run_vs_pass.md` |
+| M9 "was it really fourth and 1?" | `docs/notes/m9_distance_error.md` |
+
+The design decisions and their history are in the Decision log at the bottom of `docs/PLAN.md`.
+
