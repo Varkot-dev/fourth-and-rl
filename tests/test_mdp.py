@@ -532,7 +532,8 @@ def test_symmetry_of_the_two_sides() -> None:
 
 
 def test_kneel_threshold_arithmetic() -> None:
-    # T(n, m) = 40 * max(m - n, 0) + 2 * m capped at 120: first down 120, 86, 46, 6 seconds.
+    # T(n, m) = 40 * max(m - n, 0) + 2 * m capped at 120: on first down 120, 86, 46 and 6
+    # seconds, which round down to whole 5-second ticks: 120, 85, 45 and 5.
     thr = mg.kneel_threshold_ticks(3, 4, 5, 2.0, 40.0, 120.0)
     assert (thr[:, 0] * 5).tolist() == [120, 85, 45, 5]
     assert (thr[:, 1] * 5).tolist() == [80, 40, 0, 0]
@@ -591,6 +592,175 @@ def test_step_and_lookups(toy: mg.Solution) -> None:
             s = nxt
         assert total < 100
     assert seen_done
+
+
+def _end_only(model: mg.GameModel) -> mg.GameModel:
+    """The same toy game restricted to its end phase (no "mid" or "first" arrays)."""
+    import copy
+
+    m = copy.deepcopy(model)
+    m.clock.n_ticks, m.clock.half_tick = m.clock.endgame_ticks, None
+    return m
+
+
+def test_save_and_load_solution_round_trip(toy: mg.Solution, tmp_path) -> None:
+    target = tmp_path / "mdp"
+    target.mkdir()
+    (target / "tables.joblib").write_bytes(b"cached tables")  # not part of a solution
+    mg.save_solution(toy, target)
+    back = mg.load_solution(target)
+    for ph in toy.v:
+        assert np.array_equal(back.v[ph], toy.v[ph]) and np.array_equal(back.pol[ph], toy.pol[ph])
+    assert (target / "tables.joblib").read_bytes() == b"cached tables"
+    assert sorted(p.name for p in tmp_path.iterdir()) == ["mdp"]  # no temporary folders left
+    # A later solve with fewer phases replaces the folder: no stale phase survives.
+    small = mg.solve(_end_only(toy.model))
+    mg.save_solution(small, target)
+    assert not (target / "value_first.npy").exists()
+    assert set(mg.load_solution(target).v) == {"end"}
+    assert (target / "tables.joblib").exists()
+
+
+def test_load_solution_refuses_missing_or_misshapen_arrays(toy: mg.Solution, tmp_path) -> None:
+    target = mg.save_solution(toy, tmp_path / "a")
+    (target / "value_mid.npy").unlink()
+    with pytest.raises(ValueError, match="value_mid.npy is missing"):
+        mg.load_solution(target)
+    target = mg.save_solution(toy, tmp_path / "b")
+    np.save(target / "policy_end.npy", toy.pol["end"][:-1])
+    with pytest.raises(ValueError, match="policy_end.npy has shape"):
+        mg.load_solution(target)
+    target = mg.save_solution(mg.solve(_end_only(toy.model)), tmp_path / "c")
+    np.save(target / "value_first.npy", toy.v["first"])
+    with pytest.raises(ValueError, match="no 'first' phase"):
+        mg.load_solution(target)
+
+
+def test_interrupted_save_leaves_the_old_solution(toy: mg.Solution, tmp_path, monkeypatch) -> None:
+    target = mg.save_solution(toy, tmp_path / "mdp")
+    small = mg.solve(_end_only(toy.model))
+
+    def broken(*args, **kwargs):
+        raise OSError("disk full")
+
+    monkeypatch.setattr(mg.joblib, "dump", broken)
+    with pytest.raises(OSError, match="disk full"):
+        mg.save_solution(small, target)
+    monkeypatch.undo()
+    assert set(mg.load_solution(target).v) == {"end", "mid", "first"}
+    assert sorted(p.name for p in tmp_path.iterdir()) == ["mdp"]
+
+
+def test_reuse_mismatches_ignore_fit_times_and_name_what_changed() -> None:
+    stamp = {"seasons": [2018, 2019], "tables": {"fitted_at": "2026-01-01", "n_rows": 5}}
+    key = {"mdp_config_hash": "abc", "data_fingerprint": {"hash": "1"}}
+    meta = {"stamp": {**stamp, "tables": {"fitted_at": "2026-02-02", "n_rows": 5}},
+            "tables_key": dict(key)}  # fmt: skip
+    assert mg.reuse_mismatches(meta, stamp, key) == []
+    changed = {**key, "data_fingerprint": {"hash": "2"}}
+    assert mg.reuse_mismatches(meta, stamp, changed) == [
+        "tables_key differs in ['data_fingerprint']"
+    ]
+    assert mg.reuse_mismatches({"stamp": stamp}, stamp, key) == [
+        "the saved solution has no tables_key"
+    ]
+
+
+def test_game_over_action_only_where_the_leader_can_kneel_out(toy: mg.Solution) -> None:
+    sim, rng = mg.Simulator(toy), np.random.default_rng(0)
+    tied = mg.GameState(seconds=40, score=0, down=1, ydstogo=2, yardline_100=4,
+                        off_timeouts=2, def_timeouts=2)  # fmt: skip
+    with pytest.raises(ValueError, match="kneel"):
+        mg.step(tied, "game_over", rng, sim)
+    thr = int(toy.model.clock.kneel_ticks[0, 0])
+    ahead = mg.GameState(seconds=thr * 5, score=1, down=1, ydstogo=2, yardline_100=4,
+                         off_timeouts=2, def_timeouts=0)  # fmt: skip
+    _, info = mg.step(ahead, "game_over", rng, sim)
+    assert info["done"] and info["result"] == 1.0
+
+
+def test_simulator_start_defaults_to_full_timeouts_and_validates(toy: mg.Solution) -> None:
+    sim = mg.Simulator(toy)
+    st = sim.start(3, t=5)
+    full = toy.model.clock.n_timeouts
+    assert (st["a"] == full).all() and (st["b"] == full).all()
+    with pytest.raises(ValueError, match="timeouts"):
+        sim.start(1, t=5, a=full + 1)
+    with pytest.raises(ValueError, match="timeouts"):
+        sim.start(1, t=5, b=-1)
+    with pytest.raises(TypeError, match="unknown"):
+        sim.start(1, t=5, timeouts=1)
+
+
+def test_play_split_is_consistent(toy: mg.Solution) -> None:
+    state = mg.GameState(seconds=40, score=-1, down=1, ydstogo=2, yardline_100=4,
+                         off_timeouts=2, def_timeouts=1)  # fmt: skip
+    out = toy.play_split(state)
+    p = out["p_keep_or_score"]
+    assert 0 < p < 1
+    total = p * out["value_if_kept"] + (1 - p) * out["value_if_lost"]
+    assert total == pytest.approx(out["value"])
+
+
+def test_clock_landmarks_match_the_game_model_config() -> None:
+    from fourth_and_rl import wp
+
+    c = mdp.load_config()["clock"]
+    assert mdp.HALFTIME_SECONDS == c["half_seconds"] == wp.REGULATION_SECONDS / 2
+    assert mdp.END_GAME_SECONDS == c["endgame_seconds"]
+    assert mdp.TWO_MINUTE_SECONDS == c["warning_seconds"]
+    assert mdp.FOURTH_QUARTER_SECONDS == wp.REGULATION_SECONDS / 4
+    coach = mdp.load_config()["coach"]
+    for key, default in mg.COACH_DEFAULTS.items():
+        assert list(np.atleast_1d(coach[key])) == list(np.atleast_1d(default)), key
+
+
+def test_coach_setting_falls_back_only_for_old_tables(toy: mg.Solution) -> None:
+    sim = mg.Simulator(toy, coach={"table": None, "end_fg_ticks": 7})
+    assert sim._coach_setting("end_fg_ticks") == 7
+    assert sim._coach_setting("two_point_seconds") == mg.COACH_DEFAULTS["two_point_seconds"]
+
+
+# SHA-1 of the fixed-seed games below, computed with the simulator before `advance` was
+# split into helpers. Every quantity hashed is integer-valued (results, margins, points,
+# drive logs, final states), so the digest changes only if a game changes. If a deliberate
+# change to the simulator moves it, recompute it and say why in the commit.
+SIMULATOR_REFERENCE_SHA1 = "ca22e86ade9b1b7b9b90b7e37bd3fd3177fa8dde"
+
+
+def test_fixed_seed_games_are_unchanged() -> None:
+    import hashlib
+
+    h = hashlib.sha1()
+    for seed, defense in ((1, "optimal"), (2, "empirical")):
+        sol = mg.solve(toy_football(seed=seed, defense=defense))
+        g = sol.grid
+        rng = np.random.default_rng(seed)
+        table = rng.dirichlet(np.ones(3), size=(len(mdp.SITUATIONS), g.n_dist, g.n_yl))
+        coach = {"table": table, "end_fg_max_yardline": 3, "end_fg_ticks": 2,
+                 "two_point_seconds": 60, "two_point_leads": [-1, 0, 1]}  # fmt: skip
+        sim = mg.Simulator(sol, coach)
+        cases = [
+            dict(t=20, s=0, f=int(g.fidx(1, 1, 4)), a=0, b=0, r=1),
+            dict(t=9, s=-2, f=int(g.fidx(1, 1, 5)), a=2, b=1, r=0),
+            dict(t=7, s=1, f=int(g.fidx(2, 2, 4)), a=0, b=2, r=0),
+            dict(t=5, s=0, f=int(g.fidx(3, 0, 3)), a=1, b=1, r=0),
+        ]
+        policies = (("optimal", "model"), ("coach", "coach"), ("optimal", "coach"),
+                    ("coach", "model"))  # fmt: skip
+        for policy, post in policies:
+            for case in cases:
+                st = sim.start(2000, **case)
+                out = mg.simulate(sim, st, np.random.default_rng(11), policy=policy, post=post,
+                                  log_drives=True, checkpoints=[14, 9, 4])  # fmt: skip
+                arrays = [out["result"], out["margin"], out["points"],
+                          *out["checkpoint_margin"].values(),
+                          *(out["drives"][k] for k in sorted(out["drives"]))]  # fmt: skip
+                for arr in arrays:
+                    h.update(np.ascontiguousarray(np.asarray(arr, dtype=np.float64)).tobytes())
+                for k in sorted(st):
+                    h.update(np.ascontiguousarray(st[k].astype(np.int64)).tobytes())
+    assert h.hexdigest() == SIMULATOR_REFERENCE_SHA1
 
 
 def test_drive_log_accounts_for_every_point(toy: mg.Solution) -> None:

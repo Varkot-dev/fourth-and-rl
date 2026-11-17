@@ -53,6 +53,16 @@ SITUATIONS = (
     "last_5_min_tied",
     "last_2_min_first_half",
 )
+# Clock landmarks in game seconds left that define the coach situations above
+# (regulation is wp.REGULATION_SECONDS = 3,600). The game model's own clock is in
+# configs/mdp.yaml; tests/test_mdp.py checks that the two agree.
+HALFTIME_SECONDS = 1800  # second half starts
+FOURTH_QUARTER_SECONDS = 900  # fourth quarter starts
+END_GAME_SECONDS = 300  # last 5:00
+TWO_MINUTE_SECONDS = 120  # two-minute warning
+# yardline_100 edges of the coarse coach-table zones: 1..35 (opponent's 35 and closer),
+# 36..60 (to the own 40), 61..99.
+COACH_ZONE_EDGES = (35, 60)
 COACH_DIST_EDGES = np.array([1, 2, 3, 4, 6, 10])  # 1, 2, 3, 4-5, 6-9, 10+
 COACH_YL_WIDTH = 5
 COACH_ACTIONS = ("go", "field_goal", "punt")
@@ -287,7 +297,12 @@ def build_field_kernels(
                     o = models.go_outcomes(yl, d)
                     p = float(o["p_convert"])
                     p_new = float(np.clip(p + go_convert_shift, 1e-6, 1 - 1e-6))
-                    up, down_scale = p_new / p, (1.0 - p_new) / (1.0 - p)
+                    if 0.0 < p < 1.0:
+                        up, down_scale = p_new / p, (1.0 - p_new) / (1.0 - p)
+                    else:
+                        # A certain outcome has no other side to move mass to: the shift
+                        # leaves the row unchanged (and rows still sum to 1).
+                        up, down_scale = 1.0, 1.0
                     kept, p_td = o["first_down"] * up, float(o["p_touchdown"]) * up
                     ys = np.nonzero(kept)[0]
                     gain = yl - ys
@@ -395,18 +410,19 @@ def coach_situation(
     look it up in the simulator, so the two always agree."""
     t, h, s = np.asarray(game_seconds), np.asarray(half_seconds), np.asarray(score)
     out = np.zeros(np.shape(t), dtype=np.int64)
-    first_half = t > 1800
-    out = np.where(first_half & (h <= 120), 9, out)
-    q4 = t <= 900
-    out = np.where(q4 & (t > 300) & (s <= -1) & (s >= -8), 1, out)
+    first_half = t > HALFTIME_SECONDS
+    out = np.where(first_half & (h <= TWO_MINUTE_SECONDS), 9, out)
+    q4 = t <= FOURTH_QUARTER_SECONDS
+    out = np.where(q4 & (t > END_GAME_SECONDS) & (s <= -1) & (s >= -8), 1, out)
     out = np.where(q4 & (s <= -9), 2, out)
-    mid, late = (t <= 300) & (t > 120), t <= 120
+    end = t <= END_GAME_SECONDS
+    mid, late = end & (t > TWO_MINUTE_SECONDS), t <= TWO_MINUTE_SECONDS
     out = np.where(mid & (s <= -1) & (s >= -3), 3, out)
     out = np.where(mid & (s <= -4) & (s >= -8), 4, out)
     out = np.where(late & (s <= -1) & (s >= -3), 5, out)
     out = np.where(late & (s <= -4) & (s >= -8), 6, out)
-    out = np.where((t <= 300) & (s >= 1), 7, out)
-    out = np.where((t <= 300) & (s == 0), 8, out)
+    out = np.where(end & (s >= 1), 7, out)
+    out = np.where(end & (s == 0), 8, out)
     return out
 
 
@@ -536,7 +552,9 @@ def fit_tables(
     out["neutral_hist"], out["neutral_hist_n"], out["neutral_median_seconds"] = hist(
         running.filter(contexts["neutral"])
     )
-    crosses = (pl.col("half_seconds_remaining") > 120) & (pl.col("_next_half_seconds") <= 120)
+    crosses = (pl.col("half_seconds_remaining") > TWO_MINUTE_SECONDS) & (
+        pl.col("_next_half_seconds") <= TWO_MINUTE_SECONDS
+    )
     in_bounds = running.filter(~pl.col("_oob") & ~pl.col("_timeout_after") & ~crosses)
     for key, ctx in (("hurry_hist", "chase"), ("hurry_hist_late", "chase_late")):
         out[key], out[f"{key}_n"], out[f"{key}_median_seconds"] = hist(
@@ -727,19 +745,16 @@ def fit_coach_table(
     )
     yl = d["yardline_100"].to_numpy().astype(int)
     band = (yl - 1) // COACH_YL_WIDTH
-    zone = np.where(yl <= 35, 0, np.where(yl <= 60, 1, 2))
+    near, mid_field = COACH_ZONE_EDGES
+    zone = np.where(yl <= near, 0, np.where(yl <= mid_field, 1, 2))
     act = np.array([COACH_ACTIONS.index(a) for a in d["fourth_down_decision"].to_list()])
     n_sit, n_dg, n_band = len(SITUATIONS), len(COACH_DIST_EDGES), 100 // COACH_YL_WIDTH
     fine = np.zeros((n_sit, n_dg, n_band, 3))
     np.add.at(fine, (sit, dg, band, act), 1.0)
     coarse = np.zeros((n_sit, n_dg, 3, 3))
     np.add.at(coarse, (sit, dg, zone, act), 1.0)
-    band_zone = np.array(
-        [
-            0 if b * COACH_YL_WIDTH + 3 <= 35 else (1 if b * COACH_YL_WIDTH + 3 <= 60 else 2)
-            for b in range(n_band)
-        ]
-    )
+    band_mid = np.arange(n_band) * COACH_YL_WIDTH + 3  # middle yard line of each band
+    band_zone = np.where(band_mid <= near, 0, np.where(band_mid <= mid_field, 1, 2))
 
     def shrink(counts: np.ndarray, prior: np.ndarray) -> np.ndarray:
         return (counts + k0 * prior) / (counts.sum(axis=-1, keepdims=True) + k0)

@@ -48,7 +48,9 @@ same transition model, and the loader API (`load_solution`, `value`, `policy`).
 from __future__ import annotations
 
 import json
+import os
 import resource
+import shutil
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -77,6 +79,17 @@ DRIVE_RESULTS = (
     "end_of_half",
 )
 SOLUTION_DIR = DATA / "mdp"
+
+# Coach end-of-half settings for coach tables saved before these keys were written
+# (scripts/solve_mdp.py now copies all four from configs/mdp.yaml, section `coach`, and a
+# missing key there raises). This is the one place the old defaults live; they equal the
+# config values the keys were introduced with.
+COACH_DEFAULTS: dict[str, Any] = {
+    "end_fg_max_yardline": 42,
+    "end_fg_ticks": 2,
+    "two_point_seconds": 900,
+    "two_point_leads": (-5, -2, 1, 5),
+}
 
 
 # --------------------------------------------------------------------------------------
@@ -581,13 +594,15 @@ class Solution:
         kept[: g.nf] = True
         kept[g.col_td] = True
         p = float(row[kept].sum())
+        kept_mass, lost_mass = float(val[kept].sum()), float(val[~kept].sum())
         return {
             "mode": mode,
             "p_keep_or_score": p,
             "p_touchdown_on_the_play": float(row[g.col_td]),
             "p_clock_running_given_kept": float(row_in.sum() / max(row[: g.nf].sum(), 1e-12)),
-            "value_if_kept": float(val[kept].sum() / p),
-            "value_if_lost": float(val[~kept].sum() / (1.0 - p)),
+            # Conditional values are undefined (NaN) when their branch cannot happen.
+            "value_if_kept": kept_mass / p if p > 0 else float("nan"),
+            "value_if_lost": lost_mass / (1.0 - p) if p < 1 else float("nan"),
             "value": float(val.sum()),
         }
 
@@ -632,15 +647,58 @@ def solve(model: GameModel, progress: bool = False) -> Solution:
 # --------------------------------------------------------------------------------------
 
 
+_SOLUTION_FILES = ("model.joblib", "meta.json")
+
+
+def _is_solution_file(name: str) -> bool:
+    """Files `save_solution` owns: anything else in the folder (the cached tables) is kept."""
+    return name in _SOLUTION_FILES or (
+        name.endswith(".npy") and name.startswith(("value_", "policy_"))
+    )
+
+
 def save_solution(sol: Solution, path: Path | str | None = None) -> Path:
+    """Write the solved game to `path` (default `SOLUTION_DIR`), atomically.
+
+    Everything is written to a temporary folder next to the target first; only when every
+    array, the model and meta.json are on disk is the old folder swapped out by two
+    renames. An interrupted save therefore leaves the previous solution intact (and a
+    stray temporary folder), never a mix of old and new arrays. Files in the target that
+    are not part of a solution (for example tables.joblib, written by scripts/solve_mdp.py)
+    are carried over into the new folder; old value and policy arrays are not, so a phase
+    the new model lacks cannot survive from an earlier solve.
+    """
     path = Path(path) if path is not None else SOLUTION_DIR
-    path.mkdir(parents=True, exist_ok=True)
-    for ph in sol.v:
-        np.save(path / f"value_{ph}.npy", sol.v[ph])
-        np.save(path / f"policy_{ph}.npy", sol.pol[ph])
-    joblib.dump(sol.model, path / "model.joblib")
-    with open(path / "meta.json", "w") as f:
-        json.dump(sol.meta, f, indent=2, default=float)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tag = f"{os.getpid()}-{time.time_ns()}"
+    tmp = path.parent / f".{path.name}.tmp-{tag}"
+    old = path.parent / f".{path.name}.old-{tag}"
+    tmp.mkdir()
+    try:
+        for ph in sol.v:
+            np.save(tmp / f"value_{ph}.npy", sol.v[ph])
+            np.save(tmp / f"policy_{ph}.npy", sol.pol[ph])
+        joblib.dump(sol.model, tmp / "model.joblib")
+        with open(tmp / "meta.json", "w") as f:
+            json.dump(sol.meta, f, indent=2, default=float)
+        if path.exists():
+            for entry in path.iterdir():
+                if not _is_solution_file(entry.name) and not (tmp / entry.name).exists():
+                    if entry.is_dir():
+                        shutil.copytree(entry, tmp / entry.name)
+                    else:
+                        try:
+                            os.link(entry, tmp / entry.name)
+                        except OSError:
+                            shutil.copy2(entry, tmp / entry.name)
+            path.rename(old)
+        tmp.rename(path)
+    except BaseException:
+        shutil.rmtree(tmp, ignore_errors=True)
+        if old.exists() and not path.exists():
+            old.rename(path)
+        raise
+    shutil.rmtree(old, ignore_errors=True)
     return path
 
 
@@ -649,32 +707,118 @@ def solution_exists(path: Path | str | None = None) -> bool:
     return (path / "model.joblib").exists() and (path / "value_end.npy").exists()
 
 
+def expected_shapes(model: GameModel) -> dict[str, tuple[int, ...]]:
+    """Shape of v[phase] and pol[phase] for every phase the model has."""
+    g = model.kern.grid
+    out = {}
+    for ph in ("end", "mid", "first"):
+        lo, hi = model.phase_range(ph)
+        if hi >= lo:
+            out[ph] = (hi - lo + 1, g.nf, model.n_score, *model.extra_shape(ph))
+    return out
+
+
 def load_solution(path: Path | str | None = None, mmap: bool = True) -> Solution:
     """Load the solved game written by scripts/solve_mdp.py. Arrays are memory-mapped by
-    default, so loading is instant and only the slices you touch are read."""
+    default, so loading is instant and only the slices you touch are read.
+
+    Every phase the saved model has must be present, with value and policy arrays of the
+    shape and dtype the model implies, and no array may exist for a phase the model lacks;
+    otherwise ValueError (a partial or mixed folder is never loaded)."""
     path = Path(path) if path is not None else SOLUTION_DIR
     if not solution_exists(path):
         raise FileNotFoundError(f"no solved game under {path}. Run: python scripts/solve_mdp.py")
     model = joblib.load(path / "model.joblib")
-    v, pol = {}, {}
+    shapes = expected_shapes(model)
+    problems = []
     for ph in ("end", "mid", "first"):
-        if (path / f"value_{ph}.npy").exists():
-            mode = "r" if mmap else None
-            v[ph] = np.load(path / f"value_{ph}.npy", mmap_mode=mode)
-            pol[ph] = np.load(path / f"policy_{ph}.npy", mmap_mode=mode)
+        if ph not in shapes:
+            stray = [n for n in (f"value_{ph}.npy", f"policy_{ph}.npy") if (path / n).exists()]
+            if stray:
+                problems.append(f"{stray} exist but the model has no {ph!r} phase")
+    v, pol = {}, {}
+    mode = "r" if mmap else None
+    for ph, shape in shapes.items():
+        for name, store, dtype in (("value", v, np.dtype(model.dtype)), ("policy", pol, np.uint8)):
+            file = path / f"{name}_{ph}.npy"
+            if not file.exists():
+                problems.append(f"{file.name} is missing")
+                continue
+            arr = np.load(file, mmap_mode=mode)
+            if arr.shape != shape or arr.dtype != dtype:
+                problems.append(
+                    f"{file.name} has shape {arr.shape} and dtype {arr.dtype}; the model "
+                    f"implies {shape} and {dtype}"
+                )
+            store[ph] = arr
+    if not (path / "meta.json").exists():
+        problems.append("meta.json is missing")
+    if problems:
+        raise ValueError(f"the solved game under {path} is incomplete or inconsistent: "
+                         + "; ".join(problems))  # fmt: skip
     with open(path / "meta.json") as f:
         meta = json.load(f)
     return Solution(model, v, pol, meta)
 
 
-_DEFAULT: Solution | None = None
+def comparable(x: Any) -> Any:
+    """`x` as it reads back from JSON, without the "fitted_at" timestamps of fit stamps,
+    so a stamp or key held in memory can be compared with one saved in meta.json."""
+
+    def strip(y: Any) -> Any:
+        if isinstance(y, dict):
+            return {k: strip(w) for k, w in y.items() if k != "fitted_at"}
+        if isinstance(y, list):
+            return [strip(w) for w in y]
+        return y
+
+    return strip(json.loads(json.dumps(x, default=float)))
 
 
-def _default() -> Solution:
-    global _DEFAULT
-    if _DEFAULT is None:
-        _DEFAULT = load_solution()
-    return _DEFAULT
+def reuse_mismatches(meta: dict, stamp: dict, tables_key: dict) -> list[str]:
+    """Why a saved solution (its meta.json) was not built from these inputs; empty if it
+    was. Compares the solution's stamp and tables key with the current ones (fit times
+    aside), so `solve_mdp.py --reuse` cannot pair a saved game with different tables."""
+    out = []
+    for name, now in (("stamp", stamp), ("tables_key", tables_key)):
+        saved = meta.get(name)
+        if saved is None:
+            out.append(f"the saved solution has no {name}")
+            continue
+        a, b = comparable(saved), comparable(now)
+        if a != b:
+            keys = sorted(k for k in set(a) | set(b) if a.get(k) != b.get(k))
+            out.append(f"{name} differs in {keys}")
+    return out
+
+
+# Solutions and simulators loaded by the module-level helpers, keyed by the folder and
+# the time its meta.json was written, so a re-solve (or another folder) is never served
+# from a stale cache.
+_DEFAULT: dict[tuple[str, int], Solution] = {}
+_DEFAULT_SIM: dict[tuple[str, int], Simulator] = {}
+
+
+def _default_key(path: Path | str | None = None) -> tuple[str, int]:
+    path = Path(path) if path is not None else SOLUTION_DIR
+    meta = path / "meta.json"
+    return str(path.resolve()), meta.stat().st_mtime_ns if meta.exists() else -1
+
+
+def _default(path: Path | str | None = None) -> Solution:
+    key = _default_key(path)
+    if key not in _DEFAULT:
+        _DEFAULT.clear()
+        _DEFAULT[key] = load_solution(path)
+    return _DEFAULT[key]
+
+
+def _default_sim(path: Path | str | None = None) -> Simulator:
+    key = _default_key(path)
+    if key not in _DEFAULT_SIM:
+        _DEFAULT_SIM.clear()
+        _DEFAULT_SIM[key] = Simulator(_default(path))
+    return _DEFAULT_SIM[key]
 
 
 def value(state: GameState) -> float:
@@ -763,11 +907,22 @@ class Simulator:
 
     def start(self, n: int, **kw: Any) -> dict[str, np.ndarray]:
         """A batch of n copies of one state (keywords t, s, f, a, b, r; scalars or arrays).
-        `s` is the true score differential; it is clipped for the model."""
+        `s` is the true score differential; it is clipped for the model. Timeouts `a` and
+        `b` default to a full set (`clock.n_timeouts`, as `GameState` defaults to 3 for the
+        real model) and must lie in 0..n_timeouts; the others default to 0."""
+        full = self.model.clock.n_timeouts
+        unknown = set(kw) - {"t", "s", "f", "a", "b", "r"}
+        if unknown:
+            raise TypeError(f"Simulator.start got unknown state keys {sorted(unknown)}")
         st = {
-            k: np.broadcast_to(np.asarray(kw.get(k, 0), dtype=np.int64), (n,)).copy()
+            k: np.broadcast_to(
+                np.asarray(kw.get(k, full if k in ("a", "b") else 0), dtype=np.int64), (n,)
+            ).copy()
             for k in ("t", "s", "f", "a", "b", "r")
         }
+        for k in ("a", "b"):
+            if st[k].size and (st[k].min() < 0 or st[k].max() > full):
+                raise ValueError(f"timeouts {k!r} must be in 0..{full}")
         st["s"] = np.clip(st["s"], -self.model.score_max, self.model.score_max)
         st["side"] = np.zeros(n, dtype=np.int64)
         st["pts"] = np.zeros((n, 2), dtype=np.int64)
@@ -778,7 +933,16 @@ class Simulator:
         c = self.model.clock
         return np.where(t <= c.endgame_ticks, 0, np.where(t <= c.th, 1, 2))
 
-    def _lookup(self, arrs: dict[str, np.ndarray], t, f, s, a, b, r) -> np.ndarray:
+    def _lookup(
+        self,
+        arrs: dict[str, np.ndarray],
+        t: np.ndarray,
+        f: np.ndarray,
+        s: np.ndarray,
+        a: np.ndarray,
+        b: np.ndarray,
+        r: np.ndarray,
+    ) -> np.ndarray:
         m = self.model
         si = s + m.score_max
         ph = self._phase_code(t)
@@ -844,7 +1008,7 @@ class Simulator:
             act[fourth] = np.where(choice == 1, A_FG, np.where(choice == 2, A_PUNT, act[fourth]))
         # As time expires: kick if a field goal ties or wins (or it is the end of the first
         # half), otherwise a trailing team must go for it.
-        cc = (self.coach.get("end_fg_max_yardline", 42), self.coach.get("end_fg_ticks", 2))
+        cc = (self._coach_setting("end_fg_max_yardline"), self._coach_setting("end_fg_ticks"))
         in_range = (yl <= cc[0]) & m.kern.fg_ok[f]
         last_game = (t <= cc[1]) & (s <= 0) & (s >= -m.fg_points)
         last_half = (t > c.th) & (t - c.th <= cc[1])
@@ -855,37 +1019,65 @@ class Simulator:
         act = np.where(last_minute, np.where(in_range, A_FG, A_CHASE), act)
         return act
 
+    def _coach_setting(self, name: str) -> Any:
+        """A coach end-of-half setting from the coach table, or its documented default
+        (`COACH_DEFAULTS`) for tables saved before the key existed."""
+        if self.coach is None:
+            raise ValueError("Simulator needs a coach table for the coach policy")
+        return self.coach[name] if name in self.coach else COACH_DEFAULTS[name]
+
     # ---- one play ----
-    def advance(
-        self,
-        st: dict[str, np.ndarray],
-        idx: np.ndarray,
-        act: np.ndarray,
+    #
+    # `advance` plays one action for a batch. It is split into the same pieces as the
+    # solver's Bellman backup, in the order the solver values a play, so each helper can be
+    # read next to the solver function it mirrors:
+    #
+    #   _sample_outcomes   the action terms of `Solution.backup` (play kernels, field goal,
+    #                      punt, kneel): where the ball ends up and whether the clock runs
+    #   _run_clock         `Solution._running_values` and `next_tick`: ticks used, and the
+    #                      offense's and defense's timeout decisions after an in-bounds play
+    #   _score             `Solution._derive`: points on the play and the try after a
+    #                      touchdown
+    #   _change_possession `Solution._aug` and `opp`: kickoffs, free kicks, turnovers and
+    #                      the switch to the other team's side, with halftime
+    #                      (`Solution.post` for the first half)
+    #   _enter_end_phase   `Solution._boundary_weights`: timeouts drawn on entering the
+    #                      last 5:00
+    #
+    # The random numbers are drawn in a fixed order (outcomes, clock, try, kickoffs,
+    # halftime kickoff, end-phase timeouts), so a fixed seed gives the same games.
+
+    def _sample_outcomes(
+        self, f: np.ndarray, act: np.ndarray, t: np.ndarray, ph: np.ndarray,
         rng: np.random.Generator,
-        post: str = "model",
-    ) -> dict[str, np.ndarray]:
-        """Play one action for the batch members `idx` (in place). Returns what happened:
-        kind (K_* code), points (to the scoring side), scrimmage (bool), half_end (bool)."""
-        m, c, g, k = self.model, self.model.clock, self.grid, self.model.kern
-        n = len(idx)
-        t, s, f = st["t"][idx], st["s"][idx], st["f"][idx]
-        a, b, r = st["a"][idx], st["b"][idx], st["r"][idx]
-        ph = self._phase_code(t)
-        kind = np.zeros(n, dtype=np.int64)
-        newf, opp_yl = f.copy(), np.ones(n, dtype=np.int64)
-        inb = np.zeros(n, dtype=bool)
-        dt = np.ones(n, dtype=np.int64)
+    ) -> dict[str, np.ndarray]:  # fmt: skip
+        """Outcome of each action (the action terms of `Solution.backup`).
+
+        Returns kind (K_* code), newf (field state if the offense keeps the ball), opp_yl
+        (the other team's yard line after a turnover), inb (the play ended in bounds with
+        the clock running) and dt (ticks used when the clock is stopped)."""
+        c, g, k = self.model.clock, self.grid, self.model.kern
+        n = len(f)
+        out = {
+            "kind": np.zeros(n, dtype=np.int64),
+            "newf": f.copy(),
+            "opp_yl": np.ones(n, dtype=np.int64),
+            "inb": np.zeros(n, dtype=bool),
+            "dt": np.ones(n, dtype=np.int64),
+        }
 
         def decode(sel: np.ndarray, col: np.ndarray) -> None:
+            """Turn kernel columns (see the `mdp` module docstring) into outcomes."""
             kd = np.full(len(col), K_KEEP)
             kd = np.where(col >= g.nf, K_TURN, kd)
             kd = np.where(col == g.col_td, K_TD, kd)
             kd = np.where(col == g.col_safety, K_SAFETY, kd)
             kd = np.where(col == g.col_opp_td, K_OPPTD, kd)
-            kind[sel] = kd
-            newf[sel] = np.where(kd == K_KEEP, col, f[sel])
-            opp_yl[sel] = np.where(kd == K_TURN, col - g.nf + 1, 1)
+            out["kind"][sel] = kd
+            out["newf"][sel] = np.where(kd == K_KEEP, col, f[sel])
+            out["opp_yl"][sel] = np.where(kd == K_TURN, col - g.nf + 1, 1)
 
+        # Plays: the kernel table depends on the mode and the time (`ClockSpec.kernel_key`).
         endp = (ph == 0) & (c.endgame_ticks > 0)
         inside = np.zeros(n, dtype=bool) if c.warning_tick is None else t <= c.warning_tick
         table = {
@@ -899,97 +1091,128 @@ class Simulator:
             sel = np.nonzero(mask)[0]
             if len(sel):
                 col = self.play[key].sample(f[sel], rng.random(len(sel)))
-                running = col >= g.na
+                running = col >= g.na  # the sampler marks clock-running outcomes
                 decode(sel, np.where(running, col - g.na, col))
-                inb[sel] = running
+                out["inb"][sel] = running
+        # Field goal: made, or the other team takes over at the spot of the miss.
         sel = np.nonzero(act == A_FG)[0]
         if len(sel):
             made = rng.random(len(sel)) < k.fg_make[f[sel]]
-            kind[sel] = np.where(made, K_FG, K_TURN)
-            opp_yl[sel] = k.fg_miss_col[f[sel]] - g.nf + 1
+            out["kind"][sel] = np.where(made, K_FG, K_TURN)
+            out["opp_yl"][sel] = k.fg_miss_col[f[sel]] - g.nf + 1
+        # Punt: uses `punt_ticks` of clock.
         sel = np.nonzero(act == A_PUNT)[0]
         if len(sel):
             decode(sel, self.punt.sample(f[sel], rng.random(len(sel))))
-            dt[sel] = c.punt_ticks
+            out["dt"][sel] = c.punt_ticks
+        # Kneel: deterministic; the clock runs unless it was fourth down (a turnover).
         sel = np.nonzero(act == A_KNEEL)[0]
         if len(sel):
             keep = k.kneel_keep[f[sel]]
             decode(sel, k.kneel_col[f[sel]])
-            inb[sel] = keep
-        scrimmage = (act != A_FG) & (act != A_PUNT)
+            out["inb"][sel] = keep
+        return out
 
-        # ---- clock ----
-        t1 = np.maximum(t - dt, 0)
+    def _next_ticks(self, tt: np.ndarray, kk: np.ndarray | int) -> np.ndarray:
+        """Vector form of `Solution.next_tick`: time after kk ticks, stopping at the
+        two-minute warning when an end-phase play crosses it."""
+        c = self.model.clock
+        t2 = np.maximum(tt - kk, 0)
+        if c.warning_tick is None:
+            return t2
         w = c.warning_tick
+        return np.where((tt <= c.endgame_ticks) & (tt > w) & (t2 < w), w, t2)
 
-        def nxt(tt: np.ndarray, kk: np.ndarray | int) -> np.ndarray:
-            t2 = np.maximum(tt - kk, 0)
-            if w is None:
-                return t2
-            return np.where((tt <= c.endgame_ticks) & (tt > w) & (t2 < w), w, t2)
+    def _run_clock(
+        self, st_now: dict[str, np.ndarray], act: np.ndarray, ph: np.ndarray, oc: dict,
+        rng: np.random.Generator, post: str,
+    ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:  # fmt: skip
+        """Time after the play and both teams' timeouts (`Solution._running_values`).
+
+        A stopped clock costs `dt` ticks. Before the end phase an in-bounds play takes a
+        number of ticks from the neutral histogram. In the end phase the offense burns
+        clock (protect, kneel) or plays at its tempo (neutral, chase); then, as the solver
+        assumes with post="model", a neutral or chasing offense spends its own timeout when
+        that is worth more, and the defense spends one when that lowers the offense's value
+        (or, with post="coach" or an empirical defense, at the measured rates). Returns
+        (new time, offense timeouts, defense timeouts)."""
+        c = self.model.clock
+        t, s, a, b, r = (st_now[x] for x in ("t", "s", "a", "b", "r"))
+        a, b = a.copy(), b.copy()
+        inb, newf = oc["inb"], oc["newf"]
+        w = c.warning_tick
+        inside = np.zeros(len(t), dtype=bool) if w is None else t <= w
+        t1 = np.maximum(t - oc["dt"], 0)
 
         early = np.nonzero(inb & (ph != 0))[0]
         if len(early):
             h = _sample_dist(c.neutral_hist, rng.random(len(early))) + 1
             t1[early] = np.maximum(t[early] - h, 0)
         late = np.nonzero(inb & (ph == 0))[0]
-        if len(late):
-            tl, fl, sl, al, bl, rl = t[late], newf[late], s[late], a[late], b[late], r[late]
-            v = self.sol.v
-            model_post = post != "coach"
+        if not len(late):
+            return t1, a, b
+        tl, fl, sl, al, bl, rl = t[late], newf[late], s[late], a[late], b[late], r[late]
+        al_act = act[late]
+        model_post = post != "coach"
 
-            def look(q: np.ndarray, tt: np.ndarray, aa: np.ndarray, bb: np.ndarray) -> np.ndarray:
-                return self._lookup(v, tt, fl[q], sl[q], aa, bb, rl[q]).astype(float)
+        def look(q: np.ndarray, tt: np.ndarray, aa: np.ndarray, bb: np.ndarray) -> np.ndarray:
+            return self._lookup(self.sol.v, tt, fl[q], sl[q], aa, bb, rl[q]).astype(float)
 
-            # Without any timeout: protect (and kneel) burn the clock, the others take a
-            # number of ticks from their tempo histogram.
-            t_run = nxt(tl, c.burn_ticks)
-            run_val = np.zeros(len(late))
-            free = (act[late] == A_NEUTRAL) | (act[late] == A_CHASE)
-            hurry_late = c.hurry_hist if c.hurry_hist_late is None else c.hurry_hist_late
-            hists = (
-                (act[late] == A_NEUTRAL, c.neutral_hist),
-                ((act[late] == A_CHASE) & ~inside[late], c.hurry_hist),
-                ((act[late] == A_CHASE) & inside[late], hurry_late),
-            )
-            for mask, hist in hists:
-                q = np.nonzero(mask)[0]
-                if len(q) == 0:
-                    continue
-                h = _sample_dist(hist, rng.random(len(q))) + 1
-                t_run[q] = nxt(tl[q], h)
-                if model_post:
-                    for hh, p in enumerate(hist, start=1):
-                        if p > 0:
-                            run_val[q] += p * look(q, nxt(tl[q], hh), al[q], bl[q])
-            q = np.nonzero(~free)[0]
-            if model_post and len(q):
-                run_val[q] = look(q, t_run[q], al[q], bl[q])
-            every = np.arange(len(late))
+        # Without any timeout: protect (and kneel) burn the clock, the others take a
+        # number of ticks from their tempo histogram (`ClockSpec.tempo_hist`).
+        t_run = self._next_ticks(tl, c.burn_ticks)
+        run_val = np.zeros(len(late))
+        free = (al_act == A_NEUTRAL) | (al_act == A_CHASE)
+        hurry_late = c.hurry_hist if c.hurry_hist_late is None else c.hurry_hist_late
+        hists = (
+            (al_act == A_NEUTRAL, c.neutral_hist),
+            ((al_act == A_CHASE) & ~inside[late], c.hurry_hist),
+            ((al_act == A_CHASE) & inside[late], hurry_late),
+        )
+        for mask, hist in hists:
+            q = np.nonzero(mask)[0]
+            if len(q) == 0:
+                continue
+            h = _sample_dist(hist, rng.random(len(q))) + 1
+            t_run[q] = self._next_ticks(tl[q], h)
             if model_post:
-                own = np.where(al > 0, look(every, tl - 1, np.maximum(al - 1, 0), bl), -np.inf)
-                off_to = free & (own > run_val)
-            else:
-                off_to = (act[late] == A_CHASE) & (al > 0) & (tl <= (w or 0))
-            if post == "coach" or c.defense_timeout != "optimal":
-                rate = np.where(tl <= (w or 0), c.def_rate_after[bl], c.def_rate_before[bl])
-                def_to = (bl > 0) & (sl > 0) & (rng.random(len(late)) < rate)
-            else:
-                base = np.where(off_to, own, run_val)
-                stop = np.where(bl > 0, look(every, tl - 1, al, np.maximum(bl - 1, 0)), np.inf)
-                def_to = stop < base
-            off_to = off_to & ~def_to
-            t1[late] = np.where(def_to | off_to, tl - 1, t_run)
-            a[late] = al - off_to
-            b[late] = bl - def_to
+                for hh, p in enumerate(hist, start=1):
+                    if p > 0:
+                        run_val[q] += p * look(q, self._next_ticks(tl[q], hh), al[q], bl[q])
+        q = np.nonzero(~free)[0]
+        if model_post and len(q):
+            run_val[q] = look(q, t_run[q], al[q], bl[q])
+        # The offense's own timeout (neutral or chase only).
+        every = np.arange(len(late))
+        if model_post:
+            own = np.where(al > 0, look(every, tl - 1, np.maximum(al - 1, 0), bl), -np.inf)
+            off_to = free & (own > run_val)
+        else:
+            off_to = (al_act == A_CHASE) & (al > 0) & (tl <= (w or 0))
+        # The defense's timeout.
+        if post == "coach" or c.defense_timeout != "optimal":
+            rate = np.where(tl <= (w or 0), c.def_rate_after[bl], c.def_rate_before[bl])
+            def_to = (bl > 0) & (sl > 0) & (rng.random(len(late)) < rate)
+        else:
+            base = np.where(off_to, own, run_val)
+            stop = np.where(bl > 0, look(every, tl - 1, al, np.maximum(bl - 1, 0)), np.inf)
+            def_to = stop < base
+        off_to = off_to & ~def_to
+        t1[late] = np.where(def_to | off_to, tl - 1, t_run)
+        a[late] = al - off_to
+        b[late] = bl - def_to
+        return t1, a, b
 
-        cross_half = (t > c.th) & (t1 <= c.th)
-        t1 = np.where(cross_half, c.th, t1)
-        cross_end = (t > c.endgame_ticks) & (t1 <= c.endgame_ticks) & (c.endgame_ticks > 0)
-
-        # ---- score and possession ----
-        pts = np.zeros(n, dtype=np.int64)
-        side = st["side"][idx]
+    def _score(
+        self, st_now: dict[str, np.ndarray], kind: np.ndarray, t1: np.ndarray, ph: np.ndarray,
+        rng: np.random.Generator, post: str,
+    ) -> np.ndarray:  # fmt: skip
+        """Points on the play, to the scoring side (`Solution._derive`). After a
+        touchdown the scoring team takes the try the solver chose (post="model": the
+        better of kick and two-point try at that state) or the coach rule (post="coach")."""
+        m, c = self.model, self.model.clock
+        s, a, b, r = (st_now[x] for x in ("s", "a", "b", "r"))
+        pts = np.zeros(len(kind), dtype=np.int64)
         scored = (kind == K_TD) | (kind == K_OPPTD)
         if scored.any():
             j = np.nonzero(scored)[0]
@@ -1002,9 +1225,9 @@ class Simulator:
                 lead = ss + m.td_points
                 # In seconds of game time left, so the rule means the same thing whether
                 # the horizon is the whole game or only the end game (tables saved before
-                # these keys existed get the old full-game meaning: the fourth quarter).
-                two_sec = self.coach.get("two_point_seconds", 900)
-                leads = tuple(self.coach.get("two_point_leads", (-5, -2, 1, 5)))
+                # these keys existed get COACH_DEFAULTS: the fourth quarter).
+                two_sec = self._coach_setting("two_point_seconds")
+                leads = tuple(self._coach_setting("two_point_leads"))
                 two = (t1[j] * c.tick_seconds <= two_sec) & np.isin(lead, leads)
             else:
                 two = np.zeros(len(j), dtype=bool)
@@ -1018,14 +1241,20 @@ class Simulator:
             u = rng.random(len(j))
             pts[j] = m.td_points + np.where(two, 2 * (u < m.p_two), 1 * (u < m.p_xp))
         pts = np.where(kind == K_FG, m.fg_points, pts)
-        pts = np.where(kind == K_SAFETY, m.safety_points, pts)
-        to_me = (kind == K_TD) | (kind == K_FG)
-        to_them = (kind == K_OPPTD) | (kind == K_SAFETY)
-        s = s + np.where(to_me, pts, 0) - np.where(to_them, pts, 0)
-        np.add.at(st["pts"], (idx[to_me], side[to_me]), pts[to_me])
-        np.add.at(st["pts"], (idx[to_them], 1 - side[to_them]), pts[to_them])
-        kick = (kind == K_TD) | (kind == K_FG) | (kind == K_OPPTD)
+        return np.where(kind == K_SAFETY, m.safety_points, pts)
+
+    def _change_possession(
+        self, kind: np.ndarray, newf: np.ndarray, opp_yl: np.ndarray, r: np.ndarray,
+        cross_half: np.ndarray, rng: np.random.Generator,
+    ) -> tuple[np.ndarray, np.ndarray]:  # fmt: skip
+        """Next field state and whether the other team now has the ball (`Solution._aug`
+        and `opp`). A score is followed by a kickoff (a safety by a free kick), a turnover
+        gives the other team the ball where it was lost, and at halftime the team whose
+        flag says so receives the second-half kickoff (`Solution.post` for the first
+        half). Returns (field state, flip)."""
+        k = self.model.kern
         yl_new = np.where(kind == K_TURN, opp_yl, 1)
+        kick = (kind == K_TD) | (kind == K_FG) | (kind == K_OPPTD)
         nk = int(kick.sum())
         if nk:
             yl_new[kick] = _sample_dist(k.kickoff[1:], rng.random(nk)) + 1
@@ -1034,26 +1263,74 @@ class Simulator:
             yl_new[fk] = _sample_dist(k.free_kick[1:], rng.random(int(fk.sum()))) + 1
         flip = (kind == K_TURN) | (kind == K_TD) | (kind == K_FG) | (kind == K_SAFETY)
         f = np.where(kind == K_KEEP, newf, self.f10[yl_new])
-        # Halftime: the team whose flag says so receives the second-half kickoff.
         if cross_half.any():
             r_now = np.where(flip, 1 - r, r)
             flip = np.where(cross_half, flip ^ (r_now == 0), flip)
             nh = int(cross_half.sum())
             f[cross_half] = self.f10[_sample_dist(k.kickoff[1:], rng.random(nh)) + 1]
+        return f, flip
+
+    def _enter_end_phase(
+        self, s: np.ndarray, a: np.ndarray, b: np.ndarray, cross_end: np.ndarray,
+        rng: np.random.Generator,
+    ) -> None:  # fmt: skip
+        """Draw both teams' timeouts on entering the last 5:00, from the measured shares
+        for leading, trailing and tied teams (`Solution._boundary_weights`). In place."""
+        if not cross_end.any():
+            return
+        c = self.model.clock
+        j = np.nonzero(cross_end)[0]
+        lead, trail = c.shares_leading, c.shares_trailing
+        mean = 0.5 * (lead + trail)
+        u1, u2 = rng.random(len(j)), rng.random(len(j))
+        for sign, pa, pb in ((1, lead, trail), (-1, trail, lead), (0, mean, mean)):
+            q = np.sign(s[j]) == sign
+            a[j[q]] = _sample_dist(pa, u1[q])
+            b[j[q]] = _sample_dist(pb, u2[q])
+
+    def advance(
+        self,
+        st: dict[str, np.ndarray],
+        idx: np.ndarray,
+        act: np.ndarray,
+        rng: np.random.Generator,
+        post: str = "model",
+    ) -> dict[str, np.ndarray]:
+        """Play one action for the batch members `idx` (in place). Returns what happened:
+        kind (K_* code), points (to the scoring side), scrimmage (bool), half_end (bool),
+        flip (the other team has the ball now). See the comment above for the pieces."""
+        m, c = self.model, self.model.clock
+        now = {key: st[key][idx] for key in ("t", "s", "f", "a", "b", "r")}
+        t, s, r = now["t"], now["s"], now["r"]
+        ph = self._phase_code(t)
+
+        oc = self._sample_outcomes(now["f"], act, t, ph, rng)
+        kind = oc["kind"]
+        scrimmage = (act != A_FG) & (act != A_PUNT)
+
+        t1, a, b = self._run_clock(now, act, ph, oc, rng, post)
+        # Halftime and the start of the end phase are boundaries the clock stops at.
+        cross_half = (t > c.th) & (t1 <= c.th)
+        t1 = np.where(cross_half, c.th, t1)
+        cross_end = (t > c.endgame_ticks) & (t1 <= c.endgame_ticks) & (c.endgame_ticks > 0)
+
+        # The try after a touchdown sees the timeouts as they are after the play.
+        pts = self._score({**now, "a": a, "b": b}, kind, t1, ph, rng, post)
+        to_me = (kind == K_TD) | (kind == K_FG)
+        to_them = (kind == K_OPPTD) | (kind == K_SAFETY)
+        s = s + np.where(to_me, pts, 0) - np.where(to_them, pts, 0)
+        side = st["side"][idx]
+        np.add.at(st["pts"], (idx[to_me], side[to_me]), pts[to_me])
+        np.add.at(st["pts"], (idx[to_them], 1 - side[to_them]), pts[to_them])
+
+        f, flip = self._change_possession(kind, oc["newf"], oc["opp_yl"], r, cross_half, rng)
         s = np.where(flip, -s, s)
         a, b = np.where(flip, b, a), np.where(flip, a, b)
         r = np.where(flip, 1 - r, r)
         r = np.where(cross_half, 0, r)
         s = np.clip(s, -m.score_max, m.score_max)
-        if cross_end.any():
-            j = np.nonzero(cross_end)[0]
-            lead, trail = c.shares_leading, c.shares_trailing
-            mean = 0.5 * (lead + trail)
-            u1, u2 = rng.random(len(j)), rng.random(len(j))
-            for sign, pa, pb in ((1, lead, trail), (-1, trail, lead), (0, mean, mean)):
-                q = np.sign(s[j]) == sign
-                a[j[q]] = _sample_dist(pa, u1[q])
-                b[j[q]] = _sample_dist(pb, u2[q])
+        self._enter_end_phase(s, a, b, cross_end, rng)
+
         st["t"][idx], st["s"][idx], st["f"][idx] = t1, s, f
         st["a"][idx], st["b"][idx], st["r"][idx] = a, b, r
         st["side"][idx] = np.where(flip, 1 - side, side)
@@ -1209,27 +1486,34 @@ def step(
     the team that then has the ball, and info: possession_changed, points (scored on the
     play by `scorer`: "offense" or "defense"), done, result (for the team that had the
     ball before the play: 1, 0.5 or 0, once done).
+
+    "game_over" is the kneel-out: it is only legal where the team in front can kneel the
+    game out (`Simulator.game_over`); anywhere else it raises ValueError. Timeouts above
+    the model's maximum are clipped, as `Solution.index` does.
     """
-    global _DEFAULT_SIM
-    if sim is None:
-        if _DEFAULT_SIM is None:
-            _DEFAULT_SIM = Simulator(_default())
-        sim = _DEFAULT_SIM
+    sim = _default_sim() if sim is None else sim
     sol, m = sim.sol, sim.model
     ph, ix = sol.index(state)
     t = ix[0] + m.phase_range(ph)[0]
+    full = m.clock.n_timeouts
     st = sim.start(
         1,
         t=t,
         s=state.score,
         f=ix[1],
-        a=state.off_timeouts if ph == "end" else 0,
-        b=state.def_timeouts if ph == "end" else 0,
+        a=min(state.off_timeouts, full) if ph == "end" else 0,
+        b=min(state.def_timeouts, full) if ph == "end" else 0,
         r=state.receives_second_half,
     )
     idx = np.array([0])
     code = ACTION_NAMES.index(action)
-    if t == 0 or sim.game_over(st, idx)[0] or code == A_OVER:
+    can_kneel_out = bool(sim.game_over(st, idx)[0])
+    if code == A_OVER and t > 0 and not can_kneel_out:
+        raise ValueError(
+            f"'game_over' (kneel out) is not available in {state}: the team with the ball "
+            "cannot kneel the game out from here"
+        )
+    if t == 0 or can_kneel_out or code == A_OVER:
         res = 1.0 if t > 0 else float(sol.terminal[st["s"][0] + m.score_max])
         return state, {
             "possession_changed": False,
@@ -1265,9 +1549,6 @@ def step(
         "done": done,
         "result": result,
     }
-
-
-_DEFAULT_SIM: Simulator | None = None
 
 
 def build_model(

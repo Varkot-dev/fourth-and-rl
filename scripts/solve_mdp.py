@@ -37,6 +37,7 @@ from matplotlib.patches import Patch  # noqa: E402
 from fourth_and_rl import mdp, splits, style  # noqa: E402
 from fourth_and_rl import mdp_game as mg  # noqa: E402
 from fourth_and_rl.components import ComponentModels, config_hash  # noqa: E402
+from fourth_and_rl.fingerprint import data_fingerprint  # noqa: E402
 from fourth_and_rl.io import write_json  # noqa: E402
 from fourth_and_rl.mdp_drive import (  # noqa: E402
     DRIVE_ACTIONS,
@@ -49,13 +50,16 @@ from fourth_and_rl.paths import ASSETS, RESULTS, ROOT  # noqa: E402
 TABLES_PATH = mg.SOLUTION_DIR / "tables.joblib"
 
 
-def tables_key(cfg: dict, models: ComponentModels) -> dict[str, Any]:
-    """What the cached tables depend on: the MDP config and the bundle they were built with."""
+def tables_key(cfg: dict, models: ComponentModels, plays: pl.DataFrame) -> dict[str, Any]:
+    """What the cached tables depend on: the MDP config, the bundle they were built with
+    and the development plays they were fitted on (`fingerprint.data_fingerprint`)."""
     stamp = models.stamp or {}
     return {
         "mdp_config_hash": config_hash(cfg),
         "components_config_hash": stamp.get("config_hash"),
         "components_seasons": stamp.get("seasons"),
+        "components_data_fingerprint": stamp.get("data_fingerprint"),
+        "data_fingerprint": data_fingerprint(plays),
     }
 
 
@@ -63,14 +67,16 @@ def load_tables(
     cfg: dict, plays: pl.DataFrame | None = None, models: ComponentModels | None = None
 ) -> dict[str, Any]:
     """Count tables and the coach table, fitted on development seasons and cached next to
-    the solution. The cache is reused only when its key matches the config and bundle."""
+    the solution. Without `plays` the cache is reused when its key matches the config, the
+    bundle and the current development plays; with `plays` the tables are refitted."""
     models = ComponentModels.load() if models is None else models
-    key = tables_key(cfg, models)
-    if plays is None and TABLES_PATH.exists():
-        cached = joblib.load(TABLES_PATH)
-        if cached.get("key") == key:
-            return cached
+    refit = plays is not None
     plays = splits.load_dev_plays() if plays is None else plays
+    key = tables_key(cfg, models, plays)
+    if not refit and TABLES_PATH.exists():
+        cached = joblib.load(TABLES_PATH)
+        if mg.comparable(cached.get("key")) == mg.comparable(key):
+            return cached
     out = {
         "tables": mdp.fit_tables(plays, cfg),
         "coach": mdp.fit_coach_table(plays, mdp.grid_from_config(cfg), cfg),
@@ -236,7 +242,13 @@ def _chart_axes(ax: plt.Axes, grid: mdp.Grid, best: np.ndarray, differ: np.ndarr
 
 
 def figure_expected_points(
-    grid, ours_inf, ours_coach, ours_next, ep_ref, chart_opt, chart_coach
+    grid: mdp.Grid,
+    ours_inf: np.ndarray,
+    ours_coach: np.ndarray,
+    ours_next: np.ndarray,
+    ep_ref: np.ndarray,
+    chart_opt: dict[str, np.ndarray],
+    chart_coach: dict[str, np.ndarray],
 ) -> None:
     style.apply()
     fig, axes = plt.subplots(1, 3, figsize=(17, 5.2), gridspec_kw={"wspace": 0.28})
@@ -468,6 +480,12 @@ def main() -> None:
     print("stage 2: whole game")
     if args.reuse and mg.solution_exists():
         sol = mg.load_solution()
+        problems = mg.reuse_mismatches(sol.meta, stamp, bundle["key"])
+        if problems:
+            raise SystemExit(
+                "--reuse refused: the saved solution was not built from the current inputs ("
+                + "; ".join(problems) + "). Run without --reuse to solve the game again."
+            )
     else:
         t0 = time.time()
         model = mg.build_model(cfg, models, tables, horizon="game")
@@ -476,6 +494,7 @@ def main() -> None:
         sol.meta["kernel_build_seconds"] = build_seconds
         sol.meta["seed"] = cfg["seed"]
         sol.meta["stamp"] = stamp
+        sol.meta["tables_key"] = bundle["key"]
         t0 = time.time()
         mg.save_solution(sol, ROOT / cfg["solve"]["output_dir"])
         sol.meta["save_seconds"] = time.time() - t0
