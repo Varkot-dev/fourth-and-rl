@@ -48,13 +48,20 @@ DEFAULT_CFG: dict = {
     "sim_batch": 1024,  # rollouts per transformer forward pass
     "sim_max_live": 8192,  # rollouts held at once (queries are processed in groups)
     "mask_pad_codes": True,  # never sample code 0 for fields where 0 means padding
-    "score_on_end": False,  # add the sampled score delta on the END transition (see notes)
+    "score_on_end": True,  # add the sampled score delta of the END transition (final play)
+    "sort_by_length": True,  # simulator: encode rows sorted by context length (less padding)
 }
 
 # Target fields where code 0 is a real value ("not a down"), not padding.
 ZERO_IS_VALUE = frozenset({"down", "ydstogo"})
 TARGET_NAMES = tuple(name for name, _ in S.TARGET_FIELDS)
 PHASE_T = S.TARGET_INDEX["phase"]
+# Fields that carry a real value on a game's LAST record (target phase END): the final play's
+# points and seconds. Every other field is padding there: it never counts in the loss, and its
+# decoder input is forced to code 0 both in training and in sampling, so the score_delta and
+# elapsed heads see the same prefix (END, poss=0) in both.
+END_FIELDS = frozenset({"phase", "score_delta", "elapsed"})
+NOT_END_T = tuple(j for j, n in enumerate(TARGET_NAMES) if n not in END_FIELDS)
 
 
 def merge_cfg(cfg: dict | None) -> dict:
@@ -165,55 +172,93 @@ class WorldModel(nn.Module):
         generator: torch.Generator | None = None,
         mask_pad: bool = True,
     ) -> torch.Tensor:
-        """Sample one transition per row of h [R, d] -> codes [R, T] (long)."""
+        """Sample one transition per row of h [R, d] -> codes [R, T] (long).
+
+        The heads run in float32 even inside an autocast region: bf16 logits are rounded to
+        about 1/64 of their size, which would bias the sampled probabilities by around 1%.
+        On rows whose sampled phase is END, fields outside END_FIELDS are set to code 0
+        (the value they have on every END row in training).
+        """
         r = h.shape[0]
         out = torch.zeros(r, len(S.TARGET_FIELDS), dtype=torch.long, device=h.device)
-        s = torch.zeros_like(h)
-        for j, head in enumerate(self.heads):
-            logits = head(torch.cat([h, s], dim=-1)).float()
-            if mask_pad and TARGET_NAMES[j] not in ZERO_IS_VALUE:
-                logits[:, 0] = -float("inf")
-            if temperature <= 0:
-                code = logits.argmax(-1)
-            else:
-                u = torch.rand(logits.shape, generator=generator, device=h.device)
-                gumbel = -torch.log(-torch.log(u.clamp_(1e-10, 1.0 - 1e-7)))
-                code = (logits / temperature + gumbel).argmax(-1)
-            out[:, j] = code
-            if j < len(self.tgt_emb):
-                s = s + self.tgt_emb[j](code)
+        with torch.autocast(h.device.type, enabled=False):
+            h = h.float()
+            s = torch.zeros_like(h)
+            is_end = None
+            for j, head in enumerate(self.heads):
+                logits = head(torch.cat([h, s], dim=-1)).float()
+                if mask_pad and TARGET_NAMES[j] not in ZERO_IS_VALUE:
+                    logits[:, 0] = -float("inf")
+                if temperature <= 0:
+                    code = logits.argmax(-1)
+                else:
+                    u = torch.rand(logits.shape, generator=generator, device=h.device)
+                    gumbel = -torch.log(-torch.log(u.clamp_(1e-10, 1.0 - 1e-7)))
+                    code = (logits / temperature + gumbel).argmax(-1)
+                if j == PHASE_T:
+                    is_end = code == S.PHASE["END"]
+                elif TARGET_NAMES[j] not in END_FIELDS:
+                    code = torch.where(is_end, torch.zeros_like(code), code)
+                out[:, j] = code
+                if j < len(self.tgt_emb):
+                    s = s + self.tgt_emb[j](code)
         return out
 
     # ------------------------------------------------------------------ loss
-    def loss(self, batch: dict) -> tuple[torch.Tensor, dict]:
-        """Sum over fields of the mean cross-entropy per target.
+    @staticmethod
+    def end_prefix(targets: torch.Tensor, last: torch.Tensor) -> torch.Tensor:
+        """Targets with every field outside END_FIELDS set to 0 on last records."""
+        tg = targets.clone()
+        tg[..., list(NOT_END_T)] = tg[..., list(NOT_END_T)] * (~last).unsqueeze(-1).to(tg.dtype)
+        return tg
+
+    @staticmethod
+    def target_masks(targets: torch.Tensor, mask: torch.Tensor, last: torch.Tensor) -> list:
+        """Per field, which targets count in the loss ([B, L] bool each).
+
+        A target counts when its record is real and its code is not padding. Code 0 is
+        padding for every field except down and ydstogo ("not a down"). On a game's last
+        record only END_FIELDS count: phase (END) always, score_delta and elapsed when
+        records.py filled them (code > 0).
+        """
+        out = []
+        for j, name in enumerate(TARGET_NAMES):
+            y = targets[..., j]
+            if j == PHASE_T:
+                m = mask
+            elif name in ZERO_IS_VALUE:
+                m = mask & ~last
+            else:
+                m = mask & (y != 0)
+                if name not in END_FIELDS:
+                    m = m & ~last
+            out.append(m)
+        return out
+
+    def loss(self, batch: dict, denom: torch.Tensor | None = None) -> tuple[torch.Tensor, dict]:
+        """Sum over fields of the mean cross-entropy per target (see target_masks).
 
         batch: header [B,H], states [B,L,S], targets [B,L,T], mask [B,L] (real record),
-        last [B,L] (last record of its game). A target counts when its record is real and its
-        code is not padding. Code 0 is padding for every field except down and ydstogo, where it
-        means "not a down"; on a game's last record those two are padding too. The phase of the
-        last record (END) is always a real target.
+        last [B,L] (last record of its game). denom [T], if given, replaces the per-field
+        target counts in the means (used to split one batch into exact micro-batches).
         Returns (total, {"fields": {name: mean NLL tensor}, "sums": [T], "counts": [T]}).
         """
         h = self.encode(batch["header"], batch["states"])
-        tg = batch["targets"]
-        logits = self.decode_logits(h, tg)
         mask, last = batch["mask"], batch["last"]
+        tg = self.end_prefix(batch["targets"], last)
+        logits = self.decode_logits(h, tg)
+        masks = self.target_masks(tg, mask, last)
         total = h.new_zeros((), dtype=torch.float32)
         fields, sums, counts = {}, [], []
         for j, (name, _) in enumerate(S.TARGET_FIELDS):
             y = tg[..., j]
-            if name in ZERO_IS_VALUE:
-                m = mask & ~last
-            elif j == PHASE_T:
-                m = mask
-            else:
-                m = mask & (y != 0)
+            m = masks[j]
             ce = F.cross_entropy(logits[j].float().flatten(0, 1), y.flatten(), reduction="none")
             ce = ce.view_as(y) * m
             n = m.sum()
             sm = ce.sum()
-            mean = sm / n.clamp(min=1)
+            d = n.clamp(min=1) if denom is None else denom[j].clamp(min=1)
+            mean = sm / d
             fields[name] = mean
             sums.append(sm.detach())
             counts.append(n.detach())
@@ -245,6 +290,7 @@ def param_summary(model: WorldModel) -> str:
 __all__ = [
     "DEFAULT_CFG",
     "ZERO_IS_VALUE",
+    "END_FIELDS",
     "WorldModel",
     "merge_cfg",
     "window_start",

@@ -152,6 +152,7 @@ def _run(
     device = device_of(model)
     max_len, max_steps, chunk = model.max_len, int(cfg["max_steps"]), int(cfg["sim_batch"])
     temp, mask_pad = float(cfg["temperature"]), bool(cfg["mask_pad_codes"])
+    sort_len = bool(cfg.get("sort_by_length", True))
     r = len(lens)
     buf_t = torch.as_tensor(buf, device=device)
     head_t = torch.as_tensor(header.astype(np.int64), device=device)
@@ -170,17 +171,27 @@ def _run(
         if time.time() > deadline_ts:
             return None
         act = np.flatnonzero(active)
-        tg_parts = []
+        # Encode in chunks; with sort_by_length the chunks hold rows of similar context
+        # length, so less padding is computed. The causal encoder ignores right padding, and
+        # sampling below uses the original row order and chunks, so the draws are unchanged.
+        enc_order = np.argsort(lens[act], kind="stable") if sort_len else np.arange(len(act))
+        hl_all = torch.empty(len(act), model.cfg["d_model"], device=device)
         for a in range(0, len(act), chunk):
-            rows = act[a : a + chunk]
+            pos_rows = enc_order[a : a + chunk]
+            rows = act[pos_rows]
             rows_t = torch.as_tensor(rows, device=device)
             n = int(lens[rows].max())
             with torch.autocast(device.type, dtype=dtype, enabled=enabled):
                 h = model.encode(head_t[rows_t], buf_t[rows_t, :n])
             ln = torch.as_tensor(lens[rows] - 1, device=device)
-            hl = h[torch.arange(len(rows), device=device), ln].float()
-            with torch.autocast(device.type, dtype=dtype, enabled=enabled):
-                tg_parts.append(model.sample_transition(hl, temp, gen, mask_pad))
+            hl_all[torch.as_tensor(pos_rows, device=device)] = h[
+                torch.arange(len(rows), device=device), ln
+            ].float()
+            del h
+        tg_parts = [
+            model.sample_transition(hl_all[a : a + chunk], temp, gen, mask_pad)
+            for a in range(0, len(act), chunk)
+        ]
         tg = torch.cat(tg_parts).cpu().numpy()
         steps[act] += 1
         cnt["transitions"] += len(act)
@@ -348,15 +359,27 @@ def plan_fourth_downs(
             "score_diff_poss": np.where(home_has_ball, 1, -1) * split.raw[idx, 1],
         }
     )
-    counters = {}
+    # The three actions are simulated chunk by chunk of states (one rollout group each), so
+    # a deadline leaves whole states finished rather than GO for all and PUNT for none.
+    c = merge_cfg({**model.cfg, **(cfg or {})})
+    per = max(1, int(c["sim_max_live"]) // max(1, int(n_rollouts)))
+    counters = {ch: dict.fromkeys(COUNTER_KEYS, 0) for ch in choices}
     for ch in choices:
-        r = rollout(model, split, idx, ch, n_rollouts, cfg, deadline_ts, rng)
-        wp = np.where(home_has_ball, r["home_wp"], 1.0 - r["home_wp"])
         key = ch.lower()
-        df[f"wp_{key}"] = wp
-        df[f"se_{key}"] = r["home_wp_se"]
-        df[f"done_{key}"] = r["done"]
-        counters[ch] = r["counters"]
+        df[f"wp_{key}"] = np.nan
+        df[f"se_{key}"] = np.nan
+        df[f"done_{key}"] = False
+    for a in range(0, len(idx), per):
+        sl = slice(a, min(len(idx), a + per))
+        for ch in choices:
+            r = rollout(model, split, idx[sl], ch, n_rollouts, cfg, deadline_ts, rng)
+            key = ch.lower()
+            hb = home_has_ball[sl]
+            df.loc[df.index[sl], f"wp_{key}"] = np.where(hb, r["home_wp"], 1.0 - r["home_wp"])
+            df.loc[df.index[sl], f"se_{key}"] = r["home_wp_se"]
+            df.loc[df.index[sl], f"done_{key}"] = r["done"]
+            for k, v in r["counters"].items():
+                counters[ch][k] += v
     wps = df[[f"wp_{c.lower()}" for c in choices]].to_numpy()
     ses = df[[f"se_{c.lower()}" for c in choices]].to_numpy()
     done = df[[f"done_{c.lower()}" for c in choices]].to_numpy().all(1)
@@ -426,7 +449,7 @@ def real_game_stats(split: S.Split, games: np.ndarray | None = None) -> dict:
     chain_diff = split.raw[last, 1].astype(np.int64)  # score before the final transition
     return {
         "records_per_game": float(n_rec.mean()),
-        "points_per_game": float(pts.mean()),  # points scored on non-final transitions
+        "points_per_game": float(pts.mean()),  # all transitions that carry a score delta
         "final_margin_sd": float(fd.std()),
         "tie_share": float((fd == 0).mean()),
         "kickoffs_per_game": float(kicks.mean()),

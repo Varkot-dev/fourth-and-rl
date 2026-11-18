@@ -49,7 +49,18 @@ UPSTREAM = {
     "plan": ("train",),
     "package": (),
 }
+# Module sources recorded per stage (metadata and warnings only; hashes never use them,
+# except that a changed records/schema makes the data stage rebuild in memory and compare).
+STAGE_SOURCES = {
+    "data": ["schema", "records"],
+    "train": ["model", "train"],
+    "eval": ["simulate"],
+    "test": ["simulate"],
+    "plan": ["simulate"],
+    "package": [],
+}
 HERE = Path(__file__).resolve().parent
+
 
 # ---------------------------------------------------------------- presets
 _FULL_SEASONS = {
@@ -392,17 +403,25 @@ def synthetic_split(n_games: int = 8, seed: int = 0) -> S.Split:
 
 # ---------------------------------------------------------------- run context
 class Run:
-    """Everything a stage needs: preset, folders, the deadline guard and the log."""
+    """Everything a stage needs: preset, folders, the deadline guard and the log.
+
+    Stage hashes are keyed on CONFIG and DATA CONTENT, never on source code: the train
+    checkpoint and done-marker depend on the model and train config plus a content hash of
+    the saved train and validation arrays, so an edited notebook resumes training as long as
+    the data and config are the same. Module source hashes are recorded in each done-marker
+    as metadata and produce a warning when they change.
+    """
 
     def __init__(self, preset: dict, workdir: Path | None = None,
                  budget_min: float | None = None, allow_rescore: bool = False,
-                 seed: int = SEED, quiet: bool = False) -> None:
+                 seed: int = SEED, quiet: bool = False, force: tuple = ()) -> None:
         self.preset = preset
         self.workdir = Path(workdir or default_workdir())
         self.workdir.mkdir(parents=True, exist_ok=True)
-        for sub in ("data", "stages", "outputs", "figures", "ckpt"):
+        for sub in ("data", "stages", "outputs", "figures", "ckpt", "partial"):
             (self.workdir / sub).mkdir(exist_ok=True)
         self.allow_rescore = allow_rescore
+        self.force = set(force)
         self.seed = seed
         self.quiet = quiet
         self.session_start = time.time()
@@ -458,25 +477,40 @@ class Run:
                 pass
         return "cpu"
 
+    def content_hash(self, name: str) -> str:
+        """Content hash of data/<name>.npz, cached by file size and mtime."""
+        path = self.workdir / "data" / f"{name}.npz"
+        if not path.exists():
+            return "missing"
+        cache_path = self.workdir / "data" / "content_hashes.json"
+        cache = read_json(cache_path) if cache_path.exists() else {}
+        st = path.stat()
+        key = f"{st.st_size}:{st.st_mtime_ns}"
+        if cache.get(name, {}).get("key") == key:
+            return cache[name]["hash"]
+        sp, extra = load_split(path)
+        h = split_arrays_hash(sp, extra)
+        cache[name] = {"key": key, "hash": h}
+        write_json(cache_path, cache)
+        return h
+
+    def stage_src(self, stage: str) -> str:
+        return _source_hash(STAGE_SOURCES[stage])
+
     def stage_hash(self, stage: str) -> str:
         p = self.preset
-        src = {
-            "data": ["schema", "records"],
-            "train": ["model", "train"],
-            "eval": ["simulate"],
-            "test": ["simulate"],
-            "plan": ["simulate"],
-            "package": [],
-        }[stage]
-        parts: dict[str, Any] = {"stage": stage, "seed": self.seed, "src": _source_hash(src)}
+        parts: dict[str, Any] = {"stage": stage, "seed": self.seed}
         if stage == "data":
             parts["seasons"] = p["seasons"]
         elif stage == "train":
-            parts.update(model=p["model"], train=p["train"])
+            parts.update(model=p["model"], train=p["train"],
+                         data_train=self.content_hash("train"),
+                         data_val=self.content_hash("val"))
         elif stage in ("eval", "test", "plan"):
             parts[stage] = p[stage]
-        for up in UPSTREAM[stage]:
-            parts[f"up_{up}"] = self.stage_hash(up)
+            parts["up_train"] = self.stage_hash("train")
+            if stage in ("test", "plan"):
+                parts["data_test"] = self.content_hash("test")
         return config_hash(parts)
 
     def full_config_hash(self) -> str:
@@ -489,9 +523,23 @@ class Run:
     def output_path(self, stage: str) -> Path:
         return self.workdir / "outputs" / f"{stage}.json"
 
+    def partial_dir(self, stage: str) -> Path:
+        d = self.workdir / "partial" / f"{stage}_{self.stage_hash(stage)}"
+        d.mkdir(parents=True, exist_ok=True)
+        return d
+
     def is_done(self, stage: str) -> bool:
+        if stage in self.force:
+            return False
         m = self.marker(stage)
-        return m.exists() and read_json(m).get("hash") == self.stage_hash(stage)
+        if not m.exists():
+            return False
+        mk = read_json(m)
+        if mk.get("hash") != self.stage_hash(stage):
+            return False
+        # Data is the one stage whose code is re-checked: a changed records.py is rebuilt
+        # in memory and compared (see stage_data).
+        return not (stage == "data" and mk.get("src") != self.stage_src("data"))
 
     def status(self, stage: str) -> str:
         p = self.output_path(stage)
@@ -514,12 +562,22 @@ class Run:
 
 
 def run_stage(run: Run, stage: str, fn=None) -> dict:
-    """Run one stage under the deadline guard. Finished stages are skipped by hash."""
+    """Run one stage under the deadline guard. Finished stages are skipped by hash.
+
+    A stage may return status "partial" (it ran out of time but saved its progress); it gets
+    no done-marker, so the next run continues it. A KeyboardInterrupt is recorded as
+    "interrupted" and re-raised after the stage's output file is written.
+    """
     fn = fn or STAGE_FUNCS[stage]
     h = run.stage_hash(stage)
     if stage != "package" and run.is_done(stage):
         out = read_json(run.output_path(stage))
+        mk = read_json(run.marker(stage))
         run.log(f"[{stage}] already done (hash {h}); skipping")
+        if mk.get("src") and mk["src"] != run.stage_src(stage):
+            run.log(f"[{stage}] note: {', '.join(STAGE_SOURCES[stage])} changed since this "
+                    "stage finished; its results are kept (stages are keyed on config and "
+                    f"data). Pass force=('{stage}',) to recompute.")
         return out
     for up in UPSTREAM[stage]:
         if not run.is_done(up):
@@ -539,21 +597,31 @@ def run_stage(run: Run, stage: str, fn=None) -> dict:
     run.log(f"[{stage}] starting ({available / 60:.1f} min available, "
             f"{run.remaining() / 60:.1f} min left in the run)")
     t0 = time.time()
+    interrupted = False
     try:
         out = fn(run, run.stage_deadline(stage))
         out.setdefault("status", "done")
+    except KeyboardInterrupt:
+        interrupted = True
+        out = {"status": "interrupted",
+               "reason": "stopped by the user; saved progress is resumed on the next run"}
     except Exception as e:  # recorded, not swallowed silently: packaging reports it
         out = {"status": "error", "error": f"{type(e).__name__}: {e}",
                "traceback": traceback.format_exc()}
         run.log(f"[{stage}] ERROR {out['error']}\n{out['traceback']}")
     out["seconds"] = round(time.time() - t0, 1)
     out["hash"] = h
+    out["src"] = run.stage_src(stage)
     write_json(run.output_path(stage), out)
     if stage != "package":
         run.add_consumed(out["seconds"], stage)
     if out["status"] == "done" and stage != "package":
-        write_json(run.marker(stage), {"hash": h, "finished": time.time()})
+        # Re-hash: the data stage changes the content hashes the other stages depend on.
+        write_json(run.marker(stage), {"hash": run.stage_hash(stage), "src": out["src"],
+                                       "finished": time.time()})
     run.log(f"[{stage}] {out['status']} in {out['seconds']:.0f}s")
+    if interrupted:
+        raise KeyboardInterrupt
     return out
 
 
@@ -591,46 +659,64 @@ def align_nflverse_wp(split: S.Split, wp_df) -> dict[str, np.ndarray]:
 
 
 def stage_data(run: Run, deadline: float) -> dict:
+    """Per season: reuse the saved arrays when they exist. If records.py or schema.py
+    changed since they were built, rebuild the season in memory and keep the saved file
+    when the arrays are identical (a cosmetic change); replace it when they differ, which
+    changes the data content hash and so restarts training."""
     rec = _mod("records")
     p = run.preset
     ddir = run.workdir / "data"
-    out: dict[str, Any] = {"splits": {}}
+    src_now = run.stage_src("data")
+    out: dict[str, Any] = {"splits": {}, "source_hash": src_now, "seasons_rebuilt": {}}
     built: dict[str, S.Split] = {}
     for split_name in ("train", "val", "test"):
         seasons = check_seasons(p["seasons"][split_name])
-        parts, reports = [], {}
-        wp_parts = []
+        parts, reports, wp_parts = [], {}, []
         for season in seasons:
             cache = ddir / f"season_{season}.npz"
             rep_path = ddir / f"season_{season}_report.json"
+            meta_path = ddir / f"season_{season}_meta.json"
+            meta = read_json(meta_path) if meta_path.exists() else {}
+            if time.time() > deadline and not cache.exists():
+                raise TimeoutError(f"data stage ran out of time before season {season}")
             if cache.exists() and rep_path.exists():
                 sp, extra = load_split(cache)
-                reports[season] = read_json(rep_path)
+                report = read_json(rep_path)
+                if meta.get("src") != src_now:
+                    run.log(f"[data] records/schema code changed: rebuilding {season} in "
+                            "memory to compare")
+                    new_sp, new_report, new_extra = _build_season(rec, season)
+                    same = split_arrays_hash(new_sp, new_extra) == split_arrays_hash(sp, extra)
+                    out["seasons_rebuilt"][season] = "identical, kept" if same else "replaced"
+                    if not same:
+                        sp, report, extra = new_sp, new_report, new_extra
+                        save_split(cache, sp, **extra)
+                        write_json(rep_path, report)
+                    write_json(meta_path, {"src": src_now})
             else:
-                if time.time() > deadline:
-                    raise TimeoutError(f"data stage ran out of time before season {season}")
                 run.log(f"[data] downloading and building season {season}")
-                pbp = rec.load_pbp(check_seasons([season]))
-                sched = rec.load_schedules(check_seasons([season]))
-                sp, report = rec.build_split(pbp, sched, [season])
-                extra = align_nflverse_wp(sp, _pbp_wp_columns(pbp))
-                del pbp
+                sp, report, extra = _build_season(rec, season)
                 save_split(cache, sp, **extra)
                 write_json(rep_path, report)
-                reports[season] = _jsonable(report)
+                write_json(meta_path, {"src": src_now})
+            reports[season] = _jsonable(report)
             parts.append(sp)
             wp_parts.append(extra)
         split = concat_splits(parts)
         extra = {k: np.concatenate([w[k] for w in wp_parts]) for k in wp_parts[0]}
         validation = rec.validate_split(split)
         built[split_name] = split
-        save_split(ddir / f"{split_name}.npz", split, **extra)
+        target = ddir / f"{split_name}.npz"
+        new_hash = split_arrays_hash(split, extra)
+        if not target.exists() or run.content_hash(split_name) != new_hash:
+            save_split(target, split, **extra)  # unchanged arrays keep their file (and mtime)
         write_json(ddir / f"{split_name}_validation.json", validation)
         write_json(ddir / f"{split_name}_build_report.json", reports)
         out["splits"][split_name] = {
             "seasons": seasons,
             "games": len(split.game_ids),
             "records": n_records(split),
+            "content_hash": run.content_hash(split_name),
             "nflverse_wp_coverage": float(np.mean(np.isfinite(extra["nflverse_home_wp"]))),
             "validation": _jsonable(validation),
             "build_report": reports,
@@ -810,43 +896,35 @@ def sample_wp_states(split: S.Split, extra: dict, n: int, rng: np.random.Generat
 
 
 def wp_calibration(run: Run, split: S.Split, extra: dict, cfg_key: str, deadline: float,
-                   rng: np.random.Generator) -> dict:
+                   seed: int, pdir: Path) -> dict:
+    """Win probability by simulation on a fixed random sample of PLAY records, scored next
+    to nflverse's home_wp and vegas_home_wp on the same states (theirs, labelled)."""
     sim = _mod("simulate")
     c = run.preset[cfg_key]
     n_states, n_roll = int(c["wp_states"]), int(c["wp_rollouts"])
-    idx = sample_wp_states(split, extra, n_states, rng)
+    idx = sample_wp_states(split, extra, n_states, np.random.default_rng(seed))
     model, cfg = run.load_model(), run.model_cfg()
-    # Pilot on a few states to measure speed, then scale the sample to the time left.
-    pilot = idx[: min(4, len(idx))]
-    t0 = time.time()
-    df_pilot = sim.wp_by_simulation(model, split, pilot, n_roll, cfg, deadline, rng)
-    per_state = (time.time() - t0) / max(len(pilot), 1)
-    left = max(deadline - time.time(), 0.0) * 0.85
-    fit = int(left / max(per_state, 1e-6))
-    scaled = None
-    if fit < len(idx) - len(pilot):
-        scaled = {"planned_states": int(len(idx)), "reason": "time budget",
-                  "seconds_per_state": round(per_state, 3)}
-        rest = idx[len(pilot): len(pilot) + max(fit, 0)]
-    else:
-        rest = idx[len(pilot):]
-    frames = [df_pilot]
-    if len(rest):
-        frames.append(sim.wp_by_simulation(model, split, rest, n_roll, cfg, deadline, rng))
-    import pandas as pd
 
-    counters = [f.attrs.get("counters") for f in frames]
-    df = pd.concat(frames, ignore_index=True)
-    used = np.concatenate([pilot, rest])[: len(df)]
-    df = df.iloc[: len(used)].copy()
+    def fn(part, rng):
+        return sim.wp_by_simulation(model, split, part, n_roll, cfg, deadline, rng)
+
+    df, info = chunked(run, pdir, fn, idx, _chunk_size(run, n_roll, cfg_key), deadline, seed)
+    rng = np.random.default_rng(seed + 1)
+    used = idx[: len(df)]
     col = "home_wp_sim" if "home_wp_sim" in df.columns else "sim_wp"
-    ok = np.isfinite(df[col].to_numpy(dtype=float))
+    if len(df) and "idx" in df.columns:
+        assert np.array_equal(df["idx"].to_numpy(), used), "simulate returned rows out of order"
+    ok = np.isfinite(df[col].to_numpy(dtype=float)) if len(df) else np.zeros(0, dtype=bool)
     if "done" in df.columns:
         ok &= df["done"].to_numpy(dtype=bool)
-    if "idx" in df.columns:
-        assert np.array_equal(df["idx"].to_numpy(), used), "simulate returned rows out of order"
     n_unfinished = int((~ok).sum())
     df, used = df[ok], used[ok]
+    base = {"n_states": int(len(used)), "n_unfinished_dropped": n_unfinished,
+            "n_rollouts_per_state": n_roll, "progress": info,
+            "complete": info["complete"]}
+    if len(used) == 0:
+        return {**base, "metrics": {}, "paired_differences": {},
+                "note": "no finished rollouts inside the time budget"}
     y = S.outcome(np.asarray(split.final_diff)[record_game(split)[used]])
     games = record_game(split)[used]
     preds = {"ours_simulation": df[col].to_numpy(dtype=float)}
@@ -855,11 +933,6 @@ def wp_calibration(run: Run, split: S.Split, extra: dict, cfg_key: str, deadline
                   "nflverse_vegas_home_wp (theirs)": extra["nflverse_vegas_home_wp"][used]}
         if all(np.isfinite(v).all() for v in theirs.values()):
             preds.update(theirs)
-    if len(used) == 0:
-        return {"n_states": 0, "n_unfinished_dropped": n_unfinished, "metrics": {},
-                "paired_differences": {}, "scaled_down": scaled,
-                "note": "no finished rollouts inside the time budget"}
-
     n_boot = int(c["bootstrap"])
     metrics, diffs = {}, {}
     for k, p in preds.items():
@@ -882,11 +955,7 @@ def wp_calibration(run: Run, split: S.Split, extra: dict, cfg_key: str, deadline
     if lab in df.columns:
         label_check = float(np.mean(np.isclose(df[lab].to_numpy(dtype=float), y)))
     return {
-        "n_states": int(len(used)),
-        "n_unfinished_dropped": n_unfinished,
-        "n_rollouts_per_state": n_roll,
-        "scaled_down": scaled,
-        "rollout_counters": _jsonable(counters),
+        **base,
         "mean_steps_per_rollout": float(df["mean_steps"].mean())
         if "mean_steps" in df.columns and len(df) else None,
         "outcome_label": "home result at end of regulation: 1 win, 0.5 tie, 0 loss",
@@ -913,24 +982,33 @@ def stage_train(run: Run, deadline: float) -> dict:
         va = subset_split(va, np.arange(min(len(va.game_ids), max(mg // 4, 8))))
     cfg = run.model_cfg()
     model = model_mod.WorldModel(cfg)
+    ck_path = run.ckpt_path()
+    fresh_reason = _check_checkpoint(ck_path, model)
+    if fresh_reason:
+        stale = ck_path.with_name(ck_path.name + f".stale_{int(time.time())}")
+        ck_path.replace(stale)
+        run.log(f"[train] checkpoint does not fit the current model ({fresh_reason}); "
+                f"moved it to {stale.name} and starting fresh")
     progress = run.workdir / "outputs" / "train_progress.json"
-    prev = read_json(progress) if progress.exists() else {"seconds": 0.0, "lines": []}
+    prev = read_json(progress) if progress.exists() else {}
+    if prev.get("ckpt") != str(ck_path) or fresh_reason:
+        prev = {"seconds": 0.0, "lines": [], "ckpt": str(ck_path)}
     budget_s = 60.0 * run.preset["stage_min"]["train"] - float(prev.get("seconds", 0.0))
     deadline = min(deadline, time.time() + max(budget_s, run.preset["min_start_s"]["train"]))
     t0, base = time.time(), float(prev.get("seconds", 0.0))
 
     def log(*msg: Any) -> None:
-        run.log("[train]", *msg)
-        # Keep the ledger's view of training time current, so a disconnect mid-training
-        # does not hand the resumed run a fresh training budget.
+        # Keep the training time used current, so a disconnect mid-training does not hand
+        # the resumed run a fresh training budget.
         prev["seconds"] = base + time.time() - t0
         prev["lines"] = (prev.get("lines", []) + [" ".join(str(m) for m in msg)])[-200:]
         write_json(progress, prev)
+        run.log("[train]", *msg)
 
     run.log(f"[train] {model.count_params():,} parameters; {len(tr.game_ids)} train games, "
-            f"{n_records(tr):,} records; device {cfg['device']}")
-    history = train_mod.train_model(model, tr, va, cfg, run.ckpt_path(), deadline, log)
-    if not run.ckpt_path().exists():
+            f"{n_records(tr):,} records; device {cfg['device']}; checkpoint {ck_path}")
+    history = train_mod.train_model(model, tr, va, cfg, str(ck_path), deadline, log)
+    if not ck_path.exists():
         raise RuntimeError("train_model returned without writing a checkpoint")
     return {
         "params": int(model.count_params()),
@@ -939,36 +1017,46 @@ def stage_train(run: Run, deadline: float) -> dict:
         "val_games_for_early_stopping": len(va.game_ids),
         "history": _jsonable(history),
         "train_seconds_total": round(base + time.time() - t0, 1),
-        "checkpoint": str(run.ckpt_path()),
+        "checkpoint": str(ck_path),
+        "fresh_start_reason": fresh_reason,
     }
 
 
 # ---------------------------------------------------------------- stage 3: eval (val)
 def stage_eval(run: Run, deadline: float) -> dict:
     sim = _mod("simulate")
-    rng = np.random.default_rng(run.seed + 3)
+    pdir = run.partial_dir("eval")
     va, extra = run.split("val")
     out: dict[str, Any] = {"split": "validation", "seasons": run.preset["seasons"]["val"]}
-    out["nll"] = nll_comparison(run, va, "eval")
+    out["nll"] = _cached_json(pdir / "nll.json", lambda: nll_comparison(run, va, "eval"))
     run.log(f"[eval] NLL per transition: model "
             f"{_total_nll(out['nll']['model'])}, baseline "
             f"{out['nll']['baseline_freq_phase_down']['total_per_transition']:.3f}")
+    out["league_real"] = real_league_stats(va)
     n_games = int(run.preset["eval"]["sim_games"])
     # Simulated games get at most a third of the stage; the rest goes to WP calibration.
     sim_deadline = time.time() + (deadline - time.time()) / 3
-    out["league_real"] = real_league_stats(va)
-    if n_games > 0:
+    league_path = pdir / "league_sim.json"
+    if n_games <= 0:
+        out["league_sim"] = {"skipped": "sim_games is 0 in this preset"}
+    elif league_path.exists():
+        out["league_sim"] = read_json(league_path)
+    else:
         res = sim.simulate_games(run.load_model(), va, n_games, run.model_cfg(), sim_deadline,
-                                 rng)
+                                 np.random.default_rng(run.seed + 30))
         res.pop("table", None)  # the same numbers as "sim" and "real"
         out["league_sim"] = _jsonable(res)
+        if res.get("n_games", 0) >= n_games:
+            write_json(league_path, out["league_sim"])
         run.log(f"[eval] league stats over {res.get('n_games')} simulated games: "
                 f"sim {res.get('sim')} real {res.get('real')}")
-
-    else:
-        out["league_sim"] = {"skipped": "sim_games is 0 in this preset"}
-    out["wp"] = wp_calibration(run, va, extra, "eval", deadline, rng)
+    out["wp"] = wp_calibration(run, va, extra, "eval", deadline, run.seed + 3, pdir / "wp")
     _log_wp(run, "eval", out["wp"])
+    if not out["wp"]["complete"]:
+        out["status"] = "partial"
+        out["reason"] = (f"time budget: {out['wp']['n_states']} of "
+                         f"{out['wp']['progress']['planned_states']} states; the next run "
+                         "continues from the saved chunks")
     return out
 
 
@@ -980,7 +1068,7 @@ def _total_nll(d: dict) -> str:
 
 
 def _log_wp(run: Run, stage: str, wp: dict) -> None:
-    for k, m in wp["metrics"].items():
+    for k, m in wp.get("metrics", {}).items():
         ll, br = m["log_loss"], m["brier"]
         run.log(f"[{stage}] {k}: log loss {ll['mean']:.4f} [{ll['lo95']:.4f}, "
                 f"{ll['hi95']:.4f}], Brier {br['mean']:.4f} on {ll['n_states']} states")
@@ -1018,29 +1106,36 @@ def stage_test(run: Run, deadline: float) -> dict:
     scored_path = run.workdir / "outputs" / "test_scored.json"
     plan = test_plan(run)
     prereg = read_json(prereg_path) if prereg_path.exists() else None
+    rescore = False
     if scored_path.exists():
         scored = read_json(scored_path)
-        if not run.allow_rescore:
+        rescore = scored.get("test_hash") != plan["test_hash"]
+        if rescore and not run.allow_rescore:
             raise PermissionError(
-                f"test seasons were already scored (config {scored.get('config_hash')}); "
-                "refusing a second scoring. Set allow_rescore=True to override; the rescore "
-                "is recorded in prereg.json.")
-    if prereg is None or prereg.get("config_hash") != plan["config_hash"]:
-        prereg = {**plan, "written_at": time.time(), "attempts": [],
-                  "previous": prereg}
-    prereg["attempts"].append({"started_at": time.time(), "rescore": scored_path.exists()})
+                f"test seasons were already scored (test hash {scored.get('test_hash')}); "
+                "refusing a second scoring with a different configuration. Set "
+                "allow_rescore=True to override; the rescore is recorded in prereg.json.")
+    if prereg is None or prereg.get("test_hash") != plan["test_hash"]:
+        prereg = {**plan, "written_at": time.time(), "attempts": [], "previous": prereg}
+    prereg["attempts"].append({"started_at": time.time(), "rescore": rescore})
     write_json(prereg_path, prereg)  # written BEFORE any test data is loaded
     run.log(f"[test] preregistered plan written to {prereg_path}")
 
-    rng = np.random.default_rng(run.seed + 4)
+    pdir = run.partial_dir("test")
     te, extra = run.split("test")
     out: dict[str, Any] = {"split": "test", "seasons": run.preset["seasons"]["test"],
-                           "prereg": str(prereg_path), "config_hash": plan["config_hash"]}
-    out["nll"] = nll_comparison(run, te, "test")
+                           "prereg": str(prereg_path), "config_hash": plan["config_hash"],
+                           "test_hash": plan["test_hash"]}
+    out["nll"] = _cached_json(pdir / "nll.json", lambda: nll_comparison(run, te, "test"))
     out["league_real"] = real_league_stats(te)
-    out["wp"] = wp_calibration(run, te, extra, "test", deadline, rng)
-    write_json(scored_path, {"config_hash": plan["config_hash"], "at": time.time()})
+    out["wp"] = wp_calibration(run, te, extra, "test", deadline, run.seed + 4, pdir / "wp")
     _log_wp(run, "test", out["wp"])
+    if out["wp"]["complete"]:
+        write_json(scored_path, {"config_hash": plan["config_hash"],
+                                 "test_hash": plan["test_hash"], "at": time.time()})
+    else:
+        out["status"] = "partial"
+        out["reason"] = "time budget; the next run continues the same preregistered plan"
     return out
 
 
@@ -1150,45 +1245,47 @@ def _agreement(df) -> dict:
 
 def stage_plan(run: Run, deadline: float) -> dict:
     rec, sim = _mod("records"), _mod("simulate")
-    rng = np.random.default_rng(run.seed + 5)
+    pdir = run.partial_dir("plan")
     te, _ = run.split("test")
     p = run.preset["plan"]
     model, cfg = run.load_model(), run.model_cfg()
     out: dict[str, Any] = {"split": "test", "seasons": run.preset["seasons"]["test"]}
-    # The hypothetical first (one state, many rollouts), with a quarter of the time.
+    # The hypothetical first (one state, many rollouts), with up to a quarter of the time.
     hyp_split, doc = build_hypothetical(te)
     hyp_deadline = time.time() + (deadline - time.time()) / 4
-    hdf = sim.plan_fourth_downs(model, hyp_split, np.array([n_records(hyp_split) - 1]),
-                                int(p["hypo_rollouts"]), cfg, hyp_deadline, rng)
-    out["hypothetical"] = {"state": doc, "result": _jsonable(hdf),
-                           "n_rollouts_per_action": int(p["hypo_rollouts"]),
-                           "rollout_counters": _jsonable(hdf.attrs.get("counters"))}
-    run.log(f"[plan] hypothetical: {hdf.to_dict(orient='records')}")
-    # Sampled real fourth downs.
+    hyp_idx = np.array([n_records(hyp_split) - 1])
+
+    def hyp_fn(part, rng):
+        return sim.plan_fourth_downs(model, hyp_split, part, int(p["hypo_rollouts"]), cfg,
+                                     hyp_deadline, rng)
+
+    hdf, hinfo = chunked(run, pdir / "hypothetical", hyp_fn, hyp_idx, 1, hyp_deadline,
+                         run.seed + 50)
+    out["hypothetical"] = {"state": doc, "result": _jsonable(hdf), "progress": hinfo,
+                           "n_rollouts_per_action": int(p["hypo_rollouts"])}
+    if len(hdf):
+        run.log(f"[plan] hypothetical: {hdf.to_dict(orient='records')}")
+    # Sampled real fourth downs (fixed sample; chunks saved as they finish).
     idx_all = np.asarray(rec.fourth_down_index(te))
     n = min(int(p["n_fourth"]), len(idx_all))
+    rng = np.random.default_rng(run.seed + 5)
     idx = np.sort(rng.choice(idx_all, size=n, replace=False)) if n else idx_all[:0]
-    pilot = idx[: min(3, len(idx))]
-    t0 = time.time()
-    frames = [sim.plan_fourth_downs(model, te, pilot, int(p["n_rollouts"]), cfg, deadline,
-                                    rng)]
-    per = (time.time() - t0) / max(len(pilot), 1)
-    fit = int(max(deadline - time.time(), 0) * 0.85 / max(per, 1e-6))
-    rest = idx[len(pilot):][:fit]
-    out["scaled_down"] = None if fit >= len(idx) - len(pilot) else {
-        "planned": int(n), "reason": "time budget", "seconds_per_state": round(per, 3)}
-    if len(rest):
-        frames.append(sim.plan_fourth_downs(model, te, rest, int(p["n_rollouts"]), cfg,
-                                            deadline, rng))
-    import pandas as pd
 
-    out["rollout_counters"] = _jsonable([f.attrs.get("counters") for f in frames])
-    df = pd.concat(frames, ignore_index=True)
+    def fn(part, rng):
+        return sim.plan_fourth_downs(model, te, part, int(p["n_rollouts"]), cfg, deadline, rng)
+
+    chunk = max(1, _chunk_size(run, 3 * int(p["n_rollouts"]), "plan"))
+    df, info = chunked(run, pdir / "fourth", fn, idx, chunk, deadline, run.seed + 5)
+    out["progress"] = info
     out["n_fourth_downs_available"] = int(len(idx_all))
     out["n_rollouts_per_action"] = int(p["n_rollouts"])
     out["decisions"] = _jsonable(df)
     out["agreement"] = _agreement(df)
     run.log(f"[plan] {out['agreement']}")
+    if not (info["complete"] and hinfo["complete"]):
+        out["status"] = "partial"
+        out["reason"] = (f"time budget: {info['reused_states'] + info['computed_states']} of "
+                         f"{n} fourth downs; the next run continues from the saved chunks")
     return out
 
 
@@ -1322,7 +1419,7 @@ def make_figures(run: Run, results: dict) -> dict:
         made["training_curves"] = _save(fig, fdir / "training_curves.png", plt)
 
     panels = [(name, st[name]["wp"]) for name in ("eval", "test")
-              if st.get(name, {}).get("status") == "done" and "wp" in st[name]]
+              if st.get(name, {}).get("status") in ("done", "partial") and "wp" in st[name]]
     if panels:
         fig, axes = plt.subplots(1, len(panels), figsize=(5.5 * len(panels), 5), squeeze=False)
         for ax, (name, wp) in zip(axes[0], panels, strict=True):
@@ -1343,7 +1440,7 @@ def make_figures(run: Run, results: dict) -> dict:
             ax.legend(fontsize=8.5, loc="upper left")
         made["calibration"] = _save(fig, fdir / "calibration.png", plt)
 
-    nll = st.get("eval", {}).get("nll") if st.get("eval", {}).get("status") == "done" else None
+    nll = st.get("eval", {}).get("nll")
     if nll:
         names = [n for n, v in nll["per_field"].items()
                  if v["model"] is not None and v["baseline"] is not None]
@@ -1361,7 +1458,7 @@ def make_figures(run: Run, results: dict) -> dict:
             made["nll_vs_baseline"] = _save(fig, fdir / "nll_vs_baseline.png", plt)
 
     plan = st.get("plan", {})
-    if plan.get("status") == "done":
+    if plan.get("status") in ("done", "partial") and plan.get("hypothetical"):
         fig, axes = plt.subplots(1, 2, figsize=(11, 4.2))
         res = plan["hypothetical"]["result"]
         acts = [("GO", "wp_go", "se_go"), ("FG", "wp_fg", "se_fg"),
@@ -1400,6 +1497,203 @@ def _save(fig, path: Path, plt) -> str:
     fig.savefig(path)
     plt.close(fig)
     return str(path)
+
+
+def split_arrays_hash(split: S.Split, extra: dict | None = None) -> str:
+    """Content hash of a split's arrays (and any extra aligned arrays)."""
+    h = hashlib.sha256()
+    for k in _SPLIT_ARRAYS:
+        a = np.ascontiguousarray(getattr(split, k))
+        h.update(f"{k}{a.dtype.str}{a.shape}".encode())
+        h.update(a.tobytes())
+    h.update("\x1f".join(split.game_ids).encode())
+    for k in sorted(extra or {}):
+        a = np.ascontiguousarray(extra[k])
+        h.update(f"{k}{a.dtype.str}{a.shape}".encode())
+        h.update(a.tobytes())
+    return h.hexdigest()[:16]
+
+
+def _build_season(rec, season: int) -> tuple[S.Split, dict, dict]:
+    pbp = rec.load_pbp(check_seasons([season]))
+    sched = rec.load_schedules(check_seasons([season]))
+    sp, report = rec.build_split(pbp, sched, [season])
+    extra = align_nflverse_wp(sp, _pbp_wp_columns(pbp))
+    del pbp
+    return sp, report, extra
+
+
+def chunked(run: Run, pdir: Path, fn, idx: np.ndarray, chunk: int, deadline: float,
+            seed: int) -> tuple[Any, dict]:
+    """Run fn(idx_part, rng) -> DataFrame over fixed chunks of idx, saving each finished
+    chunk under pdir and reusing saved chunks on the next run. Each chunk has its own seed,
+    so a resumed result is the same as an uninterrupted one. Stops before a chunk that
+    would not finish by the deadline."""
+    import pandas as pd
+
+    pdir.mkdir(parents=True, exist_ok=True)
+    idx = np.asarray(idx, dtype=np.int64)
+    n_chunks = int(np.ceil(len(idx) / max(chunk, 1)))
+    frames, counters = [], []
+    reused = computed = 0
+    per_state, stopped = None, None
+    for k in range(n_chunks):
+        part = idx[k * chunk:(k + 1) * chunk]
+        f = pdir / f"chunk_{k:04d}.pkl"
+        if f.exists():
+            frames.append(pd.read_pickle(f))
+            cf = f.with_suffix(".json")
+            counters.append(read_json(cf) if cf.exists() else None)
+            reused += len(part)
+            continue
+        left = deadline - time.time()
+        if left <= 0 or (per_state is not None and left < 1.1 * per_state * len(part)):
+            stopped = "time budget"
+            break
+        t0 = time.time()
+        df = fn(part, np.random.default_rng([seed, k]))
+        per_state = (time.time() - t0) / max(len(part), 1)
+        complete = "done" not in df.columns or bool(df["done"].astype(bool).all())
+        frames.append(df)
+        counters.append(_jsonable(df.attrs.get("counters")))
+        computed += len(part)
+        if complete:
+            tmp = f.with_suffix(".tmp")
+            df.to_pickle(tmp)
+            tmp.replace(f)
+            write_json(f.with_suffix(".json"), counters[-1])
+        else:
+            stopped = "deadline reached inside a chunk"
+            break
+    df = pd.concat(frames, ignore_index=True) if frames else pd.DataFrame()
+    info = {"planned_states": int(len(idx)), "chunk_states": int(chunk),
+            "chunks": n_chunks, "reused_states": reused, "computed_states": computed,
+            "stopped": stopped, "complete": stopped is None,
+            "seconds_per_state": None if per_state is None else round(per_state, 4),
+            "rollout_counters": counters}
+    return df, info
+
+
+def _chunk_size(run: Run, n_rollouts: int, key: str) -> int:
+    c = run.preset[key]
+    if c.get("chunk_states"):
+        return int(c["chunk_states"])
+    live = int(run.preset["train"].get("sim_max_live", 8192))
+    return max(4, live // max(int(n_rollouts), 1))
+
+
+def _cached_json(path: Path, make):
+    if path.exists():
+        return read_json(path)
+    val = _jsonable(make())
+    write_json(path, val)
+    return val
+
+
+def _check_checkpoint(path: Path, model) -> str | None:
+    """None if there is no checkpoint or it fits the model; else why it does not."""
+    if not path.exists():
+        return None
+    try:
+        import torch
+
+        ck = torch.load(path, map_location="cpu", weights_only=False)
+        if not isinstance(ck, dict):
+            return "not a checkpoint dict"
+        saved = ck.get("current_model") or ck.get("model")
+        if not isinstance(saved, dict):
+            return None  # not ours to judge (a stub or another format)
+        cur = model.state_dict()
+        missing = [k for k in cur if k not in saved]
+        extra = [k for k in saved if k not in cur]
+        shape = [k for k in cur if k in saved and tuple(saved[k].shape) != tuple(cur[k].shape)]
+        if missing or extra or shape:
+            return (f"{len(missing)} missing, {len(extra)} unexpected, {len(shape)} "
+                    "shape-mismatched tensors")
+    except Exception as e:
+        return f"unreadable: {type(e).__name__}: {e}"
+    return None
+
+
+def checkpoint_info(run: Run) -> dict:
+    path = run.ckpt_path()
+    info: dict[str, Any] = {"path": str(path), "exists": path.exists()}
+    if path.exists():
+        try:
+            import torch
+
+            ck = torch.load(path, map_location="cpu", weights_only=False)
+            if isinstance(ck, dict):
+                info["epochs_done"] = ck.get("epoch")
+                info["best_val_nll"] = ck.get("best_val")
+                info["finished"] = ck.get("finished")
+        except Exception as e:
+            info["error"] = f"{type(e).__name__}: {e}"
+    return info
+
+
+def status_table(run: Run) -> str:
+    """Which stages are done, the checkpoint, its last epoch and best validation NLL, and
+    minutes used so far."""
+    lines = [f"Work folder {run.workdir}", f"{'stage':<8} {'state':<12} seconds"]
+    for s in STAGES[:-1]:
+        if run.is_done(s):
+            state = "done"
+        else:
+            state = run.status(s)
+            state = "not started" if state == "missing" else state
+        secs = read_json(run.output_path(s)).get("seconds", "") \
+            if run.output_path(s).exists() else ""
+        lines.append(f"{s:<8} {state:<12} {secs}")
+    if run.content_hash("train") != "missing":
+        ck = checkpoint_info(run)
+        if ck["exists"]:
+            best = ck.get("best_val_nll")
+            best_s = f"{best:.4f}" if isinstance(best, (int, float)) else "n/a"
+            lines.append(f"checkpoint {ck['path']}: {ck.get('epochs_done')} epochs done, best "
+                         f"validation NLL {best_s} nats/record"
+                         + (", training finished" if ck.get("finished") else ""))
+        else:
+            lines.append(f"checkpoint {ck['path']}: none yet")
+    lines.append(f"minutes used so far {run.consumed_before / 60:.1f} of "
+                 f"{run.total_s / 60:.0f}; {run.remaining() / 60:.1f} left this session")
+    return "\n".join(lines)
+
+
+def stopped_message(stage: str) -> str:
+    return f"Stopped safely at {stage}. Run all again to continue from here."
+
+
+def _beyond(stage: str, stop_after: str | None) -> bool:
+    if stop_after is None or stage == "package":
+        return False
+    if stop_after not in STAGES:
+        raise ValueError(f"STOP_AFTER must be None or one of {STAGES[:-1]}")
+    return STAGES.index(stage) > STAGES.index(stop_after)
+
+
+def notebook_stage(run: Run, stage: str, stop_after: str | None = None) -> dict:
+    """One notebook cell's worth of work. Honors STOP_AFTER; on the stop button, saves what
+    exists, writes results.json and re-raises so Colab's Run all stops here."""
+    if _beyond(stage, stop_after):
+        msg = (f"[{stage}] not run: STOP_AFTER = {stop_after!r}. Set STOP_AFTER = None and "
+               "Run all to continue.")
+        print(msg)
+        return {"status": "not_run", "reason": msg}
+    try:
+        return run_stage(run, stage)
+    except KeyboardInterrupt:
+        _safe_package(run)
+        print(stopped_message(stage), flush=True)
+        raise
+
+
+def _safe_package(run: Run) -> None:
+    try:
+        run_stage(run, "package")
+    except BaseException as e:  # never let packaging hide the original stop
+        run.log(f"[package] could not package after the stop: {e}")
+
 
 
 STAGE_FUNCS = {
@@ -1524,8 +1818,8 @@ def estimate_minutes(preset: dict) -> dict:
 
 def prepare(preset_name: str | None = None, workdir: Path | None = None, benchmark: bool = True,
             budget_min: float | None = None, force_new_preset: bool = False,
-            allow_rescore: bool = False) -> Run:
-    """Pick (or reload) the preset, benchmark it once, and return a Run.
+            allow_rescore: bool = False, force: tuple = ()) -> Run:
+    """Pick (or reload) the preset, benchmark it once, print the status table, return a Run.
 
     The adjusted preset is saved in the work folder on the first call and reused on every
     resume, so a resumed run keeps the same config hashes and skips finished stages.
@@ -1551,15 +1845,32 @@ def prepare(preset_name: str | None = None, workdir: Path | None = None, benchma
         write_json(saved, preset)
     if budget_min is not None:
         preset["budget_min"] = budget_min
-    return Run(preset, wd, budget_min=budget_min, allow_rescore=allow_rescore)
+    run = Run(preset, wd, budget_min=budget_min, allow_rescore=allow_rescore, force=force)
+    print(status_table(run), flush=True)
+    return run
 
 
-def run_all(run: Run, stages=STAGES) -> dict:
-    out = {}
-    for s in stages:
-        out[s] = run_stage(run, s)
-    if "package" not in stages:
-        out["package"] = run_stage(run, "package")
+def run_all(run: Run, stages=STAGES, stop_after: str | None = None) -> dict:
+    """Run the stages in order (up to stop_after), then package. A KeyboardInterrupt or an
+    exception in a stage still ends with results.json; an interrupt prints where it
+    stopped."""
+    out: dict[str, Any] = {}
+    current = None
+    try:
+        for s in stages:
+            if s == "package" or _beyond(s, stop_after):
+                continue
+            current = s
+            out[s] = run_stage(run, s)
+    except KeyboardInterrupt:
+        _safe_package(run)
+        out["stopped_at"] = current
+        msg = stopped_message(current)
+        run.log(msg)
+        if run.quiet:
+            print(msg, flush=True)
+        return out
+    out["package"] = run_stage(run, "package")
     return out
 
 
@@ -1587,7 +1898,7 @@ def summary(run: Run) -> str:
         lines.append(f"  model: {t['params']:,} parameters, trained {t['train_seconds_total']}s")
     for s, label in (("eval", "validation"), ("test", "test")):
         o = st.get(s, {})
-        if o.get("status") != "done":
+        if o.get("status") not in ("done", "partial") or not o.get("wp", {}).get("metrics"):
             continue
         b = o["nll"]["baseline_freq_phase_down"]["total_per_transition"]
         lines.append(f"  {label} NLL per transition: model {_total_nll(o['nll']['model'])}"
@@ -1598,7 +1909,7 @@ def summary(run: Run) -> str:
                          f"(95% game bootstrap {ll['lo95']:.4f} to {ll['hi95']:.4f}), "
                          f"Brier {m['brier']['mean']:.4f}, {ll['n_states']} states")
     p = st.get("plan", {})
-    if p.get("status") == "done":
+    if p.get("status") in ("done", "partial") and p.get("agreement", {}).get("n"):
         ag = p["agreement"]
         lines.append(f"  fourth downs: model agrees with the coach on "
                      f"{ag.get('agreement_all', 0):.0%} of {ag.get('n')} test decisions"
@@ -1623,11 +1934,18 @@ def main(argv: list[str] | None = None) -> None:
     ap.add_argument("--no-benchmark", action="store_true")
     ap.add_argument("--allow-rescore", action="store_true")
     ap.add_argument("--force-new-preset", action="store_true")
+    ap.add_argument("--stop-after", choices=[s for s in STAGES if s != "package"],
+                    default=None)
+    ap.add_argument("--force", nargs="*", default=[], choices=list(STAGES[:-1]),
+                    help="stages to recompute even if done")
     a = ap.parse_args(argv)
     run = prepare(a.preset, a.workdir, benchmark=not a.no_benchmark, budget_min=a.budget_min,
-                  force_new_preset=a.force_new_preset, allow_rescore=a.allow_rescore)
-    run_all(run)
+                  force_new_preset=a.force_new_preset, allow_rescore=a.allow_rescore,
+                  force=tuple(a.force))
+    out = run_all(run, stop_after=a.stop_after)
     print(summary(run))
+    if out.get("stopped_at"):
+        raise SystemExit(130)
 
 
 if __name__ == "__main__":

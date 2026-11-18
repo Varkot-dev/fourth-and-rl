@@ -141,6 +141,42 @@ def load_checkpoint(path: str, cfg_override: dict | None = None, device: str | N
     return model, ck
 
 
+def _micro_slices(batch: dict, k: int) -> list[dict]:
+    """Split a batch into k row groups, each trimmed to its own longest game (the causal
+    encoder makes right padding irrelevant, so the results do not change)."""
+    b = batch["mask"].shape[0]
+    out = []
+    for rows in np.array_split(np.arange(b), min(k, b)):
+        if len(rows) == 0:
+            continue
+        sl = slice(int(rows[0]), int(rows[-1]) + 1)
+        n = max(1, int(batch["mask"][sl].sum(1).max()))
+        part = {}
+        for key, v in batch.items():
+            v = v[sl]
+            if key in ("states", "targets", "mask", "last"):
+                v = v[:, :n]
+            part[key] = v
+        out.append(part)
+    return out
+
+
+def _full_counts(model: WorldModel, batch: dict) -> torch.Tensor:
+    """Per-field target counts of a whole batch (the denominators of its loss)."""
+    tg = model.end_prefix(batch["targets"], batch["last"])
+    masks = model.target_masks(tg, batch["mask"], batch["last"])
+    return torch.stack([m.sum() for m in masks]).float()
+
+
+def _fresh_scaler(scaler: torch.amp.GradScaler, enabled: bool) -> torch.amp.GradScaler:
+    """A scaler with the same scale and growth tracker but no per-step state (an OOM between
+    unscale_ and update would otherwise make the next unscale_ raise)."""
+    new = torch.amp.GradScaler("cuda", enabled=enabled)
+    if enabled:
+        new.load_state_dict(scaler.state_dict())
+    return new
+
+
 def train_model(
     model: WorldModel,
     train_split: S.Split,
@@ -153,12 +189,15 @@ def train_model(
     """Train with AdamW, warmup + cosine, gradient clipping and AMP on CUDA.
 
     One checkpoint file at ckpt_path holds: "model" = best weights so far (by validation NLL),
-    "current_model" + optimizer + scaler + RNG states + epoch + step (to resume exactly),
-    cfg, history. If ckpt_path exists, training resumes from it. Validation NLL is evaluated
-    after every epoch; training stops on early stopping (patience), at cfg["epochs"], at
-    cfg["stop_after_epoch"], or cleanly at the first batch after time.time() > deadline_ts.
-    On CUDA out-of-memory the batch size is halved and the epoch restarts (weights kept).
-    At return the model holds the best weights.
+    "current_model" + optimizer + scaler + RNG states + epoch + step + position inside the
+    epoch (to resume exactly), cfg, history. If ckpt_path exists, training resumes from it.
+    Validation NLL is evaluated after every epoch; training stops on early stopping
+    (patience), at cfg["epochs"], at cfg["stop_after_epoch"], or cleanly at the first batch
+    after time.time() > deadline_ts (a mid-epoch stop saves the position and resumes there).
+    On out-of-memory the SAME step is retried with the batch split into twice as many
+    micro-batches whose gradients are accumulated with the full batch's denominators, so the
+    data order, batch composition and schedule do not change. At return the model holds the
+    best weights (or, if no epoch finished, the current ones).
     """
     c = merge_cfg({**model.cfg, **cfg})
     device = device_of(model)
@@ -176,6 +215,10 @@ def train_model(
         "bad_epochs": 0,
         "history": [],
         "batch_games": int(c["batch_games"]),
+        "micro": 1,  # micro-batches per step (grows on out-of-memory)
+        "batch_in_epoch": 0,  # batches of the current epoch already done (mid-epoch resume)
+        "epoch_loss_sum": 0.0,
+        "epoch_loss_n": 0,
         "finished": False,
     }
     best_weights = copy.deepcopy({k: v.detach().cpu() for k, v in model.state_dict().items()})
@@ -194,8 +237,8 @@ def train_model(
         if device.type == "cuda" and ck.get("cuda_rng") is not None:
             torch.cuda.set_rng_state_all(ck["cuda_rng"])
         log(
-            f"resumed from {ckpt_path}: epoch {state['epoch']}, step {state['step']}, "
-            f"best val {state['best_val']:.4f}"
+            f"resumed from {ckpt_path}: epoch {state['epoch']} batch {state['batch_in_epoch']}, "
+            f"step {state['step']}, best val {state['best_val']:.4f}"
         )
 
     def checkpoint() -> None:
@@ -215,6 +258,45 @@ def train_model(
             },
         )
 
+    def train_step(batch: dict) -> float:
+        """One optimizer step on batch, split into state["micro"] micro-batches."""
+        nonlocal scaler
+        while True:
+            k = int(state["micro"])
+            try:
+                opt.zero_grad(set_to_none=True)
+                if k == 1:
+                    with torch.autocast(device.type, dtype=amp_dtype, enabled=enabled):
+                        total, _ = model.loss(batch)
+                    scaler.scale(total).backward()
+                    value = float(total.detach())
+                    del total
+                else:
+                    denom = _full_counts(model, batch)
+                    value = 0.0
+                    for part in _micro_slices(batch, k):
+                        with torch.autocast(device.type, dtype=amp_dtype, enabled=enabled):
+                            part_total, _ = model.loss(part, denom=denom)
+                        scaler.scale(part_total).backward()
+                        value += float(part_total.detach())
+                        del part_total
+                scaler.unscale_(opt)
+                torch.nn.utils.clip_grad_norm_(model.parameters(), c["grad_clip"])
+                scaler.step(opt)
+                scaler.update()
+                return value
+            except RuntimeError as err:  # torch.OutOfMemoryError subclasses RuntimeError
+                rows = int(batch["mask"].shape[0])
+                if not _is_oom(err) or k >= rows:
+                    raise
+            # outside the except block, so the traceback (and its activations) is released
+            opt.zero_grad(set_to_none=True)
+            scaler = _fresh_scaler(scaler, use_scaler)
+            if device.type == "cuda":
+                torch.cuda.empty_cache()
+            state["micro"] = 2 * k
+            log(f"out of memory with {k} micro-batch(es) per step; retrying with {2 * k}")
+
     stopped = "finished" if state["finished"] else "epochs"
     n_games = len(train_split.offsets) - 1
     records_seen, train_time = 0, 0.0
@@ -231,45 +313,34 @@ def train_model(
         n_batches = math.ceil(n_games / bg)
         rng = np.random.default_rng([c["seed"], epoch])
         t0 = time.time()
-        loss_sum, loss_n, hit_deadline = 0.0, 0, False
-        try:
-            for bi, batch in enumerate(make_batches(train_split, bg, model.max_len, rng)):
-                if time.time() > deadline_ts:
-                    hit_deadline = True
-                    break
-                factor = _lr_factor(state["step"], epoch + bi / n_batches, c)
-                for g in opt.param_groups:
-                    g["lr"] = c["lr"] * factor
-                batch = to_device(batch, device)
-                with torch.autocast(device.type, dtype=amp_dtype, enabled=enabled):
-                    total, _ = model.loss(batch)
-                opt.zero_grad(set_to_none=True)
-                scaler.scale(total).backward()
-                scaler.unscale_(opt)
-                torch.nn.utils.clip_grad_norm_(model.parameters(), c["grad_clip"])
-                scaler.step(opt)
-                scaler.update()
-                state["step"] += 1
-                loss_sum += float(total.detach())
-                loss_n += 1
-                records_seen += int(batch["mask"].sum())
-        except RuntimeError as err:  # torch.OutOfMemoryError subclasses RuntimeError
-            if device.type != "cuda" or not _is_oom(err) or bg <= 1:
-                raise
-            opt.zero_grad(set_to_none=True)
-            del err
-            torch.cuda.empty_cache()
-            state["batch_games"] = max(1, bg // 2)
-            log(f"CUDA out of memory at batch_games={bg}; halving to {state['batch_games']}")
-            continue
+        skip = int(state["batch_in_epoch"])
+        hit_deadline = False
+        for bi, batch in enumerate(make_batches(train_split, bg, model.max_len, rng)):
+            if bi < skip:
+                continue  # done before a mid-epoch stop; same permutation, so same batches
+            if time.time() > deadline_ts:
+                hit_deadline = True
+                break
+            factor = _lr_factor(state["step"], epoch + bi / n_batches, c)
+            for g in opt.param_groups:
+                g["lr"] = c["lr"] * factor
+            batch = to_device(batch, device)
+            value = train_step(batch)
+            state["step"] += 1
+            state["batch_in_epoch"] = bi + 1
+            state["epoch_loss_sum"] += value
+            state["epoch_loss_n"] += 1
+            records_seen += int(batch["mask"].sum())
         train_time += time.time() - t0
         if hit_deadline:
             stopped = "deadline"
+            if state["best_epoch"] < 0:  # no validated epoch yet: keep what was learned
+                best_weights = {k: v.detach().cpu().clone() for k, v in model.state_dict().items()}
             checkpoint()
             log(f"deadline reached during epoch {epoch}; saved current state")
             break
         val = evaluate_nll(model, val_split, c)
-        train_loss = loss_sum / max(loss_n, 1)
+        train_loss = state["epoch_loss_sum"] / max(state["epoch_loss_n"], 1)
         improved = val["total"] < state["best_val"]
         if improved:
             state["best_val"] = val["total"]
@@ -287,9 +358,12 @@ def train_model(
                 "lr": opt.param_groups[0]["lr"],
                 "seconds": time.time() - t0,
                 "batch_games": bg,
+                "micro": int(state["micro"]),
             }
         )
         state["epoch"] = epoch + 1
+        state["batch_in_epoch"] = 0
+        state["epoch_loss_sum"], state["epoch_loss_n"] = 0.0, 0
         if state["bad_epochs"] >= c["patience"]:
             state["finished"] = True
             stopped = "early_stopping"
@@ -307,6 +381,7 @@ def train_model(
         "best_epoch": state["best_epoch"],
         "best_val_nll": state["best_val"],
         "batch_games": state["batch_games"],
+        "micro_batches": int(state["micro"]),
         "history": state["history"],
         "train_records_per_s": records_seen / train_time if train_time > 0 else float("nan"),
     }

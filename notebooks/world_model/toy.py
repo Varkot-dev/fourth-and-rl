@@ -1,5 +1,7 @@
 """A tiny synthetic `Split` for tests: short, rule-based games whose codes and transitions are
-valid under schema.py and consistent with `schema.apply_transition`. Not football-realistic."""
+valid under schema.py and consistent with `schema.apply_transition`. Not football-realistic.
+Conventions follow the real records: a kickoff record's poss is the RECEIVING team, and the
+last record's target is END plus the final play's score_delta and elapsed."""
 
 from __future__ import annotations
 
@@ -24,19 +26,19 @@ def _policy(phase: int, down: int, togo: int, yl: int, rng: np.random.Generator)
 def _step(phase, poss, down, togo, yl, action, rng):
     """Next (phase, poss, down, togo, yardline), points for the team with the ball, elapsed."""
     other = 3 - poss
-    if phase == PH["KICKOFF"]:
-        return (PH["PLAY"], other, 1, 10, 75), 0, int(rng.integers(4, 9))
+    if phase == PH["KICKOFF"]:  # poss of a kickoff record = receiving team
+        return (PH["PLAY"], poss, 1, 10, 75), 0, int(rng.integers(4, 9))
     if phase == PH["TRY"]:
         pts = (
             (1 if rng.random() < 0.94 else 0)
             if action == A["XP"]
             else (2 if rng.random() < 0.48 else 0)
         )
-        return (PH["KICKOFF"], poss, 0, 0, 65), pts, 0
+        return (PH["KICKOFF"], other, 0, 0, 65), pts, 0
     el = int(rng.integers(5, 41))
     if action == A["FG"]:
         if rng.random() < max(0.2, 1.0 - yl / 50):
-            return (PH["KICKOFF"], poss, 0, 0, 65), 3, 5
+            return (PH["KICKOFF"], other, 0, 0, 65), 3, 5
         return (PH["PLAY"], other, 1, 10, int(np.clip(100 - (yl + 7), 1, 99))), 0, 5
     if action == A["PUNT"]:
         land = yl - 40
@@ -61,7 +63,7 @@ def make_toy_split(
     for _ in range(n_games):
         receiver = int(rng.integers(1, 3))
         header.append([S.spread_code(rng.integers(-7, 8)), receiver])
-        cat = (PH["KICKOFF"], 3 - receiver, 0, 0, 65)
+        cat = (PH["KICKOFF"], receiver, 0, 0, 65)
         raw = np.array([start_clock, 0, 3, 3], dtype=np.int32)
         action = A["KICKOFF"]
         while True:
@@ -92,9 +94,11 @@ def make_toy_split(
             states.append(rec)
             raws.append(raw.copy())
             if end:
-                tg = np.zeros_like(tg)
-                tg[S.TARGET_INDEX["phase"]] = PH["END"]
-                targets.append(tg)
+                last_tg = np.zeros_like(tg)
+                last_tg[S.TARGET_INDEX["phase"]] = PH["END"]
+                for name in ("score_delta", "elapsed"):
+                    last_tg[S.TARGET_INDEX[name]] = tg[S.TARGET_INDEX[name]]
+                targets.append(last_tg)
                 final.append(int(raw_next[1]))  # includes the final play's points
                 break
             targets.append(tg)

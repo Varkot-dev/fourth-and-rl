@@ -50,6 +50,28 @@ its checkpoint. The test seasons are scored only once (preregistered in `prereg.
 repo under `results/world_model/` on the branch `claude/world-model-colab`.
 """
 
+RESUME = """### Stopping and resuming
+
+- Press the stop button at any time. The current stage saves what it has (training keeps a
+  checkpoint after every epoch; evaluation and planning save each finished batch of states),
+  `results.json` is written with every stage's status, and the cell prints
+  "Stopped safely at <stage>. Run all again to continue from here."
+- Run all again later, even after a disconnect or with an updated notebook: finished stages
+  are skipped and training continues from its checkpoint. Stages are keyed on the
+  configuration and the data, not on the code, so an edited notebook still resumes.
+- Keep Google Drive mounted, and do not delete the `fourth_and_rl_world_model` folder in
+  Drive: that folder is the saved progress.
+- To train tonight and evaluate tomorrow, set `STOP_AFTER = "train"` in the next cell, Run
+  all, and tomorrow set it back to `None` and Run all again.
+"""
+
+PARAMS = """# Parameters.
+# STOP_AFTER: None runs everything; "data", "train", "eval", "test" or "plan" stops after
+# that stage (the results file is still written).
+STOP_AFTER = None
+# FORCE: stages to recompute even if done, e.g. ("eval",) after a fix in simulate.py.
+FORCE = ()"""
+
 SETUP = """# Colab already has torch, numpy, pandas, polars and matplotlib; only nflreadpy is added.
 # Nothing is pinned so Colab's own torch build is kept.
 !pip install -q nflreadpy pytest"""
@@ -86,7 +108,7 @@ if name == 'smoke':
     print('For the real run: Runtime > Change runtime type > GPU, then Run all again.')
 # About 30 seconds: measures training and rollout speed and scales the preset if needed.
 # On a resume the saved preset is reused, so finished stages keep their hashes.
-RUN = R.prepare(name)
+RUN = R.prepare(name, force=tuple(FORCE))
 print('Work folder:', RUN.workdir)
 print('Preset in use:', json.dumps({{k: RUN.preset[k] for k in
       ('name', 'model', 'train', 'eval', 'test', 'plan')}}, indent=1))
@@ -120,7 +142,8 @@ except Exception as e:
 
 
 def build() -> nbformat.NotebookNode:
-    cells = [new_markdown_cell(INTRO), new_code_cell(SETUP), new_code_cell(DRIVE)]
+    cells = [new_markdown_cell(INTRO), new_markdown_cell(RESUME), new_code_cell(PARAMS),
+             new_code_cell(SETUP), new_code_cell(DRIVE)]
     cells.append(new_code_cell(f"import os\nos.makedirs('{CODE_DIR}', exist_ok=True)"))
     files = [HERE / f"{m}.py" for m in MODULES]
     files += sorted(HERE.glob("test_*.py"))
@@ -136,8 +159,9 @@ def build() -> nbformat.NotebookNode:
     for stage in ("data", "train", "eval", "test", "plan", "package"):
         cells.append(new_markdown_cell(f"**{STAGE_TEXT[stage]}**"))
         cells.append(new_code_cell(
-            f"out = R.run_stage(RUN, '{stage}')\n"
+            f"out = R.notebook_stage(RUN, '{stage}', STOP_AFTER)\n"
             f"print('status:', out['status'], out.get('reason') or out.get('error') or '')"))
+
     cells.append(new_markdown_cell("Results in plain language."))
     cells.append(new_code_cell(SUMMARY))
     cells.append(new_markdown_cell("Download the results zip."))

@@ -28,7 +28,8 @@ class _StubModel:
         return self
 
 
-def _stubs(calls: dict, fail_train_once: bool = False) -> dict[str, types.ModuleType]:
+def _stubs(calls: dict, fail_train_once: bool = False, build_seed: int = 0,
+           interrupt_wp_call: int | None = None) -> dict[str, types.ModuleType]:
     rec = types.ModuleType("records")
 
     def load_pbp(seasons):
@@ -42,7 +43,7 @@ def _stubs(calls: dict, fail_train_once: bool = False) -> dict[str, types.Module
 
     def build_split(pbp, schedules, seasons):
         calls.setdefault("build_split", []).append(list(seasons))
-        sp = R.synthetic_split(n_games=4, seed=int(seasons[0]))
+        sp = R.synthetic_split(n_games=4, seed=int(seasons[0]) + build_seed)
         sp.game_ids = [f"{seasons[0]}_{g}" for g in sp.game_ids]
         return sp, {"games": 4}
 
@@ -59,8 +60,10 @@ def _stubs(calls: dict, fail_train_once: bool = False) -> dict[str, types.Module
 
     def train_model(m, tr, va, cfg, ckpt_path, deadline_ts, log):
         calls["train"] = calls.get("train", 0) + 1
+        import torch
+
         resumed = R.Path(ckpt_path).exists()
-        R.Path(ckpt_path).write_text("ckpt")
+        torch.save({"epoch": 1, "best_val": 1.1}, ckpt_path)
         if fail_train_once and calls["train"] == 1:
             raise RuntimeError("disconnect")
         log("epoch 0: train 1.0 val 1.1")
@@ -76,7 +79,11 @@ def _stubs(calls: dict, fail_train_once: bool = False) -> dict[str, types.Module
     sim = types.ModuleType("simulate")
 
     def wp_by_simulation(m, split, idx, n, cfg, deadline_ts, rng):
+        calls["wp_calls"] = calls.get("wp_calls", 0) + 1
+        if interrupt_wp_call is not None and calls["wp_calls"] == interrupt_wp_call:
+            raise KeyboardInterrupt
         calls["wp"] = calls.get("wp", 0) + len(idx)
+
         g = np.searchsorted(split.offsets, idx, side="right") - 1
         return pd.DataFrame({"idx": idx, "home_wp_sim": rng.uniform(0.1, 0.9, len(idx)),
                              "home_result": S.outcome(split.final_diff[g]),
@@ -274,3 +281,117 @@ def test_ledger_shrinks_budget_on_resume(tmp_path):
     R.write_json(tmp_path / "ledger.json", {"consumed_s": 600.0})
     run = R.Run(p, tmp_path, quiet=True)
     assert run.remaining() < 60 * p["budget_min"] - 590
+
+
+def test_resume_survives_source_change(tmp_path, monkeypatch):
+    calls: dict = {}
+    for name, mod in _stubs(calls).items():
+        monkeypatch.setitem(sys.modules, name, mod)
+    run = R.Run(_tiny_preset(), tmp_path, quiet=True)
+    R.run_stage(run, "data")
+    R.run_stage(run, "train")
+    ckpt = run.ckpt_path()
+    # Edited model/train/records code: the train stage stays done, same checkpoint.
+    orig = R._source_hash
+    monkeypatch.setattr(R, "_source_hash", lambda mods: "edited" + orig(mods))
+    run2 = R.Run(_tiny_preset(), tmp_path, quiet=True)
+    assert run2.is_done("train") and run2.ckpt_path() == ckpt
+    assert not run2.is_done("data")  # records changed: rebuild in memory and compare
+    out = R.run_stage(run2, "data")
+    assert set(out["seasons_rebuilt"].values()) == {"identical, kept"}
+    assert run2.is_done("train") and run2.ckpt_path() == ckpt
+    # Code that really changes the arrays replaces them, and training starts again.
+    for name, mod in _stubs(calls, build_seed=99).items():
+        monkeypatch.setitem(sys.modules, name, mod)
+    monkeypatch.setattr(R, "_source_hash", lambda mods: "edited again" + orig(mods))
+    run3 = R.Run(_tiny_preset(), tmp_path, quiet=True)
+    out = R.run_stage(run3, "data")
+    assert "replaced" in out["seasons_rebuilt"].values()
+    assert not run3.is_done("train") and run3.ckpt_path() != ckpt
+
+
+def test_stop_after_train(tmp_path, stubbed):
+    run = R.Run(_tiny_preset(), tmp_path, quiet=True)
+    out = R.run_all(run, stop_after="train")
+    assert "eval" not in out and out["package"]["status"] == "done"
+    res = R.read_json(tmp_path / "results.json")
+    assert res["stages"]["train"]["status"] == "done"
+    assert res["stages"]["eval"]["status"] == "missing"
+    assert "train    done" in R.status_table(run)
+    with pytest.raises(ValueError):
+        R._beyond("eval", "nonsense")
+
+
+def test_interrupted_eval_resumes_from_saved_chunks(tmp_path, monkeypatch, capsys):
+    calls: dict = {}
+    for name, mod in _stubs(calls, interrupt_wp_call=2).items():
+        monkeypatch.setitem(sys.modules, name, mod)
+    p = _tiny_preset()
+    p["eval"].update(wp_states=6, chunk_states=2, sim_games=0)
+    run = R.Run(p, tmp_path, quiet=True)
+    out = R.run_all(run, stop_after="eval")
+    assert out["stopped_at"] == "eval"
+    assert "Stopped safely at eval" in capsys.readouterr().out
+    res = R.read_json(tmp_path / "results.json")
+    assert res["stages"]["eval"]["status"] == "interrupted"
+    assert calls["wp"] == 2  # one chunk finished and was saved
+    calls2: dict = {}
+    for name, mod in _stubs(calls2).items():
+        monkeypatch.setitem(sys.modules, name, mod)
+    out = R.run_stage(R.Run(p, tmp_path, quiet=True), "eval")
+    assert out["status"] == "done"
+    assert calls2["wp"] == 4  # only the two missing chunks were simulated
+    assert out["wp"]["progress"]["reused_states"] == 2 and out["wp"]["n_states"] == 6
+
+
+def test_keyboard_interrupt_mid_training_resumes_real_modules(tmp_path, monkeypatch, capsys):
+    """Real model.py and train.py: stop after epoch 0, then resume at epoch 1."""
+    pytest.importorskip("torch")
+    import model as real_model
+    import train as real_train
+
+    calls: dict = {}
+    stubs = _stubs(calls)
+    monkeypatch.setitem(sys.modules, "records", stubs["records"])
+    monkeypatch.setitem(sys.modules, "model", real_model)
+    monkeypatch.setitem(sys.modules, "train", real_train)
+    p = _tiny_preset()
+    p["model"] = {"d_model": 16, "n_layers": 1, "n_heads": 2, "d_ff": 32, "dec_hidden": 16,
+                  "max_len": 256, "dropout": 0.0}
+    p["train"].update(epochs=2, patience=5, batch_games=4, warmup_steps=2)
+    orig_log = R.Run.log
+
+    def log_then_stop(self, *msg):
+        orig_log(self, *msg)
+        if any("epoch 0:" in str(m) for m in msg):
+            raise KeyboardInterrupt
+
+    monkeypatch.setattr(R.Run, "log", log_then_stop)
+    run = R.Run(p, tmp_path, quiet=True)
+    out = R.run_all(run, stop_after="train")
+    assert out["stopped_at"] == "train"
+    assert "Stopped safely at train" in capsys.readouterr().out
+    assert R.read_json(tmp_path / "results.json")["stages"]["train"]["status"] == "interrupted"
+    assert run.ckpt_path().exists() and not run.is_done("train")
+    assert R.checkpoint_info(run)["epochs_done"] == 1
+    monkeypatch.setattr(R.Run, "log", orig_log)
+    run2 = R.Run(p, tmp_path, quiet=True)
+    out = R.run_stage(run2, "train")
+    assert out["status"] == "done"
+    hist = out["history"]
+    assert hist["epochs_done"] == 2
+    assert [h["epoch"] for h in hist["history"]] == [0, 1]
+    assert R.checkpoint_info(run2)["epochs_done"] == 2
+
+
+def test_mismatched_checkpoint_starts_fresh(tmp_path):
+    torch = pytest.importorskip("torch")
+    import model as real_model
+
+    m = real_model.WorldModel({"d_model": 16, "n_layers": 1, "n_heads": 2, "d_ff": 32,
+                               "dec_hidden": 16})
+    path = tmp_path / "ck.pt"
+    torch.save({"current_model": {"not_a_param": torch.zeros(3)}}, path)
+    assert "missing" in R._check_checkpoint(path, m)
+    torch.save({"current_model": m.state_dict()}, path)
+    assert R._check_checkpoint(path, m) is None
