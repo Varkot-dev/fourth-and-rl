@@ -4,6 +4,8 @@ __pycache__/
 .pytest_cache/
 .ruff_cache/
 data/
+# The app bundle is the one data folder that is committed (M7).
+!app/data/
 *.egg-info/
 dist/
 .DS_Store

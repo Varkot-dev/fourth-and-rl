@@ -77,8 +77,8 @@ static_page:
   plotly_cdn: "https://cdn.plot.ly/plotly-4.1.1.min.js"   # pinned to the installed plotly.js
   max_megabytes: 10
   scores: null                    # null: every score of the bundle; else a list (a slice)
-  spreads: [0]                    # the full bundle (all three spreads) is about 15 MB as a
-                                  # page, so the page holds the even spread only
+  spreads: [0]                    # the full bundle (all three spreads) is about 19 MB as a
+                                  # page, so the page holds the even spread only (7 MB)
   # The page carries the one-step values, bootstrap counts and go-gain interval, and the
   # exact values; it leaves out the per-action intervals (the app shows them).
 

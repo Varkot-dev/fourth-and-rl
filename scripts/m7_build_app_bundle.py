@@ -14,8 +14,8 @@ once and saves compact arrays (`fourth_and_rl.app_bundle` holds the schema):
   * the question 1 and question 5 maps, copied from their saved results.
 
 The grid is in configs/app.yaml (`grid`). Nothing is interpolated. Checks written into the
-bundle: the exact values equal the saved question 1 map; how much a +-7 spread would move
-the one-step values at clocks where only an even spread is stored.
+bundle: the exact values equal the saved question 1 map; how much a +-7 spread moves the
+one-step values late in the game (why the spread is a grid axis at every clock).
 
 No test-season or holdout play is read. `decision.load_engine` reads the development file
 (and would read only kickoff rows of the test seasons if it had to refit its bundle).
@@ -210,7 +210,8 @@ def check_question1(exact: dict, ectxs: list[ab.Context], grid: dict, path: Path
                         cells += 1
     if worst > tol:
         raise SystemExit(f"exact values differ from the saved question 1 map by {worst}")
-    return {"cells": cells, "max_abs_difference": worst, "tolerance": tol, "source": str(path)}
+    return {"cells": cells, "max_abs_difference": worst, "tolerance": tol,
+            "source": str(path.relative_to(ROOT))}  # fmt: skip
 
 
 # -------------------------------------------------------------------------- questions
@@ -260,7 +261,8 @@ def question_extracts(cfg: dict) -> dict:
 
 
 def spread_check(engine: decision.DecisionEngine, cfg: dict) -> dict:
-    """At clocks where the bundle stores only an even spread: how far +-7 moves the values."""
+    """How far a +-7 spread moves the one-step values late in the game (a diagnostic: it is
+    why the spread is a grid axis at every clock)."""
     sc, grid = cfg["spread_check"], cfg["grid"]
     rows = []
     for sec in sc["seconds"]:
