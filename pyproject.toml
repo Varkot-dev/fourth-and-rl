@@ -23,7 +23,7 @@ dependencies = [
 [project.optional-dependencies]
 dev = ["pytest>=8", "ruff>=0.6"]
 rl = ["gymnasium>=1.0", "torch>=2.2", "stable-baselines3>=2.3", "d3rlpy>=2.5"]
-app = ["plotly>=5.20", "streamlit>=1.35"]
+app = ["plotly>=5.20", "streamlit>=1.50"]
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/fourth_and_rl"]

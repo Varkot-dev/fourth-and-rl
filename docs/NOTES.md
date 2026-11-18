@@ -51,6 +51,8 @@ From M1 on, each milestone's teaching notes have their own file under `docs/note
 | M9 "was it really fourth and 1?" | `docs/notes/m9_distance_error.md` |
 | M13 goal-line field goals and two-point tries | `docs/notes/m13_goal_line_and_two_point.md` |
 | M10 "how much does being predictable cost an offense?" | `docs/notes/m10_predictability.md` |
+| M7 coach evaluation, coach cost ledger, penalty assumption test, malpractice check (part one) | `docs/notes/m7_coaches.md` |
+| M7 interactive pieces: app bundle, Streamlit app, static page, Colab notebook, value-function animation | `docs/notes/m7_app.md` |
 
 The design decisions and their history are in the Decision log at the bottom of `docs/PLAN.md`.
 
