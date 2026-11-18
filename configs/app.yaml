@@ -1,0 +1,92 @@
+# M7 interactive part: the precomputed app bundle, the Streamlit app, the static page and the
+# value-function animation. Read by fourth_and_rl.app_bundle.load_config.
+# Nothing here is random; the seed is recorded for consistency with the other configs.
+seed: 20261117
+
+bundle_dir: app/data              # committed: the bundle is the only data the app reads
+cache_dir: data/app_build         # not committed: per-replicate value caches (resumable build)
+threads: 3                        # LightGBM threads for the engine and the replicates
+
+# The situation grid. Every cell is computed; nothing is interpolated. Sliders snap to it.
+grid:
+  yardlines: [1, 99]              # yardline_100, every yard
+  distances: [1, 15]              # yards to go, every yard (cells with distance > yard line
+                                  # cannot occur and are empty)
+  scores: [-14, 14]               # score differential of the team with the ball, every point
+  own_timeouts: 3                 # the team with the ball always holds 3
+  receive_2h_ko: 0                # first half: the team with the ball does NOT receive the
+                                  # second-half kickoff (both engines)
+  # Game clock (game seconds left), finer late in the fourth quarter.
+  clocks:
+    - {seconds: 3300, label: "Q1 10:00"}
+    - {seconds: 2400, label: "Q2 10:00"}
+    - {seconds: 1500, label: "Q3 10:00"}
+    - {seconds: 900, label: "Q4 15:00"}
+    - {seconds: 600, label: "Q4 10:00"}
+    - {seconds: 300, label: "Q4 5:00"}
+    - {seconds: 240, label: "Q4 4:00"}
+    - {seconds: 180, label: "Q4 3:00"}
+    - {seconds: 120, label: "Q4 2:00"}
+    - {seconds: 60, label: "Q4 1:00"}
+    - {seconds: 30, label: "Q4 0:30"}
+  # At or below endgame_seconds the opponent's timeouts are a grid axis (the exact game
+  # tracks timeouts only in the last 5:00). Earlier, both teams hold 3.
+  endgame_seconds: 300
+  opp_timeouts: [0, 1, 2, 3]
+  # Pregame spread of the team with the ball (positive = favoured by that many points, as
+  # posteam_spread in docs/DATA_DICTIONARY.md).
+  # Only the one-step engine uses it (the exact game has identical teams). It is a grid axis
+  # at every clock (spread_min_seconds: 0). A first trial stored it only up to Q4 15:00 on
+  # the belief that its effect decays away; spread_check showed a 7-point spread still moves
+  # late one-step values by 10 to 16 win-probability points, so that was dropped.
+  spreads: [-7, 0, 7]
+  spread_min_seconds: 0
+
+# Measured once per build and saved in the bundle: how much a +-7 spread moves the one-step
+# values late in the game (a diagnostic; the bundle stores all three spreads).
+spread_check:
+  seconds: [600, 300, 120]
+  scores: [-7, -3, 0, 3, 7]
+  opp_timeouts: 3
+
+# Integer encodings in the bundle files.
+encoding:
+  wp_scale: 10000                 # win probabilities as uint16, 0.0001 resolution; 65535 = n/a
+  gain_scale: 10000               # gains as int16, 0.0001 resolution; -32768 = n/a
+  # Value arrays are stored as exact int32 differences along the yard-line axis (decoded by
+  # a cumulative sum) in LZMA-compressed .npz files: about a third of plain zlib .npz.
+  delta: true
+
+# Saved results the app's question tabs read (copied into the bundle, never recomputed).
+questions:
+  q1_dp: results/questions/q1_late_lead_dp.json
+  q1_one_step: results/questions/q1_late_lead_one_step.json
+  q5: results/questions/q5_goal_line_and_two_point.json
+  q1_check_tolerance: 1.0e-4      # bundle exact values must equal the saved question 1 map
+
+app:
+  default: {seconds: 240, score: 4, yardline_100: 60, ydstogo: 2, opp_timeouts: 3, spread: 0}
+  late_lead:                      # tab 2, question 1
+    leads: [1, 3, 4, 7]
+    seconds: [300, 240, 180, 120]
+    yardlines: [50, 99]           # own half
+    distances: [1, 10]
+
+static_page:
+  out: app/fourth_down_explorer.html
+  plotly_cdn: "https://cdn.plot.ly/plotly-4.1.1.min.js"   # pinned to the installed plotly.js
+  max_megabytes: 10
+  scores: null                    # null: every score of the bundle; else a list (a slice)
+  spreads: [0]                    # the full bundle (all three spreads) is about 15 MB as a
+                                  # page, so the page holds the even spread only
+  # The page carries the one-step values, bootstrap counts and go-gain interval, and the
+  # exact values; it leaves out the per-action intervals (the app shows them).
+
+animation:
+  out: assets/m7_value_function.gif
+  seconds: [600, 10]              # Q4 10:00 to 0:10 (at 0:00 the game is decided)
+  step_seconds: 10                # one frame per 10 seconds of game clock
+  scores: [-7, -3, 0, 3, 7]       # one-score games, lines on the chart
+  timeouts: 3                     # both teams, inside the last 5:00
+  fps: 8
+  max_megabytes: 8
