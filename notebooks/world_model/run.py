@@ -7,10 +7,12 @@ so re-running everything skips finished work and training resumes from its check
   2 train    fit the world model (checkpointed, deadline-bound)
   3 eval     validation only: per-field NLL vs a frequency baseline, simulated league
              stats vs real, win probability by simulation vs nflverse on the same states
-  4 test     write prereg.json (config hash and the exact plan) FIRST, then score the
-             test seasons once; a second scoring is refused unless allow_rescore is set
-  5 plan     fourth-down recommendations on sampled test fourth downs, one constructed
-             hypothetical state, and agreement with the real coaches
+  4 test     write prereg/<config hash>.json (this configuration's exact plan) FIRST, then
+             score the test seasons once per configuration; a second scoring of the same
+             configuration is refused unless allow_rescore is set
+  5 plan     fourth-down recommendations on sampled test fourth downs (under the same
+             preregistration), one constructed hypothetical state, and agreement with the
+             real coaches
   6 package  results.json (every number), figures, a zip to download
 
 A global deadline guard gives every stage a deadline; stages scale down (fewer states or
@@ -56,7 +58,7 @@ STAGE_SOURCES = {
     "train": ["model", "train"],
     "eval": ["simulate"],
     "test": ["simulate"],
-    "plan": ["simulate"],
+    "plan": ["simulate", "support"],
     "package": [],
 }
 HERE = Path(__file__).resolve().parent
@@ -83,7 +85,9 @@ def _gpu_preset(name: str, model: dict, train: dict, eval_: dict, plan: dict, as
         "budget_min": 55.0,
         # Per-stage ceilings in minutes. They sum to more than the budget on purpose: a
         # stage that finishes early hands its time on; the global deadline is the hard cap.
-        "stage_min": {"data": 8, "train": 20, "eval": 9, "test": 7, "plan": 8, "package": 2},
+        # Plan is the last compute stage, so its ceiling is high: it may use whatever the
+        # earlier stages left (training on the GPU usually takes well under its 20 minutes).
+        "stage_min": {"data": 8, "train": 20, "eval": 9, "test": 7, "plan": 20, "package": 2},
         # Minimum seconds a stage needs to be worth starting; below it, it is skipped.
         "min_start_s": {"data": 60, "train": 60, "eval": 45, "test": 45, "plan": 45,
                         "package": 0},
@@ -106,7 +110,8 @@ PRESETS: dict[str, dict] = {
                  "nll_max_games": 60},
         "test": {"wp_states": 16, "wp_rollouts": 16, "sim_games": 0, "bootstrap": 200,
                  "nll_max_games": 60},
-        "plan": {"n_fourth": 8, "n_rollouts": 16, "hypo_rollouts": 64},
+        "plan": {"n_fourth": 8, "n_rollouts": 16, "hypo_rollouts": 64,
+                 "support": {"diag_states_per_band": 4, "diag_draws": 64}},
 
         "budget_min": 12.0,
         "stage_min": {"data": 5, "train": 2.5, "eval": 2, "test": 1.5, "plan": 1.5,
@@ -120,41 +125,56 @@ PRESETS: dict[str, dict] = {
         "t4",
         model={"d_model": 256, "n_layers": 6, "n_heads": 8, "d_ff": 1024, "dec_hidden": 256,
                "max_len": 256, "dropout": 0.1},
-        train={"batch_games": 32, "lr": 6e-4, "weight_decay": 0.1, "epochs": 40,
+        train={"batch_games": 64, "lr": 8.5e-4, "weight_decay": 0.1, "epochs": 40,
                "patience": 4, "warmup_steps": 300, "max_train_games": None,
                "sim_batch": 1024, "sim_max_live": 8192, "score_on_end": True},
-        eval_={"wp_states": 600, "wp_rollouts": 64, "sim_games": 128, "bootstrap": 1000,
+        eval_={"wp_states": 600, "wp_rollouts": 256, "sim_games": 128, "bootstrap": 1000,
                "nll_max_games": None},
-        plan={"n_fourth": 150, "n_rollouts": 128, "hypo_rollouts": 1024},
+        plan={"n_fourth": 300, "n_rollouts": 512, "hypo_rollouts": 4096},
         assumed={"train_rec_per_s": 60_000, "rollout_units_per_s": 40_000},
     ),
     "l4": _gpu_preset(
         "l4",
         model={"d_model": 320, "n_layers": 6, "n_heads": 8, "d_ff": 1280, "dec_hidden": 320,
                "max_len": 256, "dropout": 0.1},
-        train={"batch_games": 48, "lr": 6e-4, "weight_decay": 0.1, "epochs": 50,
+        train={"batch_games": 64, "lr": 7e-4, "weight_decay": 0.1, "epochs": 50,
                "patience": 4, "warmup_steps": 300, "max_train_games": None,
                "sim_batch": 2048, "sim_max_live": 16384, "score_on_end": True},
-        eval_={"wp_states": 1000, "wp_rollouts": 96, "sim_games": 256, "bootstrap": 1000,
+        eval_={"wp_states": 1000, "wp_rollouts": 384, "sim_games": 256, "bootstrap": 1000,
                "nll_max_games": None},
-        plan={"n_fourth": 250, "n_rollouts": 192, "hypo_rollouts": 2048},
+        plan={"n_fourth": 400, "n_rollouts": 512, "hypo_rollouts": 8192},
         assumed={"train_rec_per_s": 120_000, "rollout_units_per_s": 80_000},
     ),
     "a100": _gpu_preset(
         "a100",
         model={"d_model": 384, "n_layers": 8, "n_heads": 8, "d_ff": 1536, "dec_hidden": 384,
                "max_len": 256, "dropout": 0.1},
-        train={"batch_games": 64, "lr": 5e-4, "weight_decay": 0.1, "epochs": 60,
+        train={"batch_games": 128, "lr": 7e-4, "weight_decay": 0.1, "epochs": 60,
                "patience": 5, "warmup_steps": 300, "max_train_games": None,
                "sim_batch": 4096, "sim_max_live": 32768, "score_on_end": True},
 
-        eval_={"wp_states": 1500, "wp_rollouts": 128, "sim_games": 512, "bootstrap": 1000,
+        eval_={"wp_states": 1500, "wp_rollouts": 512, "sim_games": 512, "bootstrap": 1000,
                "nll_max_games": None},
-        plan={"n_fourth": 400, "n_rollouts": 256, "hypo_rollouts": 4096},
+        plan={"n_fourth": 600, "n_rollouts": 1024, "hypo_rollouts": 16384},
         assumed={"train_rec_per_s": 300_000, "rollout_units_per_s": 200_000},
     ),
 }
 DOWNGRADE = {"a100": "l4", "l4": "t4", "t4": "t4", "smoke": "smoke"}
+# Bump when what a preset means changes without its values changing (for example a new rule
+# in how the benchmark adjusts it). preset.json stores this with a hash of the PRESETS entry;
+# a saved preset whose definition differs from the code is replaced by a fresh pick.
+PRESET_VERSION = "2 (2026-11-18: GPU training, KV-cache rollouts, action support)"
+# The preflight benchmark scales a preset down only when the measured rollout or training
+# speed is below this share of the preset's assumed speed, and never below these floors
+# (or the preset's own value, if that is smaller).
+BENCH_SLOW_SHARE = 0.5
+BENCH_FLOORS = {"n_fourth": 200, "wp_states": 300, "sim_games": 32, "hypo_rollouts": 1024}
+
+
+def preset_definition(name: str) -> dict:
+    """What identifies a preset's definition: its name, PRESET_VERSION and a hash of its
+    PRESETS entry (before any benchmark adjustment)."""
+    return {"name": name, "version": PRESET_VERSION, "hash": config_hash(PRESETS[name])}
 
 
 def pick_preset(device_name: str | None = None, mem_gb: float | None = None) -> str:
@@ -509,6 +529,10 @@ class Run:
         elif stage in ("eval", "test", "plan"):
             parts[stage] = p[stage]
             parts["up_train"] = self.stage_hash("train")
+            if stage == "plan":
+                # Defaults included, so a resumed run with an older saved preset still
+                # recomputes the plan with the support rules.
+                parts["support"] = _mod("support").config(p["plan"])
             if stage in ("test", "plan"):
                 parts["data_test"] = self.content_hash("test")
         return config_hash(parts)
@@ -542,8 +566,30 @@ class Run:
         return not (stage == "data" and mk.get("src") != self.stage_src("data"))
 
     def status(self, stage: str) -> str:
+        """Status of this configuration's output of a stage; "missing" when there is none
+        and "other config" when the file was written under a different stage hash."""
         p = self.output_path(stage)
-        return read_json(p).get("status", "missing") if p.exists() else "missing"
+        if not p.exists():
+            return "missing"
+        out = read_json(p)
+        if stage != "package" and out.get("hash") != self.stage_hash(stage):
+            return "other config"
+        return out.get("status", "missing")
+
+    def current_output(self, stage: str) -> dict:
+        """The stage's output file if it belongs to this configuration; otherwise a stub
+        saying why not (an output from an earlier configuration is never reported as
+        this run's)."""
+        p = self.output_path(stage)
+        if not p.exists():
+            return {"status": "missing"}
+        out = read_json(p)
+        h = self.stage_hash(stage)
+        if out.get("hash") != h:
+            return {"status": "missing",
+                    "reason": f"the saved output belongs to another configuration (stage hash "
+                              f"{out.get('hash')}, this run {h}); not reported"}
+        return out
 
     def split(self, name: str) -> tuple[S.Split, dict]:
         return load_split(self.workdir / "data" / f"{name}.npz")
@@ -1077,6 +1123,7 @@ def _log_wp(run: Run, stage: str, wp: dict) -> None:
 # ---------------------------------------------------------------- stage 4: prereg + test
 def test_plan(run: Run) -> dict:
     p = run.preset
+    sc = _mod("support").config(p["plan"])
     return {
         "config_hash": run.full_config_hash(),
         "train_hash": run.stage_hash("train"),
@@ -1092,47 +1139,165 @@ def test_plan(run: Run) -> dict:
             f"({p['test']['bootstrap']} resamples) for ours, nflverse home_wp and nflverse "
             "vegas_home_wp on the same states, and paired differences",
             f"fourth-down plan on {p['plan']['n_fourth']} sampled test fourth downs, "
-            f"{p['plan']['n_rollouts']} rollouts per action; agreement of the recommended "
-            "action with the real coach on decisions not flagged too_close",
+            f"{p['plan']['n_rollouts']} rollouts per action; field goals beyond the longest "
+            f"made in the training split plus {sc['fg_margin_yards']} yards and punts inside "
+            f"the opponent's {sc['punt_min_yardline']} are not simulated; agreement of the "
+            "recommended action with the real coach on decisions not flagged too_close, also "
+            "split by training support (low support: the recommended call made fewer than "
+            f"{sc['min_support']} times by coaches in comparable training states)",
         ],
         "outcome_label": "home result at end of regulation: 1 win, 0.5 tie, 0 loss",
-        "rule": "test seasons are scored once; a second scoring needs allow_rescore=True "
-                "and is recorded as such",
+        "preset": p["name"],
+        "model": p["model"],
+        "rule": "each configuration (full config hash: data, model, training, evaluation, "
+                "test and plan settings) preregisters its own plan in prereg/<hash>.json "
+                "before it reads the test seasons, and scores them once; a second scoring of "
+                "the same configuration needs allow_rescore=True and is recorded as such. "
+                "Every preregistration in the work folder is kept and listed in results.json.",
     }
 
 
-def stage_test(run: Run, deadline: float) -> dict:
-    prereg_path = run.workdir / "prereg.json"
-    scored_path = run.workdir / "outputs" / "test_scored.json"
+# ---------------------------------------------------------------- preregistration files
+# prereg/<config hash>.json           the plan, written once before any test data is read,
+#                                     never overwritten
+# prereg/<config hash>.attempts.json  every test or plan stage start (a log; appended)
+# prereg/<config hash>.scored.json    written once, when that configuration's test scoring
+#                                     completed
+def prereg_dir(run: Run) -> Path:
+    d = run.workdir / "prereg"
+    d.mkdir(exist_ok=True)
+    return d
+
+
+def prereg_path(run: Run, config_hash_: str | None = None) -> Path:
+    return prereg_dir(run) / f"{config_hash_ or run.full_config_hash()}.json"
+
+
+def _write_once(path: Path, obj: Any) -> bool:
+    """Write path only if it does not exist yet. Returns True if this call wrote it."""
+    if path.exists():
+        return False
+    write_json(path, obj)
+    return True
+
+
+def migrate_legacy_prereg(run: Run) -> list[str]:
+    """Copy the first notebook's single prereg.json (and any earlier plans chained under
+    "previous") and outputs/test_scored.json into the per-configuration files. The legacy
+    files are left where they are. Returns the hashes imported."""
+    imported = []
+    legacy = run.workdir / "prereg.json"
+    d = prereg_dir(run)
+    p = read_json(legacy) if legacy.exists() else None
+    while isinstance(p, dict):
+        h = p.get("config_hash")
+        rec = {k: v for k, v in p.items() if k != "previous"}
+        rec["migrated_from"] = "prereg.json (single-file format of the first notebook)"
+        if h and _write_once(d / f"{h}.json", rec):
+            imported.append(h)
+        p = p.get("previous")
+    scored = run.workdir / "outputs" / "test_scored.json"
+    if scored.exists():
+        s = read_json(scored)
+        if s.get("config_hash"):
+            _write_once(d / f"{s['config_hash']}.scored.json",
+                        {**s, "scored_at": s.get("at"),
+                         "migrated_from": "outputs/test_scored.json"})
+    return imported
+
+
+def _migrate_and_log(run: Run, stage: str) -> None:
+    for h in migrate_legacy_prereg(run):
+        run.log(f"[{stage}] imported the earlier single-file preregistration of config {h} "
+                "into prereg/ (prereg.json is left in place)")
+
+
+def ensure_prereg(run: Run, stage: str, rescore: bool = False) -> Path:
+    """This configuration's preregistration: written now if it does not exist (BEFORE the
+    caller reads any test data), never overwritten. Every call is logged as an attempt."""
+    _migrate_and_log(run, stage)
     plan = test_plan(run)
-    prereg = read_json(prereg_path) if prereg_path.exists() else None
-    rescore = False
-    if scored_path.exists():
-        scored = read_json(scored_path)
-        rescore = scored.get("test_hash") != plan["test_hash"]
-        if rescore and not run.allow_rescore:
-            raise PermissionError(
-                f"test seasons were already scored (test hash {scored.get('test_hash')}); "
-                "refusing a second scoring with a different configuration. Set "
-                "allow_rescore=True to override; the rescore is recorded in prereg.json.")
-    if prereg is None or prereg.get("test_hash") != plan["test_hash"]:
-        prereg = {**plan, "written_at": time.time(), "attempts": [], "previous": prereg}
-    prereg["attempts"].append({"started_at": time.time(), "rescore": rescore})
-    write_json(prereg_path, prereg)  # written BEFORE any test data is loaded
-    run.log(f"[test] preregistered plan written to {prereg_path}")
+    path = prereg_path(run, plan["config_hash"])
+    if _write_once(path, {**plan, "written_at": time.time(), "written_by_stage": stage}):
+        run.log(f"[{stage}] preregistered this configuration's test plan: {path}")
+    elif read_json(path).get("test_hash") != plan["test_hash"]:  # cannot happen by design
+        raise RuntimeError(f"{path} does not match this configuration's test plan")
+    att_path = path.with_name(f"{plan['config_hash']}.attempts.json")
+    attempts = read_json(att_path) if att_path.exists() else []
+    attempts.append({"stage": stage, "started_at": time.time(), "rescore": rescore})
+    write_json(att_path, attempts)
+    return path
+
+
+def list_preregistrations(run: Run) -> list[dict]:
+    """Every preregistration in the work folder, oldest first, with whether and when that
+    configuration scored the test seasons."""
+    migrate_legacy_prereg(run)
+    current = run.full_config_hash()
+    rows = []
+    for f in prereg_dir(run).glob("*.json"):
+        if f.name.endswith((".attempts.json", ".scored.json")):
+            continue
+        p = read_json(f)
+        h = p.get("config_hash", f.stem)
+        sc = f.with_name(f"{h}.scored.json")
+        att = f.with_name(f"{h}.attempts.json")
+        attempts = read_json(att) if att.exists() else p.get("attempts", [])
+        scored = read_json(sc) if sc.exists() else None
+        rows.append({
+            "config_hash": h,
+            "test_hash": p.get("test_hash"),
+            "train_hash": p.get("train_hash"),
+            "preset": p.get("preset"),
+            "written_at": p.get("written_at"),
+            "test_scored": scored is not None,
+            "test_scored_at": (scored or {}).get("scored_at"),
+            "attempts": len(attempts),
+            "rescores": sum(bool(a.get("rescore")) for a in attempts),
+            "this_run": h == current,
+            "file": f"prereg/{f.name}",
+            "migrated_from": p.get("migrated_from"),
+        })
+    return sorted(rows, key=lambda r: r["written_at"] or 0)
+
+
+def _scorings_note(rows: list[dict]) -> dict:
+    scored = [r for r in rows if r["test_scored"]]
+    note = (f"The test seasons in this work folder have been scored by {len(scored)} "
+            "configuration(s)")
+    if len(scored) > 1:
+        note += ("; each is a separate experiment on the same test seasons, and only the "
+                 "first was chosen before any test-season result existed")
+    return {"n_configurations_scored": len(scored),
+            "config_hashes_scored": [r["config_hash"] for r in scored],
+            "note": note + "."}
+
+
+def stage_test(run: Run, deadline: float) -> dict:
+    plan = test_plan(run)
+    h = plan["config_hash"]
+    scored_path = prereg_dir(run) / f"{h}.scored.json"
+    _migrate_and_log(run, "test")
+    rescore = scored_path.exists()
+    if rescore and not run.allow_rescore:
+        raise PermissionError(
+            f"the test seasons were already scored by this configuration (config hash {h}); "
+            "refusing a second scoring of the same configuration. Set allow_rescore=True to "
+            "override; the rescore is recorded in prereg/.")
+    path = ensure_prereg(run, "test", rescore=rescore)  # BEFORE any test data is loaded
 
     pdir = run.partial_dir("test")
     te, extra = run.split("test")
     out: dict[str, Any] = {"split": "test", "seasons": run.preset["seasons"]["test"],
-                           "prereg": str(prereg_path), "config_hash": plan["config_hash"],
-                           "test_hash": plan["test_hash"]}
+                           "prereg": str(path), "config_hash": h,
+                           "test_hash": plan["test_hash"], "rescore": rescore}
     out["nll"] = _cached_json(pdir / "nll.json", lambda: nll_comparison(run, te, "test"))
     out["league_real"] = real_league_stats(te)
     out["wp"] = wp_calibration(run, te, extra, "test", deadline, run.seed + 4, pdir / "wp")
     _log_wp(run, "test", out["wp"])
     if out["wp"]["complete"]:
-        write_json(scored_path, {"config_hash": plan["config_hash"],
-                                 "test_hash": plan["test_hash"], "at": time.time()})
+        _write_once(scored_path, {"config_hash": h, "test_hash": plan["test_hash"],
+                                  "scored_at": time.time()})
     else:
         out["status"] = "partial"
         out["reason"] = "time budget; the next run continues the same preregistered plan"
@@ -1243,13 +1408,106 @@ def _agreement(df) -> dict:
     }
 
 
+SUPPORT_NOTE = ("The hard action rules and the support flags were added after the first Colab "
+                "T4 run's test-season fourth-down results had been seen (see "
+                "results/world_model/colab_t4_run_summary.md). They are a post hoc change to "
+                "the planner, not part of that run's preregistered test plan.")
+
+
+def _agreement_by_support(df, min_support: int) -> dict:
+    """Agreement with the coach, separately for well-supported and low-support
+    recommendations (finished decisions only)."""
+    if df is None or len(df) == 0 or "low_support" not in df.columns:
+        return {"min_support": min_support, "well_supported": {"n": 0},
+                "low_support": {"n": 0}}
+    d = df[df["done"].astype(bool)] if "done" in df.columns else df
+    low = d["low_support"].astype(bool)
+    return {
+        "min_support": min_support,
+        "rule": f"low support: coaches made the recommended call fewer than {min_support} "
+                "times in comparable training fourth downs (yard line within 3, same "
+                "yards-to-go bucket)",
+        "n_low_support": int(low.sum()),
+        "well_supported": _agreement(d[~low]),
+        "low_support": _agreement(d[low]),
+    }
+
+
+def _fg_recommendations(df) -> dict:
+    """The field-goal calls: the simulator's one-step make rate against the training make
+    rate at that yard line, and what the coach did."""
+    if df is None or len(df) == 0 or "best" not in df.columns:
+        return {"n": 0}
+    d = df[df["best"] == "FG"]
+    if "done" in d.columns:
+        d = d[d["done"].astype(bool)]
+    out: dict[str, Any] = {"n": int(len(d))}
+    if len(d) == 0:
+        return out
+    out["coach_choice_counts"] = d["real_choice"].astype(str).value_counts().to_dict()
+    if "low_support" in d.columns:
+        out["n_low_support"] = int(d["low_support"].astype(bool).sum())
+    for k in ("sim_fg_make", "emp_fg_make"):
+        if k in d.columns:
+            v = d[k].to_numpy(dtype=float)
+            out[f"mean_{k}"] = float(np.nanmean(v)) if np.isfinite(v).any() else None
+    return out
+
+
+def _support_diagnostic(run: Run, sp, model, te: S.Split, support, rules: dict, cfg: dict,
+                        pool: np.ndarray, decision_idx: np.ndarray, hyp_split: S.Split,
+                        hyp_idx: np.ndarray, pdir: Path, deadline: float) -> dict:
+    """Simulated versus empirical make rate and punt net yards (support.sim_vs_empirical),
+    plus the one-step field-goal make rate of every planned state and of the hypothetical.
+    One encoder pass per state, so it is cheap; it gets at most an eighth of the time left
+    and is saved once complete. A failure is recorded, never fatal to the plan."""
+    path = pdir / "support_diagnostic.json"
+    if path.exists():
+        return read_json(path)
+    dl = time.time() + max(deadline - time.time(), 0.0) / 8
+    rng = np.random.default_rng(run.seed + 70)
+    n = int(support.cfg["diag_draws"])
+    try:
+        d = sp.sim_vs_empirical(model, te, support, rules, cfg, rng, pool, dl)
+        d["fg_headline"] = sp.fg_gap_summary(d, int(support.cfg["min_support"]))
+        d["decision_states"] = {
+            "idx": decision_idx,
+            "sim_fg_make": sp.sim_fg_make(model, te, decision_idx, n, cfg, rng, dl)}
+        hyp = sp.sim_fg_make(model, hyp_split, hyp_idx, n, cfg, rng, dl)
+        yl = int(hyp_split.states[int(hyp_idx[0]), S.STATE_INDEX["yardline"]])
+        emp, att = sp.empirical_fg_rate(support, [yl])
+        d["hypothetical_fg"] = {"yardline_100": yl,
+                                "distance_yards": yl + sp.KICK_DISTANCE_OFFSET,
+                                "sim_make_rate": float(hyp[0]),
+                                "train_attempts_within_2_yards": int(att[0]),
+                                "empirical_make_rate": float(emp[0])}
+    except Exception as e:  # recorded in results.json; the plan itself goes on
+        run.log(f"[plan] support diagnostic failed: {type(e).__name__}: {e}")
+        return {"error": f"{type(e).__name__}: {e}"}
+    d = _jsonable(d)
+    write_json(path, d)
+    return d
+
+
 def stage_plan(run: Run, deadline: float) -> dict:
-    rec, sim = _mod("records"), _mod("simulate")
+    rec, sim, sp = _mod("records"), _mod("simulate"), _mod("support")
+    # The plan also reads the test seasons, so it needs this configuration's preregistration
+    # too (written here if the test stage was skipped or failed).
+    ensure_prereg(run, "plan")
     pdir = run.partial_dir("plan")
-    te, _ = run.split("test")
     p = run.preset["plan"]
+    scfg = sp.config(p)
+    # Support tables and hard rules: from the TRAINING split only, never validation or test.
+    tr, _ = run.split("train")
+    support = sp.build_support(tr, scfg)
+    del tr
+    rules = sp.hard_rules(support)
+    run.log(f"[plan] action rules: {rules['text']}")
+    te, _ = run.split("test")
     model, cfg = run.load_model(), run.model_cfg()
     out: dict[str, Any] = {"split": "test", "seasons": run.preset["seasons"]["test"]}
+    out["support"] = {"config": scfg, "rules": rules, "note": SUPPORT_NOTE,
+                      "training_tables": support.to_json()}
     # The hypothetical first (one state, many rollouts), with up to a quarter of the time.
     hyp_split, doc = build_hypothetical(te)
     hyp_deadline = time.time() + (deadline - time.time()) / 4
@@ -1257,10 +1515,13 @@ def stage_plan(run: Run, deadline: float) -> dict:
 
     def hyp_fn(part, rng):
         return sim.plan_fourth_downs(model, hyp_split, part, int(p["hypo_rollouts"]), cfg,
-                                     hyp_deadline, rng)
+                                     hyp_deadline, rng,
+                                     action_mask=sp.action_mask(hyp_split, part, rules))
 
     hdf, hinfo = chunked(run, pdir / "hypothetical", hyp_fn, hyp_idx, 1, hyp_deadline,
                          run.seed + 50)
+    if len(hdf):
+        hdf = sp.add_support_columns(hdf, support, hyp_split, rules)
     out["hypothetical"] = {"state": doc, "result": _jsonable(hdf), "progress": hinfo,
                            "n_rollouts_per_action": int(p["hypo_rollouts"])}
     if len(hdf):
@@ -1270,18 +1531,48 @@ def stage_plan(run: Run, deadline: float) -> dict:
     n = min(int(p["n_fourth"]), len(idx_all))
     rng = np.random.default_rng(run.seed + 5)
     idx = np.sort(rng.choice(idx_all, size=n, replace=False)) if n else idx_all[:0]
+    masked = (sp.masked_actions(hyp_split, hyp_idx, rules, "hypothetical")
+              + sp.masked_actions(te, idx, rules, "test"))
+    out["masked_actions"] = masked
+    test_masked = [m for m in masked if m["set"] == "test"]
+    out["masked_summary"] = {
+        "planned_states": int(n),
+        "states_with_a_masked_action": len({m["idx"] for m in test_masked}),
+        "fg_masked": sum(m["masked"] == "FG" for m in test_masked),
+        "punt_masked": sum(m["masked"] == "PUNT" for m in test_masked),
+        "hypothetical_masked": [m["masked"] for m in masked if m["set"] == "hypothetical"],
+    }
+    # Simulated versus empirical kicking (cheap), before the long planning loop.
+    diag = _support_diagnostic(run, sp, model, te, support, rules, cfg, idx_all, idx,
+                               hyp_split, hyp_idx, pdir, deadline)
+    out["support"]["diagnostic"] = diag
+    if diag.get("fg_headline"):
+        run.log(f"[plan] support diagnostic: {diag['fg_headline']}")
 
     def fn(part, rng):
-        return sim.plan_fourth_downs(model, te, part, int(p["n_rollouts"]), cfg, deadline, rng)
+        return sim.plan_fourth_downs(model, te, part, int(p["n_rollouts"]), cfg, deadline, rng,
+                                     action_mask=sp.action_mask(te, part, rules))
 
     chunk = max(1, _chunk_size(run, 3 * int(p["n_rollouts"]), "plan"))
     df, info = chunked(run, pdir / "fourth", fn, idx, chunk, deadline, run.seed + 5)
+    if len(df):
+        df = sp.add_support_columns(df, support, te, rules)
+        yl = te.states[df["idx"].to_numpy(dtype=np.int64), S.STATE_INDEX["yardline"]]
+        emp, att = sp.empirical_fg_rate(support, yl)
+        df["emp_fg_make"], df["emp_fg_attempts"] = emp, att
+        ds = diag.get("decision_states") or {}
+        sim_fg = dict(zip(ds.get("idx", []), ds.get("sim_fg_make", []), strict=True))
+        df["sim_fg_make"] = [sim_fg.get(int(i), np.nan) for i in df["idx"]]
     out["progress"] = info
     out["n_fourth_downs_available"] = int(len(idx_all))
     out["n_rollouts_per_action"] = int(p["n_rollouts"])
     out["decisions"] = _jsonable(df)
     out["agreement"] = _agreement(df)
+    out["agreement_by_support"] = _agreement_by_support(df, int(scfg["min_support"]))
+    out["fg_recommendations"] = _fg_recommendations(df)
     run.log(f"[plan] {out['agreement']}")
+    run.log(f"[plan] by support: well supported {out['agreement_by_support']['well_supported']}"
+            f"; low support {out['agreement_by_support']['low_support']}")
     if not (info["complete"] and hinfo["complete"]):
         out["status"] = "partial"
         out["reason"] = (f"time budget: {info['reused_states'] + info['computed_states']} of "
@@ -1333,11 +1624,14 @@ def stage_package(run: Run, deadline: float) -> dict:
     for s in STAGES:
         if s == "package":
             continue
-        p = run.output_path(s)
-        results["stages"][s] = read_json(p) if p.exists() else {"status": "missing"}
-    prereg = run.workdir / "prereg.json"
-    if prereg.exists():
-        results["prereg"] = read_json(prereg)
+        results["stages"][s] = run.current_output(s)
+    results["benchmark"] = run.preset.get("benchmark")
+    results["preset_choice"] = run.preset.get("picked")
+    mine = prereg_path(run)
+    if mine.exists():
+        results["prereg"] = read_json(mine)
+    results["preregistrations"] = list_preregistrations(run)
+    results["test_scorings"] = _scorings_note(results["preregistrations"])
     figs: dict[str, Any] = {}
     try:
         figs = make_figures(run, results)
@@ -1353,6 +1647,8 @@ def stage_package(run: Run, deadline: float) -> dict:
                 z.write(f, f"{sub}/{f.name}")
         for f in sorted((run.workdir / "data").glob("*.json")):
             z.write(f, f"data_reports/{f.name}")
+        for f in sorted(prereg_dir(run).glob("*.json")):
+            z.write(f, f"prereg/{f.name}")
         for f in ("prereg.json", "run.log", "ledger.json", "preset.json"):
             if (run.workdir / f).exists():
                 z.write(run.workdir / f, f)
@@ -1463,13 +1759,18 @@ def make_figures(run: Run, results: dict) -> dict:
         res = plan["hypothetical"]["result"]
         acts = [("GO", "wp_go", "se_go"), ("FG", "wp_fg", "se_fg"),
                 ("PUNT", "wp_punt", "se_punt")]
-        vals = [(a, res[w][0], (res.get(s) or [0])[0]) for a, w, s in acts
-                if w in res and res[w] and res[w][0] is not None]
         ax = axes[0]
-        for k, (a, v, se) in enumerate(vals):
+        for k, (a, w, s) in enumerate(acts):
+            v = (res.get(w) or [None])[0]
+            if v is None:  # masked by a hard rule, or not finished in time
+                allowed = (res.get(f"allowed_{a.lower()}") or [True])[0]
+                ax.text(k, 0.02, "not allowed\n(hard rule)" if allowed is False else "not run",
+                        ha="center", va="bottom", fontsize=8.5, color=_STYLE["MUTED"])
+                continue
+            se = (res.get(s) or [0])[0]
             ax.bar(k, v, yerr=1.96 * (se or 0), color=_ACTION_COLORS[a], capsize=4)
             ax.text(k, v + 0.01, f"{v:.3f}", ha="center", va="bottom", fontsize=9)
-        ax.set_xticks(range(len(vals)), [a for a, _, _ in vals])
+        ax.set_xticks(range(len(acts)), [a for a, _, _ in acts])
         ax.set_ylabel("simulated win probability, offense")
         ax.set_title("Up 4, 4:00 left, 4th and 2 at own 40", fontsize=11)
         ag = plan.get("agreement", {})
@@ -1490,7 +1791,79 @@ def make_figures(run: Run, results: dict) -> dict:
         ax.set_ylabel("fourth downs")
         ax.legend()
         made["fourth_down"] = _save(fig, fdir / "fourth_down.png", plt)
+    diag = (plan.get("support") or {}).get("diagnostic") or {}
+    if plan.get("status") in ("done", "partial") and diag.get("fg"):
+        made["fg_support"] = _fg_support_figure(diag, plan["support"]["rules"],
+                                                fdir / "fg_support.png", plt)
     return made
+
+
+def _band_series(rows: list[dict], key: str) -> np.ndarray:
+    return np.array([np.nan if r.get(key) is None else float(r[key]) for r in rows])
+
+
+def _fg_support_figure(diag: dict, rules: dict, path: Path, plt) -> str:
+    """Simulated vs training make rate by distance (left) and punt net yards by yard line
+    (right), each over the number of training attempts in the band. Shaded: masked."""
+    s = _STYLE
+    fig, axes = plt.subplots(2, 2, figsize=(12, 6.8), sharex="col",
+                             gridspec_kw={"height_ratios": [3, 1.3], "hspace": 0.08,
+                                          "wspace": 0.22})
+    panels = (
+        ("fg", "distance_yards", "train_attempts", "empirical_make_rate", "sim_make_rate",
+         "Field goals: simulated vs training make rate", "make rate",
+         "field goal distance (yards) = yard line + 18", "training\nattempts"),
+        ("punt", "yardline", "train_punts", "empirical_net_yards", "sim_net_yards",
+         "Punts: simulated vs training net yards", "net yards",
+         "yard line of the punt (yards from the opponent's end zone)", "training\npunts"),
+    )
+    for col, (key, xkey, nkey, ekey, skey, title, ylab, xlab, nlab) in enumerate(panels):
+        rows = diag.get(key) or []
+        if not rows:
+            continue
+        x = np.array([(r[xkey][0] + r[xkey][1]) / 2 for r in rows])
+        width = rows[0][xkey][1] - rows[0][xkey][0] + 1
+        emp, sim, se = (_band_series(rows, k) for k in (ekey, skey, "sim_se"))
+        ax = axes[0, col]
+        if key == "fg":
+            lo, hi = rules["fg_max_distance_yards"] + 0.5, x.max() + width / 2
+            label = f"not allowed:\nbeyond {rules['fg_max_distance_yards']} yd"
+            ax.set_ylim(0, 1.04)
+        else:
+            lo, hi = x.min() - width / 2, rules["punt_min_yardline"] - 0.5
+            label = f"not allowed:\ninside the\nopponent's {rules['punt_min_yardline']}"
+        if hi > lo:
+            ax.axvspan(lo, hi, color=s["GRID"], alpha=0.7, lw=0)
+            ax.text(lo + 0.6, 0.97, label, transform=ax.get_xaxis_transform(), va="top",
+                    fontsize=8.5, color=s["INK_2"])
+        ok = np.isfinite(emp)
+        ax.plot(x[ok], emp[ok], color=s["ORANGE"], marker="o", ms=6,
+                label="training seasons: what coaches' kicks did")
+        ok = np.isfinite(sim)
+        ax.errorbar(x[ok], sim[ok], yerr=1.96 * np.nan_to_num(se[ok]), color=s["BLUE"],
+                    marker="s", ms=6, capsize=3,
+                    label="world model: forced kick, simulated next play (95% interval)")
+        ax.set_title(title, pad=8)
+        ax.set_ylabel(ylab)
+        ax = axes[1, col]
+        n = np.array([r[nkey] or 0 for r in rows])
+        ax.bar(x, n, width=width * 0.85, color=s["NEUTRAL"])
+        for xi, ni in zip(x, n, strict=True):
+            ax.text(xi, ni, f"{ni}", ha="center", va="bottom", fontsize=8, color=s["INK_2"])
+        ax.set_ylim(0, max(int(n.max()), 1) * 1.35)
+        ax.set_ylabel(nlab)
+        ax.set_xlabel(xlab)
+        ax.grid(axis="x", visible=False)
+    handles, labels = axes[0, 0].get_legend_handles_labels()
+    fig.legend(handles, labels, loc="lower center", bbox_to_anchor=(0.5, 0.95), ncol=2,
+               fontsize=9)
+    fig.text(0.01, -0.03,
+             f"Simulated: up to {diag.get('states_per_band')} test-season fourth downs per band "
+             f"(whatever the coach did), the kick forced, {diag.get('draws_per_state')} sampled "
+             "next plays each.\nTraining: every attempt in the training seasons. Coaches pick "
+             "when to kick, so long-range training rates are for selected attempts.",
+             fontsize=8.5, color=s["MUTED"], va="top")
+    return _save(fig, path, plt)
 
 
 def _save(fig, path: Path, plt) -> str:
@@ -1575,10 +1948,15 @@ def chunked(run: Run, pdir: Path, fn, idx: np.ndarray, chunk: int, deadline: flo
 
 
 def _chunk_size(run: Run, n_rollouts: int, key: str) -> int:
-    c = run.preset[key]
+    return _chunk_states(run.preset, n_rollouts, key)
+
+
+def _chunk_states(preset: dict, n_rollouts: int, key: str) -> int:
+    """States per saved chunk of a stage (n_rollouts = rollouts per state per chunk call)."""
+    c = preset[key]
     if c.get("chunk_states"):
         return int(c["chunk_states"])
-    live = int(run.preset["train"].get("sim_max_live", 8192))
+    live = int(preset["train"].get("sim_max_live", 8192))
     return max(4, live // max(int(n_rollouts), 1))
 
 
@@ -1726,87 +2104,164 @@ def system_info() -> dict:
     return info
 
 
-def micro_benchmark(preset: dict, seconds: float = 30.0) -> dict:
-    """Time training and rollouts for about `seconds` on a synthetic split, and scale the
-    preset down if this GPU is slower than the preset assumes. Returns the measurements and
-    the (possibly) adjusted preset. The synthetic split is not football; it only fixes
-    tensor shapes."""
-    import torch
+def _bench_states(syn: S.Split, n: int) -> np.ndarray:
+    """n start records near the middle of synthetic games (cycling through the games), so
+    the shared history is about as long as at a real mid-game fourth down."""
+    lens = np.diff(syn.offsets)
+    g = np.arange(n) % len(lens)
+    return np.asarray(syn.offsets[g] + lens[g] // 2, dtype=np.int64)
 
-    model_mod, train_mod, sim = _mod("model"), _mod("train"), _mod("simulate")
-    device = "cuda" if preset["device"] == "cuda" and torch.cuda.is_available() else "cpu"
-    cfg = {**preset["model"], **preset["train"], "device": device, "seed": SEED, "epochs": 1}
-    syn = synthetic_split(n_games=24 if device == "cuda" else 6, seed=1)
-    model = model_mod.WorldModel(cfg).to(device)
-    tmp = Path(os.environ.get("TMPDIR", "/tmp")) / f"wm_bench_{os.getpid()}.pt"
-    t0 = time.time()
-    hist = train_mod.train_model(model, syn, subset_split(syn, [0, 1]), cfg, tmp,
-                                 time.time() + seconds / 2, lambda *a: None)
-    train_s = time.time() - t0
-    tmp.unlink(missing_ok=True)
-    rec_per_s = float(hist.get("train_records_per_s") or n_records(syn) / max(train_s, 1e-6))
-    if not np.isfinite(rec_per_s):
-        rec_per_s = n_records(syn) / max(train_s, 1e-6)
-    model.eval()
-    rng = np.random.default_rng(0)
-    idx = np.array([int(syn.offsets[g]) + 5 for g in range(4)])
-    n_roll = max(int(cfg.get("sim_batch", 1024)) // len(idx), 4)
-    t0 = time.time()
-    df = sim.wp_by_simulation(model, syn, idx, n_roll, cfg, time.time() + seconds / 2, rng)
-    roll_s = time.time() - t0
-    steps = np.nan_to_num(df["mean_steps"].to_numpy(dtype=float)) if "mean_steps" in df else 1
-    # Rollout-steps per second at this batch size. Untrained rollouts end early, so the live
-    # batch shrinks while timing: this undercounts steady-state speed (conservative).
-    units = float(np.sum(steps * n_roll)) / max(roll_s, 1e-6)
+
+def apply_benchmark(preset: dict, rec_per_s: float, units: float):
+    """The benchmark's rule, as a pure function of the measured speeds. Returns (adjusted
+    preset, list of changes, decision text, train speed share, rollout speed share)."""
     a = preset["assumed"]
     tr_ratio = rec_per_s / a["train_rec_per_s"]
     ro_ratio = units / a["rollout_units_per_s"]
     adjusted = copy.deepcopy(preset)
-    changes = []
-    if preset["device"] == "cuda" and tr_ratio < 0.5 and DOWNGRADE[preset["name"]] != \
-            preset["name"]:
+    changes: list[str] = []
+    downgraded = None
+    if preset["device"] == "cuda" and tr_ratio < BENCH_SLOW_SHARE \
+            and DOWNGRADE[preset["name"]] != preset["name"]:
         smaller = PRESETS[DOWNGRADE[preset["name"]]]
         adjusted["model"] = copy.deepcopy(smaller["model"])
         adjusted["train"]["batch_games"] = smaller["train"]["batch_games"]
+        downgraded = (f"model downgraded to the {smaller['name']} size (training at "
+                      f"{tr_ratio:.0%} of the assumed speed)")
+        changes.append(downgraded)
+    if ro_ratio < BENCH_SLOW_SHARE:
+        f = ro_ratio
+        for block, key in (("eval", "wp_states"), ("eval", "sim_games"), ("test", "wp_states"),
+                           ("test", "sim_games"), ("plan", "n_fourth"),
+                           ("plan", "hypo_rollouts")):
+            old = int(adjusted[block][key])
+            new = max(int(old * f), min(old, BENCH_FLOORS[key]))
+            if new != old:
+                adjusted[block][key] = new
+                changes.append(f"{block}.{key} {old} -> {new}")
+        decision = (f"scaled down: rollouts at {units:,.0f} steps/s are {ro_ratio:.0%} of the "
+                    f"{a['rollout_units_per_s']:,} the preset assumes (below the "
+                    f"{BENCH_SLOW_SHARE:.0%} threshold), so sizes were multiplied by {f:.2f} "
+                    f"with floors {BENCH_FLOORS}")
+    else:
+        decision = (f"kept the preset sizes: rollouts at {units:,.0f} steps/s are "
+                    f"{ro_ratio:.0%} of the {a['rollout_units_per_s']:,} the preset assumes "
+                    f"(it is scaled only below {BENCH_SLOW_SHARE:.0%})")
+    if downgraded:
+        decision += "; " + downgraded
+    return adjusted, changes, decision, tr_ratio, ro_ratio
 
-        changes.append(f"model downgraded to the {smaller['name']} size (training at "
-                       f"{tr_ratio:.0%} of assumed speed)")
-    # Rollout counts from the measured speed: a rollout from a random state runs about
-    # STEPS_PER_ROLLOUT transitions to the end of regulation; each stage may spend 60% of
-    # its ceiling on rollouts (the pilot and deadline guard handle the rest).
-    est = {}
-    for key in ("eval", "test"):
-        c = adjusted[key]
-        cost = (c["wp_states"] * c["wp_rollouts"] * STEPS_PER_ROLLOUT
-                + c["sim_games"] * 2 * STEPS_PER_ROLLOUT) / max(units, 1e-6)
-        room = 0.6 * 60 * adjusted["stage_min"][key]
-        if cost > room:
-            f = room / cost
-            c["wp_states"] = max(int(c["wp_states"] * f), min(c["wp_states"], 20))
-            c["sim_games"] = int(c["sim_games"] * f)
-            changes.append(f"{key}: states and simulated games scaled by {f:.2f}")
-        est[key] = round(cost / 60, 1)
-    c = adjusted["plan"]
-    cost = 3 * (c["n_fourth"] * c["n_rollouts"] + c["hypo_rollouts"]) * STEPS_PER_ROLLOUT \
-        / max(units, 1e-6)
-    room = 0.6 * 60 * adjusted["stage_min"]["plan"]
-    if cost > room:
-        f = room / cost
-        c["n_fourth"] = max(int(c["n_fourth"] * f), min(c["n_fourth"], 10))
-        c["hypo_rollouts"] = max(int(c["hypo_rollouts"] * max(f, 0.25)), 16)
-        changes.append(f"plan: fourth downs scaled by {f:.2f}")
-    est["plan"] = round(cost / 60, 1)
+
+def micro_benchmark(preset: dict, seconds: float = 30.0) -> dict:
+    """Measure training and rollout speed on this machine with the code the stages use, and
+    scale the preset DOWN only if this machine is much slower than the preset assumes.
+
+    Training: two short epochs on a synthetic split (2 x batch_games games on a GPU); the
+    speed is read from the second epoch, after warm-up. Rollouts: the current rollout path
+    (the key/value cache) at the batch one plan-stage call uses on this GPU (states per
+    chunk x n_rollouts), from mid-game states. The model is untrained, so its END phase is
+    switched off and max_steps is STEPS_PER_ROLLOUT: every rollout runs about as long as a
+    real one, and the speed is rollout steps (transitions) per second.
+
+    Rule: a size is scaled only when the measured speed is below BENCH_SLOW_SHARE of the
+    preset's assumed speed, by the measured share, never below BENCH_FLOORS (or the preset's
+    own value if smaller). Otherwise the preset is kept as written; every stage still runs
+    against its own deadline and saves partial progress. The synthetic split is not
+    football; it only fixes tensor shapes."""
+    import torch
+
+    model_mod, train_mod, sim = _mod("model"), _mod("train"), _mod("simulate")
+    device = "cuda" if preset["device"] == "cuda" and torch.cuda.is_available() else "cpu"
+    cfg = {**preset["model"], **preset["train"], "device": device, "seed": SEED, "epochs": 2}
+    cfg.pop("max_train_games", None)
+    n_games = 2 * int(cfg["batch_games"]) if device == "cuda" else 6
+    syn = synthetic_split(n_games=n_games, seed=1)
+    model = model_mod.WorldModel(cfg)
+    tmp = Path(os.environ.get("TMPDIR", "/tmp")) / f"wm_bench_{os.getpid()}_{time.time_ns()}.pt"
+    tmp.unlink(missing_ok=True)
+    t0 = time.time()
+    try:
+        hist = train_mod.train_model(model, syn, subset_split(syn, [0, 1]), cfg, str(tmp),
+                                     time.time() + seconds / 2, lambda *a: None)
+    finally:
+        tmp.unlink(missing_ok=True)
+    train_s = time.time() - t0
+    warm = [h for h in hist.get("history") or [] if h.get("epoch", 0) >= 1]
+    rec_per_s = (warm[-1].get("timing") or {}).get("train_records_per_s") if warm else None
+    train_basis = "second epoch (after warm-up)"
+    if not rec_per_s or not np.isfinite(rec_per_s):
+        rec_per_s = hist.get("train_records_per_s")
+        train_basis = "all steps, including warm-up"
+    if not rec_per_s or not np.isfinite(rec_per_s):
+        rec_per_s = n_records(syn) / max(train_s, 1e-6)
+        train_basis = "wall time of the whole call"
+    rec_per_s = float(rec_per_s)
+
+    # ---- rollouts: the current path, at one plan-stage call's batch
+    if hasattr(model, "eval"):
+        model.eval()
+    heads = getattr(model, "heads", None)
+    if heads is not None:
+        with torch.no_grad():  # untrained: never end the game early by sampling END
+            heads[S.TARGET_INDEX["phase"]][-1].bias[S.PHASE["END"]] = -1e4
+    rcfg = {**cfg, "kv_cache": True, "max_steps": STEPS_PER_ROLLOUT}
+    n_roll = int(preset["plan"]["n_rollouts"])
+    live = int(sim.live_rows(model, rcfg)) if hasattr(sim, "live_rows") else n_roll
+    states = max(1, min(_chunk_states(preset, 3 * n_roll, "plan"), live // max(n_roll, 1)))
+    idx = _bench_states(syn, states)
+    rng = np.random.default_rng(0)
+    sim.rollout(model, syn, idx[:1], None, 16, {**rcfg, "max_steps": 3}, time.time() + 30,
+                rng)  # warm-up: first-call kernel and allocator setup
+    planned = states * n_roll * STEPS_PER_ROLLOUT
+    t0 = time.time()
+    res = sim.rollout(model, syn, idx, None, n_roll, rcfg, t0 + seconds / 2, rng)
+    roll_s = time.time() - t0
+    finished = bool(np.all(res["done"]))
+    if finished:
+        units = float(res["counters"]["transitions"]) / max(roll_s, 1e-6)
+        speed_note = "measured"
+    else:  # did not finish in its time: at most this fast
+        units = planned / max(roll_s, 1e-6)
+        speed_note = "upper bound (the batch did not finish in its time)"
+    adjusted, changes, decision, tr_ratio, ro_ratio = apply_benchmark(preset, rec_per_s, units)
+
+    def minutes(p: dict) -> dict:
+        out = {}
+        for key in ("eval", "test"):
+            c = p[key]
+            u = c["wp_states"] * c["wp_rollouts"] * STEPS_PER_ROLLOUT \
+                + c["sim_games"] * 2 * STEPS_PER_ROLLOUT
+            out[key] = round(u / max(units, 1e-6) / 60, 1)
+        c = p["plan"]
+        u = 3 * (c["n_fourth"] * c["n_rollouts"] + c["hypo_rollouts"]) * STEPS_PER_ROLLOUT
+        out["plan"] = round(u / max(units, 1e-6) / 60, 1)
+        return out
+
+    timing = {k: (round(v, 3) if isinstance(v, float) else v)
+              for k, v in (res.get("timing") or {}).items() if k != "method"}
     return {
         "device": device,
         "train_records_per_s": round(rec_per_s, 1),
-        "rollout_steps_per_s_untrained": round(units, 1),
-        "estimated_rollout_minutes_before_scaling": est,
-
+        "train_speed_basis": train_basis,
+        "rollout_steps_per_s": round(units, 1),
+        "rollout_speed_basis": speed_note,
+        "rollout_batch": {"states": int(states), "rollouts_per_state": n_roll,
+                          "rows": int(states * n_roll), "live_rows_cap": live,
+                          "max_steps": STEPS_PER_ROLLOUT, "path": "kv_cache",
+                          "seconds": round(roll_s, 2), "timing": timing},
+        "assumed": dict(preset["assumed"]),
         "train_speed_vs_assumed": round(tr_ratio, 2),
         "rollout_speed_vs_assumed": round(ro_ratio, 2),
-        "note": "untrained-model rollouts end at random, so rollout speed is a rough guide; "
-                "each stage also measures a pilot and scales to its own deadline",
+        "threshold_share": BENCH_SLOW_SHARE,
+        "floors": dict(BENCH_FLOORS),
+        "decision": decision,
         "changes": changes,
+        "estimated_minutes_at_measured_speed": {"preset": minutes(preset),
+                                                "after_adjustment": minutes(adjusted)},
+        "stage_ceilings_min": dict(preset["stage_min"]),
+        "note": "rollout speed from an untrained model with END switched off on synthetic "
+                "games; each stage also times its own chunks and stops at its deadline, "
+                "saving what it finished",
         "adjusted_preset": adjusted,
     }
 
@@ -1816,36 +2271,118 @@ def estimate_minutes(preset: dict) -> dict:
     return {"budget_min": preset["budget_min"], "stage_ceilings_min": sm}
 
 
+# Files of a run that a fresh preset pick starts over: moved into archive/ (results.json,
+# the zip, the time ledger, preset.json, figures) or copied there (stage outputs, the legacy
+# preregistration and the log, which stay in place: finished data is reused by hash).
+_ARCHIVE_MOVE = ("results.json", "world_model_results.zip", "ledger.json", "preset.json")
+_ARCHIVE_COPY = ("prereg.json", "run.log")
+
+
+def archive_previous_run(wd: Path, reason: str) -> Path | None:
+    """Keep the previous run's results before a fresh preset pick. Moves results.json, the
+    zip, figures/, preset.json and ledger.json (so the time budget starts again) into
+    archive/run_<time>/, and copies outputs/, prereg.json and run.log there. Data, the
+    checkpoints and the per-configuration preregistrations stay where they are."""
+    import shutil
+
+    wd = Path(wd)
+    present = [n for n in _ARCHIVE_MOVE + _ARCHIVE_COPY if (wd / n).exists()]
+    figs = sorted((wd / "figures").glob("*")) if (wd / "figures").is_dir() else []
+    outs = sorted((wd / "outputs").glob("*")) if (wd / "outputs").is_dir() else []
+    if not (present or figs or outs):
+        return None
+    dest = wd / "archive" / f"run_{time.strftime('%Y%m%d_%H%M%S')}"
+    k = 1
+    while dest.exists():
+        dest = dest.with_name(dest.name.split("__")[0] + f"__{k}")
+        k += 1
+    dest.mkdir(parents=True)
+    for n in present:
+        (shutil.move if n in _ARCHIVE_MOVE else shutil.copy2)(str(wd / n), str(dest / n))
+    if figs:
+        (dest / "figures").mkdir()
+        for f in figs:
+            shutil.move(str(f), str(dest / "figures" / f.name))
+    if outs:
+        shutil.copytree(wd / "outputs", dest / "outputs")
+    write_json(dest / "ARCHIVED.json", {"archived_at": time.time(), "reason": reason})
+    return dest
+
+
 def prepare(preset_name: str | None = None, workdir: Path | None = None, benchmark: bool = True,
             budget_min: float | None = None, force_new_preset: bool = False,
             allow_rescore: bool = False, force: tuple = ()) -> Run:
     """Pick (or reload) the preset, benchmark it once, print the status table, return a Run.
 
-    The adjusted preset is saved in the work folder on the first call and reused on every
-    resume, so a resumed run keeps the same config hashes and skips finished stages.
+    The (possibly benchmark-adjusted) preset is saved in the work folder with its definition
+    (PRESET_VERSION and a hash of its PRESETS entry) and reused on every resume, so a
+    resumed run keeps the same config hashes and skips finished stages. When the saved
+    definition differs from the code (or force_new_preset), the preset is picked afresh:
+    the previous run's results are archived and the time ledger starts again.
     """
     wd = Path(workdir or default_workdir())
     wd.mkdir(parents=True, exist_ok=True)
     saved = wd / "preset.json"
-    if saved.exists() and not force_new_preset:
-        preset = read_json(saved)
-        print(f"Reusing the saved preset '{preset['name']}' from {saved}")
-    else:
+    notes: list[str] = []
+    preset = None
+    if saved.exists():
+        old = read_json(saved)
+        name_old = old.get("name")
+        cur = preset_definition(name_old) if name_old in PRESETS else None
+        if force_new_preset:
+            reason = "force_new_preset was set"
+        elif cur is None:
+            reason = f"its preset name {name_old!r} is not in this code"
+        elif old.get("definition") is None:
+            reason = "it has no definition version (saved by the first notebook)"
+        elif old["definition"] != cur:
+            reason = (f"its definition (version {old['definition'].get('version')!r}, hash "
+                      f"{old['definition'].get('hash')}) differs from the code's (version "
+                      f"{cur['version']!r}, hash {cur['hash']})")
+        else:
+            reason = None
+            preset = old
+            notes.append(f"Reusing the saved preset '{name_old}' from {saved} (definition "
+                         f"hash {cur['hash']})")
+            want = preset_name or pick_preset()
+            if want != name_old:
+                notes.append(f"Note: this machine would get preset '{want}'; the saved "
+                             f"'{name_old}' is kept so finished stages resume. Set "
+                             "FORCE_NEW_PRESET = True to start over with a fresh pick.")
+        if reason:
+            dest = archive_previous_run(wd, f"fresh preset pick: {reason}")
+            notes.append(f"The saved preset in {saved} is replaced: {reason}. Picking the "
+                         "preset afresh"
+                         + (f"; the previous run's results, figures and time ledger were "
+                            f"moved to {dest}" if dest else ""))
+    elif (wd / "ledger.json").exists() or (wd / "results.json").exists():
+        dest = archive_previous_run(wd, "fresh preset pick: no preset.json, but an earlier "
+                                        "run's ledger or results")
+        notes.append(f"No saved preset, but an earlier run's files were found; moved them to "
+                     f"{dest} so this run starts with the full time budget")
+    if preset is None:
         name = preset_name or pick_preset()
         preset = get_preset(name)
+        preset["definition"] = preset_definition(name)
         if benchmark:
             try:
                 bench = micro_benchmark(preset)
                 preset = bench.pop("adjusted_preset")
                 preset["benchmark"] = bench
-                print("Micro-benchmark:", json.dumps(bench, indent=1))
+                notes.append(f"Micro-benchmark: {bench['decision']}")
+                print("Micro-benchmark:", json.dumps(
+                    {k: v for k, v in bench.items() if k != "rollout_batch"}, indent=1))
             except Exception as e:
-                preset["benchmark"] = {"error": f"{type(e).__name__}: {e}"}
-                print("Micro-benchmark failed, keeping the preset as is:", e)
+                preset["benchmark"] = {"error": f"{type(e).__name__}: {e}",
+                                       "decision": "kept the preset as is (benchmark failed)"}
+                notes.append(f"Micro-benchmark failed, keeping the preset as is: {e}")
+        preset["picked"] = {"at": time.time(), "notes": list(notes)}
         write_json(saved, preset)
     if budget_min is not None:
         preset["budget_min"] = budget_min
     run = Run(preset, wd, budget_min=budget_min, allow_rescore=allow_rescore, force=force)
+    for n in notes:
+        run.log(f"[preflight] {n}")
     print(status_table(run), flush=True)
     return run
 
@@ -1883,6 +2420,13 @@ def summary(run: Run) -> str:
     st = r["stages"]
     lines = [f"Preset {r['preset']['name']}, config {r['config_hash']}, "
              f"GPU {r['versions'].get('gpu', 'none')}."]
+    bench = r.get("benchmark") or {}
+    if bench.get("decision"):
+        lines.append(f"  preflight benchmark: {bench['decision']}")
+    ts = r.get("test_scorings") or {}
+    if ts.get("n_configurations_scored", 0) > 1:
+        lines.append(f"  {ts['note']} (config hashes {', '.join(ts['config_hashes_scored'])}; "
+                     "see results.json 'preregistrations')")
     for s in ("data", "train", "eval", "test", "plan"):
         o = st.get(s, {})
         lines.append(f"- {s}: {o.get('status')}"
@@ -1895,7 +2439,12 @@ def summary(run: Run) -> str:
                          f"seasons {v['seasons'][0]}-{v['seasons'][-1]}")
     t = st.get("train", {})
     if t.get("status") == "done":
-        lines.append(f"  model: {t['params']:,} parameters, trained {t['train_seconds_total']}s")
+        h = t.get("history") or {}
+        speed = h.get("train_records_per_s")
+        lines.append(f"  model: {t['params']:,} parameters, trained {t['train_seconds_total']}s"
+                     + (f" on {h['device']}" if h.get("device") else "")
+                     + (f" ({h.get('epochs_done')} epochs, {speed:,.0f} records/s)"
+                        if isinstance(speed, (int, float)) and np.isfinite(speed) else ""))
     for s, label in (("eval", "validation"), ("test", "test")):
         o = st.get(s, {})
         if o.get("status") not in ("done", "partial") or not o.get("wp", {}).get("metrics"):
@@ -1919,9 +2468,94 @@ def summary(run: Run) -> str:
         bits = [f"{a} {res[k][0]:.3f}" for a, k in (("go", "wp_go"), ("field goal", "wp_fg"),
                                                      ("punt", "wp_punt"))
                 if res.get(k) and res[k][0] is not None]
+        bits += [f"{a} not allowed (hard rule)" for a, k in (("go", "allowed_go"),
+                                                           ("field goal", "allowed_fg"),
+                                                           ("punt", "allowed_punt"))
+                 if (res.get(k) or [True])[0] is False]
         lines.append(f"  hypothetical (up 4, 4:00 left, 4th and 2 at own 40): "
                      f"{', '.join(bits)}; best {res.get('best', ['?'])[0]}")
+    if p.get("status") in ("done", "partial"):
+        lines += _support_summary_lines(p)
     return "\n".join(lines)
+
+
+def _fmt(v, spec: str = ".2f") -> str:
+    return "none" if v is None else format(v, spec)
+
+
+def _pct(a: dict) -> str:
+    v = a.get("agreement_all")
+    return "n/a" if v is None else f"{v:.0%}"
+
+
+def _support_summary_lines(p: dict) -> list[str]:
+    """The action-support part of the summary: rules, masked actions, low-support flags and
+    the simulated-versus-training kicking diagnostic, in plain language."""
+    sup = p.get("support") or {}
+    rules = sup.get("rules")
+    if not rules:
+        return []
+    lines = [f"  action rules (from the training seasons only): {rules['text']}"]
+    ms = p.get("masked_summary") or {}
+    if ms.get("planned_states"):
+        lines.append(f"  masked: {ms['states_with_a_masked_action']} of {ms['planned_states']} "
+                     f"sampled test fourth downs had an action ruled out (field goal on "
+                     f"{ms['fg_masked']}, punt on {ms['punt_masked']}); each is listed under "
+                     "stages.plan.masked_actions")
+    ab = p.get("agreement_by_support") or {}
+    ws, ls = ab.get("well_supported") or {}, ab.get("low_support") or {}
+    n_ws, n_ls = ws.get("n", 0), ls.get("n", 0)
+    if n_ws or n_ls:
+        lines.append(f"  support: {n_ls} of {n_ws + n_ls} recommendations have low support (the "
+                     f"coaches made that call fewer than {ab.get('min_support')} times in "
+                     "comparable training fourth downs); agreement with the coach "
+                     f"{_pct(ws)} on the {n_ws} well-supported, {_pct(ls)} on the {n_ls} "
+                     "low-support")
+    fr = p.get("fg_recommendations") or {}
+    if fr.get("n"):
+        bit = ""
+        if fr.get("mean_sim_fg_make") is not None and fr.get("mean_emp_fg_make") is not None:
+            bit = (f"; on them the simulator's make rate averages {fr['mean_sim_fg_make']:.2f} "
+                   f"against {fr['mean_emp_fg_make']:.2f} for training kicks from the same "
+                   "yard lines (within 2)")
+        lines.append(f"  field-goal calls: {fr['n']} (coach: {fr.get('coach_choice_counts')})"
+                     + bit)
+    diag = sup.get("diagnostic") or {}
+    if diag.get("error"):
+        lines.append(f"  kicking diagnostic failed: {diag['error']}")
+        return lines
+    rows = [r for r in diag.get("fg") or [] if r.get("sim_make_rate") is not None]
+    if rows:
+        bits = [f"{r['distance_yards'][0]}-{r['distance_yards'][1]} yd {r['sim_make_rate']:.2f}"
+                f" vs {_fmt(r['empirical_make_rate'])} ({r['train_attempts']})" for r in rows]
+        lines.append("  field goals, simulated vs training make rate (training attempts): "
+                     + "; ".join(bits))
+        h = diag.get("fg_headline") or {}
+        parts = []
+        if h.get("weighted_mean_gap_with_data") is not None:
+            a, b = h["largest_gap_band"]
+            parts.append(f"where training has at least {h['min_attempts']} attempts the "
+                         f"simulator is off by {h['weighted_mean_gap_with_data']:+.2f} on "
+                         f"average (attempt-weighted), at most {h['largest_gap']:+.2f} at "
+                         f"{a}-{b} yd")
+        if h.get("sim_make_rate_thin_bands") is not None:
+            parts.append(f"in thin bands it makes {h['sim_make_rate_thin_bands']:.2f}")
+        if h.get("sim_make_rate_beyond_limit") is not None:
+            parts.append(f"beyond the {rules['fg_max_distance_yards']}-yd limit it still makes "
+                         f"{h['sim_make_rate_beyond_limit']:.2f}")
+        if parts:
+            lines.append("  " + "; ".join(parts))
+    hf = diag.get("hypothetical_fg")
+    if hf:
+        lines.append(f"  the hypothetical's {hf['distance_yards']}-yard field goal: the simulator "
+                     f"makes {hf['sim_make_rate']:.2f} of them (masked by the hard rule)")
+    prow = [r for r in diag.get("punt") or [] if r.get("sim_net_yards") is not None]
+    if prow:
+        bits = [f"{r['yardline'][0]}-{r['yardline'][1]} {r['sim_net_yards']:.1f} vs "
+                f"{_fmt(r['empirical_net_yards'], '.1f')} ({r['train_punts']})" for r in prow]
+        lines.append("  punts, simulated vs training net yards by yard line (training punts): "
+                     + "; ".join(bits))
+    return lines
 
 
 def main(argv: list[str] | None = None) -> None:
