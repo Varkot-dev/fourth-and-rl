@@ -188,8 +188,11 @@ def _hover(chart: dict[str, np.ndarray], yardlines: list[int], distances: list[i
 
 
 def action_bars(cell: dict[str, Any], height: int = 260) -> Any:
-    """Win probability of each action: one-step bars with their 90% bootstrap interval,
-    and the exact game's value as a diamond."""
+    """Win probability of each action: the one-step value as a dot with its 90% bootstrap
+    interval, and the exact game's value as a diamond just below it.
+
+    Dots, not bars: the axis is cropped to the values (they differ by a few points), and
+    a bar on a cropped axis would make its length, not its end, carry the value."""
     import plotly.graph_objects as go
 
     p = palette()
@@ -201,31 +204,40 @@ def action_bars(cell: dict[str, Any], height: int = 260) -> Any:
     lo = [one["wp_lo"][a] for a in acts]
     hi = [one["wp_hi"][a] for a in acts]
     fig = go.Figure()
-    fig.add_trace(go.Bar(
-        y=y, x=[100 * v if np.isfinite(v) else None for v in w], orientation="h",
-        marker={"color": [p["actions"][a] for a in acts]},
-        name="One step ahead (bars, 90% interval)",
+    fig.add_trace(go.Scatter(
+        y=y, x=[100 * v if np.isfinite(v) else None for v in w], mode="markers",
+        orientation="h", offsetgroup="one", showlegend=False,
+        marker={"symbol": "circle", "size": 14, "color": [p["actions"][a] for a in acts],
+                "line": {"color": p["surface"], "width": 1.5}},
         error_x={"type": "data", "symmetric": False, "color": p["ink_2"], "thickness": 1.5,
+                 "width": 5,
                  "array": [100 * (h - v) if np.isfinite(v) else None
                            for v, h in zip(w, hi, strict=True)],
                  "arrayminus": [100 * (v - lo_) if np.isfinite(v) else None
                                 for v, lo_ in zip(w, lo, strict=True)]},
         hovertemplate="%{y}: %{x:.1f}%<extra>one step</extra>",
     ))  # fmt: skip
+    # Legend entry for the dots in a neutral colour (the dots carry each action's colour).
+    fig.add_trace(go.Scatter(
+        x=[None], y=[None], mode="markers", name="One step ahead (dot, 90% interval)",
+        marker={"symbol": "circle", "size": 11, "color": p["muted"]}, hoverinfo="skip",
+    ))  # fmt: skip
     fig.add_trace(go.Scatter(
         y=y, x=[100 * ex["wp"][a] if np.isfinite(ex["wp"][a]) else None for a in acts],
-        mode="markers", name="Exact full game", hovertemplate="%{y}: %{x:.1f}%<extra>exact</extra>",
-        marker={"symbol": "diamond", "size": 13, "color": p["exact"],
+        mode="markers", orientation="h", offsetgroup="exact", name="Exact full game",
+        hovertemplate="%{y}: %{x:.1f}%<extra>exact</extra>",
+        marker={"symbol": "diamond", "size": 12, "color": p["exact"],
                 "line": {"color": p["surface"], "width": 1.5}},
     ))  # fmt: skip
     finite = [v for v in w + [ex["wp"][a] for a in acts] + lo + hi if np.isfinite(v)]
-    lo_x = max(0.0, 100 * min(finite) - 8) if finite else 0
-    hi_x = min(100.0, 100 * max(finite) + 4) if finite else 100
+    lo_x = max(0.0, 100 * min(finite) - 2) if finite else 0
+    hi_x = min(100.0, 100 * max(finite) + 2) if finite else 100
     _layout(fig, height)
     fig.update_xaxes(range=[lo_x, hi_x], ticksuffix="%", gridcolor=p["grid"], zeroline=False,
                      title={"text": "Win probability", "font": {"color": p["ink_2"]}})
     fig.update_yaxes(autorange="reversed", showgrid=False)
-    fig.update_layout(legend={"orientation": "h", "y": -0.35, "x": 0}, bargap=0.35)
+    fig.update_layout(legend={"orientation": "h", "y": -0.35, "x": 0}, scattermode="group",
+                      scattergap=0.45)  # fmt: skip
     return fig
 
 
