@@ -62,6 +62,16 @@ ALLOWLIST: dict[tuple[str, str], tuple[int | None, str]] = {
     ("scripts/offline_real_data.py", "read_parquet("): (
         1, "reads back its own cache of 2024 to 2025 decision outcomes, which the same "
            "script built from splits.load_test_plays(purpose=TEST_PURPOSE) (logged)"),
+    # ---- M7 coach evaluation (reads of its own caches only)
+    ("scripts/m7_coach_evaluation.py", "read_parquet("): (
+        3, "the M3 per-play categories of 2024-2025 (written by bootstrap_decisions.py from "
+           "load_test_plays), its own graded-decisions cache (built from the guarded loaders "
+           "with fold models that never saw each season), and the cached nflverse schedule "
+           "(head coaches per game; no plays)"),
+    ("scripts/m7_penalty_ledger.py", "read_parquet("): (
+        2, "its own caches of the nflverse penalty columns (penalty type, team and yards, "
+           "joined by game and play id to plays read through the guarded loaders) and of the "
+           "schedule (head coaches per game); nothing is fitted on them"),
     # ---- pending: being fixed by the win-probability rewrite
     ("src/fourth_and_rl/wp.py", "load_plays("): (
         None, "pending: being fixed by the win-probability rewrite"),
