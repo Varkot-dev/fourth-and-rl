@@ -3,7 +3,8 @@
 Win probability of the team with the ball on first and 10 (goal to go inside the 10) at
 every yard line, read from the exactly solved game (M4), one line per score in a one-score
 game, from 10:00 to 0:10 in the fourth quarter (at 0:00 the game is over). Both teams hold
-3 timeouts in the last 5:00 (before that the model has no timeouts). Identical, league-average teams.
+3 timeouts in the last 5:00 (before that the model has no timeouts).
+Identical, league-average teams.
 
 Output: assets/m7_value_function.gif (settings in configs/app.yaml, `animation`).
 
