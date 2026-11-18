@@ -564,9 +564,9 @@ The results above were produced on the solved model from before the leakage hard
 | REINFORCE network | 0.030 (one seed stuck at 0.067) | |
 | PPO | 0.094 | 4.41, still improving |
 | DQN | 0.17 | 2.08 (range 1.52 to 2.55) |
-| Coach-like policy | 0.224 | 2.34 (win-rate gap, standard error about 0.75) |
-| Never go for it | 0.357 | 3.50 (win-rate gap) |
-| Network fitted to the exact optimum | | 1.67 (win-rate gap) |
+| Coach-like policy | 0.224 | 2.71 (exact regret; 2.34 by the noisier win-rate gap) |
+| Never go for it | 0.357 | 3.50 (win-rate gap; no exact-regret figure saved) |
+| Network fitted to the exact optimum | | 1.18 (exact regret; 1.67 by the win-rate gap) |
 
-What changed: the tabular results are within a few thousandths of the earlier run. In the end game DQN is somewhat weaker than before (2.08 against 1.73) and is now roughly level with the coach-like policy within noise, while PPO is still improving at the end of its budget. The lessons of this note are unchanged: dynamic programming gets regret 0 by using the model, the learners need millions of decisions to approach it, close calls are learned last, and in the end game most of the remaining gap is function approximation.
+What changed: the tabular results are within a few thousandths of the earlier run. In the end game DQN is somewhat weaker than before (2.08 against 1.73). Measured on the same exact-regret scale it still beats the coach-like policy (2.71) and stays above the network fitted directly to the optimum (1.18), so more than half of its remaining gap is function approximation. An earlier version of this paragraph compared DQN's exact regret with the coach's win-rate gap and called them roughly level; that mixed two measures and is corrected here. PPO is still improving at the end of its budget. The lessons of this note are unchanged: dynamic programming gets regret 0 by using the model, the learners need millions of decisions to approach it, close calls are learned last, and in the end game most of the remaining gap is function approximation.
 
