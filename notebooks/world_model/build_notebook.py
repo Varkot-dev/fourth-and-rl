@@ -16,7 +16,11 @@ from nbformat.v4 import new_code_cell, new_markdown_cell, new_notebook
 HERE = Path(__file__).resolve().parent
 OUT = HERE.parent / "world_model_colab.ipynb"
 CODE_DIR = "/content/wm_code"
-MODULES = ("schema", "records", "model", "train", "simulate", "toy", "run")
+MODULES = ("schema", "records", "model", "train", "simulate", "support", "toy", "run")
+# Test files that must be in the notebook (all test_*.py files are embedded; these are
+# checked by name so a renamed file cannot silently drop out).
+REQUIRED_TESTS = ("test_amp_cpu.py", "test_model.py", "test_records.py", "test_run.py",
+                  "test_speed.py", "test_support.py")
 
 INTRO = """# NFL world model on Colab: next-play transformer as a fourth-down simulator
 
@@ -44,10 +48,51 @@ L4 or A100 run larger samples). Then Runtime > Run all.
 **If you are disconnected.** Reconnect and Run all again. With Google Drive mounted, every
 finished stage and the training checkpoint are kept in
 `MyDrive/fourth_and_rl_world_model`; finished stages are skipped and training resumes from
-its checkpoint. The test seasons are scored only once (preregistered in `prereg.json`).
+its checkpoint. Each configuration preregisters its test plan in
+`prereg/<config hash>.json` before it reads the test seasons, and scores them once.
 
 **What to bring back.** The last cell downloads `world_model_results.zip`. Unzip it into the
 repo under `results/world_model/` on the branch `claude/world-model-colab`.
+"""
+
+CHANGES = """### What changed since the first run
+
+The first run (Tesla T4, 18 November 2026) finished every stage, but its training ran on the
+CPU and its fourth-down planning was cut to 67 decisions, 56 of them too close to call. This
+version changes five things.
+
+- **Training runs on the GPU.** The first run never moved the model to the GPU, so its 20
+  minutes of training happened on the CPU. Training now moves the model to the GPU before the
+  optimizer is built, keeps the training data on the GPU as ready-made tensors, and uses mixed
+  precision (float16 with loss scaling on a T4, bfloat16 on newer GPUs) and a fused AdamW
+  optimizer. Training should be many times faster; the training log shows the device,
+  records per second and how each epoch's time splits between batching, the forward pass,
+  the backward pass, validation and checkpointing.
+- **Faster rollouts.** Each simulated play now encodes only the new record and reuses a
+  key/value cache of everything before it, and the real game so far is stored once for all
+  rollouts of a state. The preflight speed test measures this path at the batch size the
+  planning stage uses, and scales the run down only if the GPU is less than half as fast as
+  the preset assumes, never below 200 fourth downs. Sample sizes are larger: on a T4, 600
+  win-probability states with 256 rollouts each, and 300 fourth downs with 512 rollouts per
+  action.
+- **Action-support guards and a field-goal check.** The planner no longer simulates field
+  goals longer than the longest made field goal in the training seasons plus 3 yards, or
+  punts from inside the opponent's 30. Every recommendation reports how often coaches made
+  that call in comparable training situations; a call made fewer than 10 times is flagged as
+  low support, and agreement with the coaches is reported separately for well-supported and
+  low-support calls. A new figure, `fg_support.png`, compares the simulator's field-goal make
+  rate and punt net yards with the training seasons. These rules were designed after the
+  first run's test-season results had been seen, so they are a post hoc change and are
+  labelled as such in the results.
+- **Preregistration per model.** Each configuration writes its own
+  `prereg/<config hash>.json` before it reads the test seasons, and scores them once. The
+  first run's preregistration is kept. `results.json` lists every preregistration in the
+  work folder, so it is visible that the test seasons have now been scored by more than one
+  model.
+- **A clean restart in the same Drive folder.** The preset saved by the first run is
+  recognised as out of date and replaced automatically. The first run's results, figures and
+  time ledger are moved to `archive/` in the Drive folder, so nothing from it is overwritten
+  and the new run gets the full time budget. The downloaded data is reused.
 """
 
 RESUME = """### Stopping and resuming
@@ -65,24 +110,37 @@ RESUME = """### Stopping and resuming
   all, and tomorrow set it back to `None` and Run all again.
 """
 
-PARAMS = """# Parameters.
+PARAMS = """# Parameters. The defaults are the real run: leave them as they are for Run all.
+# BUDGET_MIN: total minutes for all stages, summed over sessions of the same run.
+BUDGET_MIN = 55
 # STOP_AFTER: None runs everything; "data", "train", "eval", "test" or "plan" stops after
 # that stage (the results file is still written).
 STOP_AFTER = None
+# USE_DRIVE: keep checkpoints and outputs on Google Drive, so a disconnect loses nothing.
+USE_DRIVE = True
 # FORCE: stages to recompute even if done, e.g. ("eval",) after a fix in simulate.py.
-FORCE = ()"""
+FORCE = ()
+# FORCE_NEW_PRESET: True archives the saved run in the work folder and starts over.
+FORCE_NEW_PRESET = False
+# ALLOW_RESCORE: True lets this same configuration score the test seasons a second time
+# (recorded). A new model or test plan never needs it.
+ALLOW_RESCORE = False"""
 
 SETUP = """# Colab already has torch, numpy, pandas, polars and matplotlib; only nflreadpy is added.
 # Nothing is pinned so Colab's own torch build is kept.
 !pip install -q nflreadpy pytest"""
 
-DRIVE = """# Optional: keep checkpoints and outputs on Google Drive so a disconnect loses nothing.
-try:
-    from google.colab import drive
-    drive.mount('/content/drive')
-    print('Drive mounted: outputs go to MyDrive/fourth_and_rl_world_model')
-except Exception as e:  # not on Colab, or the mount was declined
-    print('Drive not mounted, outputs go to /content/wm_run (lost on disconnect):', e)"""
+DRIVE = """# Keep checkpoints and outputs on Google Drive (USE_DRIVE above) so a disconnect loses
+# nothing. Accept the prompt that appears.
+if USE_DRIVE:
+    try:
+        from google.colab import drive
+        drive.mount('/content/drive')
+        print('Drive mounted: outputs go to MyDrive/fourth_and_rl_world_model')
+    except Exception as e:  # not on Colab, or the mount was declined
+        print('Drive not mounted, outputs go to /content/wm_run (lost on disconnect):', e)
+else:
+    print('USE_DRIVE is False: outputs go to /content/wm_run (lost on disconnect)')"""
 
 TESTS = f"""import subprocess, sys
 r = subprocess.run([sys.executable, '-m', 'pytest', '-q', '-x', '-p', 'no:cacheprovider',
@@ -101,15 +159,18 @@ info = R.system_info()
 print(json.dumps(info, indent=1))
 name = R.pick_preset()
 print('Chosen preset:', name)
-print('Time budget (minutes):', R.PRESETS[name]['budget_min'],
-      ' stage ceilings:', R.PRESETS[name]['stage_min'])
+print('Time budget (minutes):', BUDGET_MIN, ' stage ceilings:', R.PRESETS[name]['stage_min'])
 if name == 'smoke':
     print('No GPU found: this runs the small CPU smoke preset (2021/2022/2023 seasons only).')
     print('For the real run: Runtime > Change runtime type > GPU, then Run all again.')
-# About 30 seconds: measures training and rollout speed and scales the preset if needed.
-# On a resume the saved preset is reused, so finished stages keep their hashes.
-RUN = R.prepare(name, force=tuple(FORCE))
+# About 30 seconds on a new run: measures training and rollout speed with the code the stages
+# use, and scales the preset down only if this GPU is much slower than the preset assumes.
+# On a resume the saved preset is reused, so finished stages keep their hashes; a preset
+# saved by an older notebook is replaced (the old run is archived first).
+RUN = R.prepare(name, budget_min=BUDGET_MIN, force=tuple(FORCE),
+                force_new_preset=FORCE_NEW_PRESET, allow_rescore=ALLOW_RESCORE)
 print('Work folder:', RUN.workdir)
+print('Benchmark decision:', (RUN.preset.get('benchmark') or {{}}).get('decision', 'none'))
 print('Preset in use:', json.dumps({{k: RUN.preset[k] for k in
       ('name', 'model', 'train', 'eval', 'test', 'plan')}}, indent=1))
 print(f'Minutes left in the budget: {{RUN.remaining() / 60:.1f}}')"""
@@ -118,7 +179,7 @@ STAGE_TEXT = {
     "data": "Stage 1: download play-by-play season by season, build the splits, validate them.",
     "train": "Stage 2: train the world model (checkpointed every epoch; resumes on re-run).",
     "eval": "Stage 3: validation seasons only: NLL vs baseline, league stats, WP calibration.",
-    "test": "Stage 4: write prereg.json, then score the test seasons once.",
+    "test": "Stage 4: write prereg/<config hash>.json, then score the test seasons once.",
     "plan": "Stage 5: fourth-down recommendations on test-season fourth downs.",
     "package": "Stage 6: results.json, figures and the zip.",
 }
@@ -131,7 +192,8 @@ for f in sorted((RUN.workdir / 'figures').glob('*.png')):
 
 DOWNLOAD = """# Download the results. Unzip into the repo under results/world_model/ on the branch
 # claude/world-model-colab, then commit. The zip holds results.json, figures, stage outputs,
-# the data reports, prereg.json and the run log (no data or checkpoints).
+# the data reports, every preregistration (prereg/) and the run log (no data, checkpoints
+# or archived earlier runs).
 zip_path = RUN.workdir / 'world_model_results.zip'
 print(zip_path, f'{zip_path.stat().st_size / 1e6:.1f} MB')
 try:
@@ -142,11 +204,14 @@ except Exception as e:
 
 
 def build() -> nbformat.NotebookNode:
-    cells = [new_markdown_cell(INTRO), new_markdown_cell(RESUME), new_code_cell(PARAMS),
-             new_code_cell(SETUP), new_code_cell(DRIVE)]
+    cells = [new_markdown_cell(INTRO), new_markdown_cell(CHANGES), new_markdown_cell(RESUME),
+             new_code_cell(PARAMS), new_code_cell(SETUP), new_code_cell(DRIVE)]
     cells.append(new_code_cell(f"import os\nos.makedirs('{CODE_DIR}', exist_ok=True)"))
     files = [HERE / f"{m}.py" for m in MODULES]
     files += sorted(HERE.glob("test_*.py"))
+    missing = set(REQUIRED_TESTS) - {f.name for f in files}
+    if missing:
+        raise FileNotFoundError(f"test files missing from the notebook: {sorted(missing)}")
     for path in files:
         if not path.exists():
             raise FileNotFoundError(path)
