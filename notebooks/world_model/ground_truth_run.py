@@ -225,6 +225,35 @@ def _has_game(d: Path) -> bool:
     return _mg().solution_exists(d) and (Path(d) / "tables.joblib").exists()
 
 
+def _dir_bytes(d: Path) -> int:
+    return sum(f.stat().st_size for f in Path(d).rglob("*") if f.is_file())
+
+
+def _try_cache_game(run: Any, src: Path, cache: Path) -> dict:
+    """Cache the solved game on Drive when there is room. The cache only saves rebuild time
+    on a later session, so a full Drive (or a failed copy) skips it instead of failing."""
+    need = _dir_bytes(src)
+    parent = Path(cache).parent
+    try:
+        free = shutil.disk_usage(parent if parent.exists() else run.workdir).free
+    except OSError:
+        free = None
+    if free is not None and free < need * 1.1 + 2**28:
+        msg = (f"not caching the solved game: it needs {need / 2**30:.1f} GB and the work "
+               f"folder has {free / 2**30:.1f} GB free; a later session rebuilds it")
+        run.log(f"[setup] {msg}")
+        return {"cache_skipped": msg}
+    run.log(f"[setup] caching the solved game in {cache} ({need / 2**30:.1f} GB)")
+    try:
+        return {"cache_seconds": copy_game(src, cache)}
+    except OSError as e:
+        for p in parent.glob(f".{Path(cache).name}.tmp-*"):
+            shutil.rmtree(p, ignore_errors=True)
+        msg = f"caching the solved game failed ({type(e).__name__}: {e}); continuing without it"
+        run.log(f"[setup] {msg}")
+        return {"cache_skipped": msg}
+
+
 def copy_game(src: Path, dst: Path) -> float:
     """Copy a solved game folder (value and policy arrays, model, meta, tables), atomically:
     into a temporary folder next to dst, then one rename. Returns seconds."""
@@ -395,8 +424,7 @@ def stage_setup(run: GTRun, deadline: float) -> dict:
         out["build"] = build_game(run.log)
         out["source"] = "built from public data in this session"
     if run.game_dir_given is None and run.cache_game and not _has_game(cache):
-        run.log(f"[setup] caching the solved game in {cache} (about 2 GB)")
-        out["cache_seconds"] = copy_game(d, cache)
+        out.update(_try_cache_game(run, d, cache))
     out["game_dir"] = str(d)
     run._game = None
     sol, sim = load_game(run)

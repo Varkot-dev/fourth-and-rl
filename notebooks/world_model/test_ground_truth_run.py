@@ -216,3 +216,31 @@ def test_full_build_from_public_data():
     print({"build": info, "verify": v, "seconds": round(time.time() - t0, 1)})
     assert mg.solution_exists(info["solution_dir"])
     assert info["n_states"]["total"] == 407_854_656  # docs/notes/m4_mdp.md
+
+
+def test_game_cache_is_skipped_when_the_drive_is_full(tmp_path, monkeypatch):
+    """A full Drive must not stop the run: the cache only saves rebuild time later."""
+    import shutil
+    import types
+
+    src = tmp_path / "game"
+    src.mkdir()
+    (src / "values.npy").write_bytes(b"x" * 4096)
+    logs: list[str] = []
+    run = types.SimpleNamespace(workdir=tmp_path, log=logs.append)
+    cache = tmp_path / "cache" / "game"
+    full = shutil.disk_usage(tmp_path)._replace(free=1024)
+    monkeypatch.setattr(G.shutil, "disk_usage", lambda p: full)
+    out = G._try_cache_game(run, src, cache)
+    assert "cache_skipped" in out and not cache.exists() and "not caching" in logs[-1]
+    monkeypatch.undo()
+
+    def broken(*a, **k):
+        raise OSError(28, "No space left on device")
+
+    monkeypatch.setattr(G, "copy_game", broken)
+    out = G._try_cache_game(run, src, cache)
+    assert "failed" in out["cache_skipped"] and not cache.exists()
+    monkeypatch.undo()
+    out = G._try_cache_game(run, src, cache)
+    assert "cache_seconds" in out and (cache / "values.npy").exists()
