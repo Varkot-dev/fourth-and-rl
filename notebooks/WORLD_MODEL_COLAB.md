@@ -152,3 +152,39 @@ over actions is drawn to exactly those. So:
 If the unit tests fail, or a stage prints `status: error`, copy the printed error and the
 end of `run.log` from the work folder and send them back. The other stages still run where
 they can, and the package stage still writes `results.json` recording the error.
+
+## 8. The second notebook: the world model against a known truth
+
+`notebooks/world_model_ground_truth.ipynb` asks how much data the world model needs to recover
+the optimal fourth-down policy, using games from the repo's exact game model, where the true
+value of every action is known. Design, metrics and limits:
+`results/world_model/GROUND_TRUTH_DESIGN.md`. It is independent of the first notebook: its own
+Drive folder (`MyDrive/fourth_and_rl_world_model_gt`), no shared files.
+
+- **Open it.** [Open in Colab](https://colab.research.google.com/github/Varkot-dev/fourth-and-rl/blob/claude/world-model-colab/notebooks/world_model_ground_truth.ipynb)
+  (the badge at the top of the notebook is the same link). Unlike the first notebook it embeds
+  no code: it clones the branch `claude/world-model-colab` from GitHub and installs it, so it
+  always runs the code that is pushed to that branch.
+- **GPU.** An A100 is recommended. At the presets' assumed speeds (not yet measured) an A100
+  plans all four sizes and refines most states to the target precision within the budget; an L4
+  plans every state but refines fewer; a T4 completes every size with coarser estimates and
+  records what it cut. The preflight cell measures the GPU and prints minutes per size.
+- **Budget.** `BUDGET_MIN = 90` by default, shared across sessions. The first few minutes rebuild
+  the exact game from public data on the CPU (download, fit, solve; about 2 GB, cached in the
+  Drive folder so a resumed run restores it instead). Training gets 45% of what is left, in
+  proportion to each size's number of games, smallest first; planning splits the rest between
+  the trained sizes. Leave the other parameters as they are.
+- **Resuming.** Run all again after a disconnect: finished stages are skipped, training resumes
+  from each size's checkpoint and planning from its saved chunks. `STOP_AFTER = "train"` stops
+  after training; changing `SIZES` keeps every finished size.
+- **What to send back.** The last cell downloads `world_model_gt_results.zip`
+  (`gt_results.json` with every number and the scaling table, the three figures
+  `gt_regret_accuracy.png`, `gt_q_scatter.png` and `gt_overestimation_by_coverage.png`, every
+  stage's output, the run log and the preset). Unzip it into `results/world_model/ground_truth/`
+  on the branch. If a cell fails, send its output and the end of `run.log` from the work folder.
+- Expect the setup stage to say that the saved ground truth does not match the game built in
+  Colab. nflverse has revised its data since `gt_v1` was computed (on 19 November 2026 a fresh
+  download had two fewer 2011 plays and a few more 2018 to 2022 kickoffs than the cached copy),
+  so the rebuilt game differs slightly from the one `gt_v1` used. The stage then recomputes the
+  ground truth for the game it built (300 states, 20,000 rollouts per action, a few minutes on
+  the Colab CPUs) and the results say which ground truth was used.
