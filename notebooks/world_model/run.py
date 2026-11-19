@@ -867,7 +867,7 @@ def real_league_stats(split: S.Split) -> dict:
     act = st[:, S.STATE_INDEX["action"]]
     pts = np.abs(S.score_delta_value(tg[:, S.TARGET_INDEX["score_delta"]]))
     fourth = (phase == S.PHASE["PLAY"]) & (down == 4)
-    go = np.isin(act, S.GO_ACTIONS)
+    go = np.isin(act, S.ANY_GO_ACTIONS)
     fd = fourth & (go | (act == S.ACTION["PUNT"]) | (act == S.ACTION["FG"]))
     final = np.asarray(split.final_diff, dtype=float)
     return {

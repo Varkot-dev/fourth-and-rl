@@ -234,8 +234,9 @@ def test_sampler_draws_from_the_model_distribution():
         p0 = torch.softmax(lg, -1).double()
     f0 = torch.bincount(codes[:, 0], minlength=len(p0)).double() / n
     assert ((f0 - p0).abs() <= 4 * (p0 * (1 - p0) / n).sqrt() + 1e-9).all()
-    top = int(torch.argmax(p0))
-    assert top != S.PHASE["END"]
+    # the most likely phase that does not end the game (its next field is then sampled);
+    # chosen from p0 rather than assumed, so the test does not depend on the random init
+    top = int(torch.argmax(p0.masked_fill(torch.arange(len(p0)) == S.PHASE["END"], -1.0)))
     rows = codes[:, 0] == top
     with torch.no_grad():
         lg1 = m.field_logits(h[:1], codes[rows][:1], 1)[0]

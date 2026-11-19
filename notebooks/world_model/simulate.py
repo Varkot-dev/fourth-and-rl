@@ -28,7 +28,8 @@ GO = "GO"
 
 # Which actions may follow which phase; anything else is counted as inconsistent.
 _ALLOWED = np.zeros((len(S.PHASES), len(S.ACTIONS)), dtype=bool)
-for _a in ("RUN", "PASS", "PUNT", "FG", "KNEEL", "SPIKE", "NOPLAY"):
+for _a in ("RUN", "PASS", "PUNT", "FG", "KNEEL", "SPIKE", "NOPLAY",
+           "PLAY_NEUTRAL", "PLAY_PROTECT", "PLAY_CHASE"):
     _ALLOWED[PH["PLAY"], A[_a]] = True
 for _a in ("KICKOFF", "ONSIDE", "NOPLAY"):
     _ALLOWED[PH["KICKOFF"], A[_a]] = True
@@ -112,11 +113,14 @@ def _last_hidden(
 
 
 @torch.no_grad()
-def _go_probs(model: WorldModel, split: S.Split, idx: np.ndarray, cfg: dict) -> np.ndarray:
-    """P(RUN), P(PASS) for record i, renormalised over the two, from the model's prediction
+def _go_probs(model: WorldModel, split: S.Split, idx: np.ndarray, cfg: dict,
+              go_set: tuple[int, ...] = S.GO_ACTIONS) -> np.ndarray:
+    """P(a) for each go action a in `go_set` (RUN and PASS for real data, the play modes for
+    a synthetic split) for record i, renormalised over the set, from the model's prediction
     of record i's action at record i-1 (given the true other fields of record i)."""
     device = device_of(model)
-    out = np.full((len(idx), 2), 0.5)
+    k = len(go_set)
+    out = np.full((len(idx), k), 1.0 / k)
     games = _game_of(split, idx)
     has_prev = idx > split.offsets[games]
     if not has_prev.any():
@@ -127,10 +131,10 @@ def _go_probs(model: WorldModel, split: S.Split, idx: np.ndarray, cfg: dict) -> 
     h = _last_hidden(model, header, torch.as_tensor(buf, device=device), lens, cfg["sim_batch"])
     prefix = torch.as_tensor(split.targets[prev].astype(np.int64), device=device)
     logits = model.field_logits(h, prefix, TI["action"]).float()
-    p = torch.softmax(logits, -1)[:, list(S.GO_ACTIONS)].cpu().numpy().astype(np.float64)
+    p = torch.softmax(logits, -1)[:, list(go_set)].cpu().numpy().astype(np.float64)
     tot = p.sum(1, keepdims=True)
     ok = tot[:, 0] > 0
-    out_prev = np.full_like(p, 0.5)
+    out_prev = np.full_like(p, 1.0 / k)
     out_prev[ok] = p[ok] / tot[ok]
     out[has_prev] = out_prev
     return out
@@ -596,7 +600,9 @@ def rollout(
     """Home win probability by simulation from each query record.
 
     forced_action: None (keep the real action), an action code or name, or "GO" (record i's
-    action is RUN or PASS, sampled from the model's own probabilities renormalised over the two).
+    action is a go action, sampled from the model's own probabilities renormalised over the
+    go set: RUN and PASS for real data, the play modes for a synthetic split; see
+    `schema.go_actions`).
     Queries are processed in groups of up to `live_rows` rollouts (cfg["sim_max_live"],
     lowered to what the key/value cache fits); if the deadline passes, the unfinished
     queries come back as NaN with done=False. res["timing"] splits the time by phase.
@@ -607,6 +613,7 @@ def rollout(
     idx = np.atleast_1d(np.asarray(query_idx, dtype=np.int64))
     nq, n = len(idx), int(n_rollouts)
     fa = _resolve_action(forced_action)
+    go_set = S.go_actions(split) if fa == GO else S.GO_ACTIONS
     res = {
         "query_idx": idx,
         "home_wp": np.full(nq, np.nan),
@@ -630,9 +637,11 @@ def rollout(
         buf = np.repeat(buf, n, axis=0)
         lens = np.repeat(lens, n)
         if fa == GO:
-            p = _go_probs(model, split, idx[q], c)
+            p = _go_probs(model, split, idx[q], c, go_set)
             u = rng.random(len(q) * n)
-            pick = np.where(u < np.repeat(p[:, 0], n), S.GO_ACTIONS[0], S.GO_ACTIONS[1])
+            # Inverse-CDF pick; for two actions this is exactly u < p0 -> first, else second.
+            cum = np.repeat(np.cumsum(p, axis=1)[:, :-1], n, axis=0)
+            pick = np.asarray(go_set)[(u[:, None] >= cum).sum(axis=1)]
             buf[np.arange(len(lens)), lens - 1, SI["action"]] = pick
         elif fa is not None:
             buf[np.arange(len(lens)), lens - 1, SI["action"]] = fa
@@ -666,7 +675,7 @@ def _action_name(code: int) -> str:
 
 
 def _choice_of(code: int) -> str:
-    if int(code) in S.GO_ACTIONS:
+    if int(code) in S.ANY_GO_ACTIONS:
         return GO
     return _action_name(code)
 

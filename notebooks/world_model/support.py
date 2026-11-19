@@ -84,10 +84,10 @@ def poss_sign(poss: np.ndarray) -> np.ndarray:
 
 
 def choice_index(actions: np.ndarray) -> np.ndarray:
-    """0 GO (RUN or PASS), 1 FG, 2 PUNT, -1 anything else."""
+    """0 GO (RUN or PASS, or a synthetic play mode), 1 FG, 2 PUNT, -1 anything else."""
     a = np.asarray(actions)
     return np.select(
-        [np.isin(a, S.GO_ACTIONS), a == A["FG"], a == A["PUNT"]], [0, 1, 2], default=-1
+        [np.isin(a, S.ANY_GO_ACTIONS), a == A["FG"], a == A["PUNT"]], [0, 1, 2], default=-1
     )
 
 

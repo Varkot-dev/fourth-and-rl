@@ -39,9 +39,26 @@ ACTIONS = (
     "XP",
     "TWO_PT",
     "NOPLAY",  # play wiped out by a penalty whose run/pass type is unknown
+    # Appended for synthetic games from the solved game model (synthetic.py), whose plays
+    # are not run or pass but a play mode: normal tempo, protect a lead, chase a deficit.
+    # Real records never use them. Codes are append-only: never reorder the list above.
+    "PLAY_NEUTRAL",
+    "PLAY_PROTECT",
+    "PLAY_CHASE",
 )
 ACTION = {name: i for i, name in enumerate(ACTIONS)}
 GO_ACTIONS = (ACTION["RUN"], ACTION["PASS"])  # "go for it" on fourth down = run or pass
+PLAY_MODE_ACTIONS = (ACTION["PLAY_NEUTRAL"], ACTION["PLAY_PROTECT"], ACTION["PLAY_CHASE"])
+ANY_GO_ACTIONS = GO_ACTIONS + PLAY_MODE_ACTIONS  # a go call in any split, real or synthetic
+
+
+def go_actions(split: Split | None = None) -> tuple[int, ...]:
+    """The action codes "GO" may be forced to in this split: the play modes if any record
+    uses one (a synthetic split), otherwise RUN and PASS (real data, the default)."""
+    if split is not None and np.isin(split.states[:, STATE_INDEX["action"]],
+                                     PLAY_MODE_ACTIONS).any():  # fmt: skip
+        return PLAY_MODE_ACTIONS
+    return GO_ACTIONS
 
 # Points change on one transition, HOME minus AWAY. Code 0 is padding.
 SCORE_DELTAS = (0, -8, -7, -6, -3, -2, -1, 0, 1, 2, 3, 6, 7, 8)  # index 0 unused (pad)
