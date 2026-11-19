@@ -53,6 +53,7 @@ From M1 on, each milestone's teaching notes have their own file under `docs/note
 | M10 "how much does being predictable cost an offense?" | `docs/notes/m10_predictability.md` |
 | M7 coach evaluation, coach cost ledger, penalty assumption test, malpractice check (part one) | `docs/notes/m7_coaches.md` |
 | M7 interactive pieces: app bundle, Streamlit app, static page, Colab notebook, value-function animation | `docs/notes/m7_app.md` |
+| Field-goal selection bias: kicker model, decomposition, support distance, planner interface (post hoc, after the world-model run) | `docs/notes/fg_selection_bias.md` |
 
 The design decisions and their history are in the Decision log at the bottom of `docs/PLAN.md`.
 
