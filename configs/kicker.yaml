@@ -1,0 +1,98 @@
+# Selection-bias-aware field-goal make model (src/fourth_and_rl/kicker.py,
+# scripts/questions/fg_selection_bias.py). Post hoc: designed after the world-model run
+# on branch claude/world-model-colab (results/world_model/colab_t4_v2) showed the
+# simulator's long-range make rate above the raw training rate. Every value below was
+# fixed before the model was fitted on real data, except the knot candidates (see
+# `distance`), and none is tuned on calibration or test seasons.
+seed: 20261119
+
+distance:
+  # Natural (restricted) cubic spline in kick distance, linear in log-odds beyond the
+  # outer knots. `knots` is the first choice (near the 5th to 95th percentiles of training
+  # distances, last knot at 55). After the first fit on the training seasons, the
+  # in-sample check showed the model above the raw rate on 60+ yard attempts (0.36
+  # predicted against 0.26 on 78 attempts), so a short candidate list was added and the
+  # knot set is chosen among them by AIC on the training seasons only (-2 x Laplace log
+  # marginal likelihood + 2 x number of fixed effects). Calibration seasons are only
+  # reported for the candidates, not used to choose.
+  knots: [23, 32, 40, 47, 55]
+  knot_candidates:
+    - [23, 32, 40, 47, 55]
+    - [23, 35, 47, 58]
+    - [25, 35, 45, 52, 58]
+    - [23, 32, 40, 47, 55, 60]
+    - [23, 32, 40, 47, 53, 58, 62]
+  # z = (distance - center) / 10 carries the kicker random slope and the interactions.
+  center: 45
+
+terms:
+  roof: true        # outdoors and open retractable roof, each against indoors (dome, closed)
+  weather: true     # temperature and wind outdoors (median-filled when not recorded), by distance
+  season: true      # linear season trend and season by distance
+  heave: true       # end-of-half last-play attempt
+  kicker_slope: true  # kicker random slope on z (random intercept is always on)
+  # Kicker usage (mean distance of his training attempts) as a fixed covariate: the
+  # Mundlak, or correlated-random-effects, term. Added after the synthetic recovery test
+  # showed that plain random effects tilt the distance curve up when strong kickers take
+  # the long kicks (random effects assume kicker strength is unrelated to distance).
+  kicker_usage: true
+
+weather:
+  temp_center: 60   # degrees F
+  temp_scale: 10
+  wind_scale: 10    # mph
+
+season:
+  center: 2016
+  scale: 10
+
+heave:
+  # An attempt with at most this many seconds left in the half (first half or regulation,
+  # never overtime) and no later snap or kickoff in the same half: the kick was the last
+  # play, so it was taken because time ran out, not because the kicker or the conditions
+  # suited a long try.
+  max_half_seconds: 10
+
+fit:
+  ridge: 1.0e-4     # tiny ridge on fixed effects other than the intercept, for stability
+  newton_tol: 1.0e-8
+  newton_max_iter: 100
+  # Starting values for the random-effect standard deviations (log-odds) and correlation.
+  start_sd_intercept: 0.3
+  start_sd_slope: 0.1
+
+kickers:
+  # Who counts as an established kicker when ranking: training attempts.
+  min_attempts_ranked: 100
+  top_quantile: 0.9
+  # The 50-yard log-odds shift ranks kickers (strength is read at this distance).
+  strength_distance: 50
+  named_min_attempts: 150
+
+support:
+  # Rule (fixed before fitting): the support distance is the largest integer distance D
+  # such that every distance d from 40 to D satisfies both
+  #   (a) top-decile kickers made at least min_attempts training attempts with distance
+  #       in [d - half_window, d + half_window], and
+  #   (b) the median, over top-decile kickers, of the width of the 90% interval of that
+  #       kicker's predicted make rate at d (neutral conditions, reference season) is at
+  #       most max_interval_width.
+  start_distance: 40
+  half_window: 2
+  min_attempts: 20
+  interval_level: 0.90
+  max_interval_width: 0.20
+
+curves:
+  distances: [18, 70]
+  report_at: [30, 40, 45, 50, 55, 60, 65]
+  strength_quantiles: [0.1, 0.5, 0.9]
+  posterior_draws: 1000
+
+decomposition:
+  # Bands over which the raw rate is decomposed (inclusive kick distances).
+  bands: [[50, 54], [55, 59], [60, 75], [55, 75]]
+  headline_band: [55, 75]
+  # Bands on the world-model convention (distance = yardline_100 + 18), for comparison
+  # with results/world_model/colab_t4_v2 on branch claude/world-model-colab.
+  world_model_bands: [[54, 58], [59, 63]]
