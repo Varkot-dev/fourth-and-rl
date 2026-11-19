@@ -1,0 +1,168 @@
+{
+  "evaluated_at": "2026-11-19T02:19:44+00:00",
+  "preregistration": "results/questions/fg_selection_bias_preregistration.json",
+  "model_fingerprint": "adfa369e976bf2bede64ba0a9ad4d8046204853796b198edac6f76916dc22312",
+  "seasons": [
+    2024,
+    2025
+  ],
+  "attempts": 2306,
+  "attempts_by_kickers_seen_in_training": 1423,
+  "outdoor_attempts_without_weather": 49,
+  "metrics": {
+    "hierarchical_own_kicker": {
+      "log_loss": 0.3750814620251356,
+      "brier": 0.11751883958509386
+    },
+    "hierarchical_average_kicker": {
+      "log_loss": 0.3752270061114686,
+      "brier": 0.11763505121880943
+    },
+    "m1_distance_and_season": {
+      "log_loss": 0.3702087160167924,
+      "brier": 0.11520074016731546
+    }
+  },
+  "hypotheses": {
+    "H1": {
+      "hierarchical_log_loss": 0.3750814620251356,
+      "m1_log_loss": 0.3702087160167924,
+      "passed": false
+    },
+    "H2": {
+      "mean_shift_55_plus_minus_all": 0.010164631256426838,
+      "attempts_55_plus_known": 123,
+      "passed": true
+    },
+    "H3": {
+      "observed_50_plus": 0.6920353982300885,
+      "predicted_50_plus": 0.5934437658077568,
+      "observed_minus_predicted": 0.09859163242233171,
+      "attempts": 565,
+      "passed": false
+    }
+  },
+  "by_band": [
+    {
+      "band": [
+        18,
+        29
+      ],
+      "attempts": 469,
+      "observed": 0.976545842217484,
+      "hierarchical_own_kicker": 0.9840257166896084,
+      "hierarchical_average_kicker": 0.9834865160535263,
+      "m1_distance_and_season": 0.978305963693464
+    },
+    {
+      "band": [
+        30,
+        39
+      ],
+      "attempts": 632,
+      "observed": 0.9367088607594937,
+      "hierarchical_own_kicker": 0.9335754000244021,
+      "hierarchical_average_kicker": 0.9315999943600837,
+      "m1_distance_and_season": 0.9223364451977547
+    },
+    {
+      "band": [
+        40,
+        49
+      ],
+      "attempts": 640,
+      "observed": 0.8078125,
+      "hierarchical_own_kicker": 0.7994432250664755,
+      "hierarchical_average_kicker": 0.7943879602561152,
+      "m1_distance_and_season": 0.81812778797314
+    },
+    {
+      "band": [
+        50,
+        54
+      ],
+      "attempts": 354,
+      "observed": 0.7401129943502824,
+      "hierarchical_own_kicker": 0.6693836573781659,
+      "hierarchical_average_kicker": 0.6603819746604391,
+      "m1_distance_and_season": 0.6994723985150318
+    },
+    {
+      "band": [
+        55,
+        59
+      ],
+      "attempts": 173,
+      "observed": 0.653179190751445,
+      "hierarchical_own_kicker": 0.5194542740065748,
+      "hierarchical_average_kicker": 0.5096011052674064,
+      "m1_distance_and_season": 0.5822044466221955
+    },
+    {
+      "band": [
+        60,
+        75
+      ],
+      "attempts": 38,
+      "observed": 0.42105263157894735,
+      "hierarchical_own_kicker": 0.22285062016774884,
+      "hierarchical_average_kicker": 0.2158731896931127,
+      "m1_distance_and_season": 0.3373788604201402
+    },
+    {
+      "band": [
+        50,
+        75
+      ],
+      "attempts": 565,
+      "observed": 0.6920353982300885,
+      "hierarchical_own_kicker": 0.5934437658077568,
+      "hierarchical_average_kicker": 0.5843175069900797,
+      "m1_distance_and_season": 0.6392123805945601
+    }
+  ],
+  "decomposition_55_plus": {
+    "attempts": 211,
+    "raw": 0.6113744075829384,
+    "model_fit": 0.4660375022251748,
+    "selection_free": 0.47361391854373924,
+    "fit_error": 0.14533690535776356,
+    "contributions": {
+      "kicker": 0.009425507866374078,
+      "conditions": 0.018506161653725924,
+      "heave": -0.01109975445402657,
+      "era": -0.024408331384637858
+    },
+    "total_selection": -0.007576416318564427,
+    "interval_90": {
+      "model_fit": [
+        0.40783642428151323,
+        0.5260708589755501
+      ],
+      "selection_free": [
+        0.43710940430770806,
+        0.5129669479594793
+      ],
+      "total_selection": [
+        -0.06069257093387754,
+        0.044285788331542626
+      ],
+      "contribution_kicker": [
+        0.0012099039063691761,
+        0.01804914770338343
+      ],
+      "contribution_conditions": [
+        0.004161148960420588,
+        0.03243474532863918
+      ],
+      "contribution_heave": [
+        -0.018812092791315925,
+        -0.004607737612337585
+      ],
+      "contribution_era": [
+        -0.0762535092846205,
+        0.02394980569708377
+      ]
+    }
+  }
+}
