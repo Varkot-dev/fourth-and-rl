@@ -1,0 +1,131 @@
+{
+  "what": "JAX end-phase solver against the CPU solver on the real game, one matchup (scripts/questions/q6_jax_check.py)",
+  "matchup": "det_vs_average",
+  "kernels": {
+    "a_offense_vs_b_defense": {
+      "tilt": 0.00835303716979765,
+      "turnover_scale": 1.0,
+      "conv_dlogit": 0.09757224252027254,
+      "start_yardline": 75,
+      "target_drive_points_shift": 0.4084932274743389,
+      "model_drive_points_base": 1.8163804631540197,
+      "model_drive_points_matchup": 2.2248736906281747,
+      "achieved_drive_points_shift": 0.40849322747415506
+    },
+    "b_offense_vs_a_defense": {
+      "tilt": 0.002057207153028165,
+      "turnover_scale": 1.0,
+      "conv_dlogit": 0.028399689381256435,
+      "start_yardline": 75,
+      "target_drive_points_shift": 0.09549802154940812,
+      "model_drive_points_base": 1.8163804631540197,
+      "model_drive_points_matchup": 1.9118784838182774,
+      "achieved_drive_points_shift": 0.09549802066425772
+    }
+  },
+  "device": "cpu:0",
+  "jax_version": "0.12.1",
+  "python": "3.12.3",
+  "cpu_threads_env": 3,
+  "seconds": {
+    "cpu_solver": 54.70630931854248,
+    "jax_dense": 96.19399333000183,
+    "jax_compile": 11.743903398513794
+  },
+  "backend_benchmark": {
+    "device": "cpu:0",
+    "ticks_timed": 6,
+    "dense": {
+      "seconds_per_tick": 1.6567445993423462,
+      "seconds_with_setup": 13.00583291053772
+    },
+    "bcoo": {
+      "seconds_per_tick": 2.65451451142629,
+      "seconds_with_setup": 16.724028825759888
+    },
+    "bcoo_cusparse": {
+      "seconds_per_tick": 2.5898353656133017,
+      "seconds_with_setup": 16.3078293800354
+    },
+    "max_abs_diff_vs_first": {
+      "dense": 0.0,
+      "bcoo": 1.9073486328125e-06,
+      "bcoo_cusparse": 1.9073486328125e-06
+    },
+    "choice": "dense"
+  },
+  "max_abs_value_diff": {
+    "A": 3.0994415283203125e-06,
+    "B": 3.2186508178710938e-06
+  },
+  "action_value_diff_at_4_00_team_A": {
+    "play_protect": {
+      "max_abs_diff": 2.2649765014648438e-06,
+      "same_allowed_states": true
+    },
+    "play": {
+      "max_abs_diff": 2.86102294921875e-06,
+      "same_allowed_states": true
+    },
+    "play_chase": {
+      "max_abs_diff": 1.3778981156065129e-06,
+      "same_allowed_states": true
+    },
+    "field_goal": {
+      "max_abs_diff": 1.1737987506421632e-06,
+      "same_allowed_states": true
+    },
+    "punt": {
+      "max_abs_diff": 1.1810557225544471e-06,
+      "same_allowed_states": true
+    },
+    "kneel": {
+      "max_abs_diff": 2.0265579223632812e-06,
+      "same_allowed_states": true
+    }
+  },
+  "policy_share_differing": {
+    "A": 0.12730647111604032,
+    "B": 0.125718881854509
+  },
+  "policy_ties": {
+    "A_t12": {
+      "states_differing": 818961,
+      "largest_value_gap": 2.562999725341797e-06
+    },
+    "A_t30": {
+      "states_differing": 258174,
+      "largest_value_gap": 2.205371856689453e-06
+    },
+    "A_t48": {
+      "states_differing": 96512,
+      "largest_value_gap": 2.2649765014648438e-06
+    },
+    "B_t12": {
+      "states_differing": 817400,
+      "largest_value_gap": 2.562999725341797e-06
+    },
+    "B_t30": {
+      "states_differing": 251491,
+      "largest_value_gap": 2.682209014892578e-06
+    },
+    "B_t48": {
+      "states_differing": 86944,
+      "largest_value_gap": 2.5033950805664062e-06
+    }
+  },
+  "headline_jax": {
+    "go": 0.7997354865074158,
+    "punt": 0.7190617918968201,
+    "field_goal": -Infinity,
+    "go_minus_punt_points": 8.06736946105957
+  },
+  "headline_committed_q6": {
+    "go": 0.799735426902771,
+    "punt": 0.7190617918968201,
+    "field_goal": -Infinity,
+    "go_minus_punt_points": 8.067363739013672
+  },
+  "map_max_abs_diff_vs_committed_points": 0.001000046730041504,
+  "note": "float32 throughout; JAX time includes copying every slice back to the host"
+}

@@ -81,7 +81,7 @@ The honest headline may turn out to be "matchup changes the fourth-down call onl
 ## 3. The next phase, step by step
 
 ### Ground rules for all three steps
-- **Branch:** `docs/PLAN.md` says team-specific and run-vs-pass work lives off the main research branch and stays out of the main README unless you promote it. `mdp_team.py` and `mdp_team_jax.py` are on `claude/team-specific-solver`, not on the current branch. Start from that branch (or merge it first) and record the choice in the decision log.
+- **Branch:** the two-team solver (`mdp_team.py`, `mdp_team_jax.py`) is merged into main and into the working branch. Team-specific results stay out of the main README headline unless promoted, as `docs/PLAN.md` says.
 - **Seasons:** development is 2010 to 2023 (train 2010 to 2021, calibration 2022 to 2023). 2024 to 2025 is scored once, after a preregistration is committed. 2026 is never loaded.
 - **Already explored:** 2022 to 2023 coverage and cell rates were looked at while designing this, so they are no longer a clean check. The 2024 to 2025 test is the only clean out-of-sample check. Record this in the decision log.
 - **Known leak to fix first:** the repo's B2 team-effects finding was computed on 2011 to 2025, which includes the test seasons. Rerun it on 2011 to 2023 before using it as a design input, and log the leak.

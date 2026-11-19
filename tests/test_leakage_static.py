@@ -37,6 +37,10 @@ ALLOWLIST: dict[tuple[str, str], tuple[int | None, str]] = {
     ("scripts/build_data.py", "load_plays("): (
         1, "writes the development and test files (splits.write_split_files) and the M0 "
            "data summary; nothing is fitted"),
+    ("src/fourth_and_rl/team_matchups.py", "load_plays("): (
+        1, "the Colab rebuild, as scripts/build_data.py: checks that no holdout season is "
+           "present and writes the development and test files; every fit then reads "
+           "splits.load_dev_plays (and the logged kickoff-table exception)"),
     ("scripts/research/endgame_clock_stats.py", "load_plays("): (
         2, "one call and one source string; the --split all descriptive research record; "
            "the model's constants come from the --dev-only file and the simulator's "
