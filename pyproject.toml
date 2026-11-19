@@ -25,6 +25,9 @@ dependencies = [
 dev = ["pytest>=8", "ruff>=0.6"]
 rl = ["gymnasium>=1.0", "torch>=2.2", "stable-baselines3>=2.3", "d3rlpy>=2.5"]
 app = ["plotly>=5.20", "streamlit>=1.50"]
+# GPU end-phase solver (src/fourth_and_rl/mdp_team_jax.py). This pulls the CPU build; on a
+# GPU machine install jax[cuda12] (Colab already has it, and the extra keeps it).
+jax = ["jax>=0.4.30"]
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/fourth_and_rl"]
