@@ -1,0 +1,62 @@
+{
+  "written_at": "2026-11-19T02:19:39+00:00",
+  "statement": [
+    "Written before any 2024 to 2025 field-goal number was computed for this model.",
+    "The model was fitted on 2010 to 2021 only; the knot set was chosen by AIC on those seasons; 2022 to 2023 were used for checks only.",
+    "The test check runs once (--evaluate). Whatever it shows is reported, and the model does not change afterwards.",
+    "Post hoc: this model, the support distance and the cap or override it offers the planner were designed after seeing the world-model run on branch claude/world-model-colab (results/world_model/colab_t4_v2), whose simulated long-range make rate was above the raw training rate. They are not part of that run's preregistered plan.",
+    "The 2026 holdout has not been loaded."
+  ],
+  "model_fingerprint": "adfa369e976bf2bede64ba0a9ad4d8046204853796b198edac6f76916dc22312",
+  "config_sha256_16": "f0b7dd3cc15f1710",
+  "model_stamp": {
+    "what": "kicker field-goal model",
+    "seasons": [
+      2010,
+      2011,
+      2012,
+      2013,
+      2014,
+      2015,
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021
+    ],
+    "n_games": 3181,
+    "n_rows": 12409,
+    "config_sha256_16": "f0b7dd3cc15f1710"
+  },
+  "support_distance": 60,
+  "scoring": {
+    "kickers_not_seen_in_training": "average kicker (effects 0)",
+    "season": "each attempt's own season (the linear trend extrapolates from 2021)",
+    "weather_missing_outdoors": "training median",
+    "comparison_model": "M1 FieldGoalModel (distance and season trend), refitted on 2010 to 2021"
+  },
+  "hypotheses": [
+    {
+      "id": "H1",
+      "statement": "The hierarchical model (own kicker effects) has lower log loss than the M1 distance-and-season model on all 2024 to 2025 attempts.",
+      "pass_if": "log_loss(hierarchical_own_kicker) < log_loss(m1_distance_and_season)"
+    },
+    {
+      "id": "H2",
+      "statement": "Selection by kicker persists: among attempts by kickers seen in training, the mean training-estimated 50-yard strength of kickers on 55+ yard attempts exceeds that on all attempts.",
+      "pass_if": "mean_shift_55_plus - mean_shift_all > 0"
+    },
+    {
+      "id": "H3",
+      "statement": "The hierarchical model is calibrated within 5 points on 50+ yard attempts.",
+      "pass_if": "abs(observed - predicted_own_kicker) <= 0.05 on 50+ yard attempts",
+      "expectation": "May fail toward under-prediction: the season trend is a straight line fitted through 2021, and long-range kicking may have improved faster since."
+    }
+  ],
+  "also_reported": [
+    "log loss and Brier score for the hierarchical model with average-kicker effects",
+    "observed against predicted by distance band",
+    "the selection decomposition on 2024 to 2025 55+ yard attempts"
+  ]
+}

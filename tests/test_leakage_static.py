@@ -76,6 +76,11 @@ ALLOWLIST: dict[tuple[str, str], tuple[int | None, str]] = {
         2, "its own caches of the nflverse penalty columns (penalty type, team and yards, "
            "joined by game and play id to plays read through the guarded loaders) and of the "
            "schedule (head coaches per game); nothing is fitted on them"),
+    # ---- field-goal selection bias (kicker model)
+    ("src/fourth_and_rl/kicker.py", "read_parquet("): (
+        1, "its own cache of the nflverse kicker columns (kicker id and name per game and "
+           "play id, no plays), joined to plays read through the guarded loaders; the "
+           "download refuses the holdout and the fit refuses non-training seasons"),
     # ---- pending: being fixed by the win-probability rewrite
     ("src/fourth_and_rl/wp.py", "load_plays("): (
         None, "pending: being fixed by the win-probability rewrite"),
