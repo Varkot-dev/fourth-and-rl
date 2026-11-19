@@ -175,3 +175,7 @@ Then, in order: `fit_components.py` and `fit_wp.py` (M1, with `--tune`, `--prere
 - Libraries: LightGBM, scikit-learn, PyTorch, Gymnasium, Stable-Baselines3, d3rlpy, polars, matplotlib, Plotly, Streamlit.
 
 Verified citation details and what was taken from each paper are in [docs/PAPERS.md](docs/PAPERS.md); the survey of existing public work is in [docs/research/landscape.md](docs/research/landscape.md). That survey could not search everything, so this README makes no claim that any part of the project is the first of its kind.
+
+## License
+
+The code is released under the [MIT License](LICENSE). Play-by-play data comes from nflverse under its own terms; papers and tools cited above belong to their authors.
