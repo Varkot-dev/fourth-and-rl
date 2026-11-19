@@ -13,6 +13,8 @@ from that team's side (clipped), and e the extra state of the phase:
 
 The teams are identical, so the other team's value in any state is 1 minus ours after
 swapping roles: `opp(X)[s, e] = 1 - X[-s, swapped e]`. That one array holds both teams.
+(`mdp_team.py` solves two different teams: each `Solution` then reads the other team's
+values from a linked `Solution`, `Solution.other`; by default a solution is its own other.)
 
 Bellman equation (one tick = `tick_seconds`):
 
@@ -310,6 +312,8 @@ class Solution:
                     pol[ph] = np.zeros(shape, dtype=np.uint8)
         self.v, self.pol = v, pol
         self._posts: dict[tuple[int, str], _Post] = {}
+        self._bases: dict[tuple[int, str], tuple[np.ndarray, np.ndarray, np.ndarray]] = {}
+        self._other: Solution | None = None
         dt = np.dtype(m.dtype)
         self._k_all = {k: x.astype(dt) for k, x in m.kern.k_all.items()}
         self._k_in = {k: x.astype(dt) for k, x in m.kern.k_in.items()}
@@ -319,6 +323,14 @@ class Solution:
         self.terminal = np.where(s > 0, 1.0, np.where(s < 0, 0.0, 0.5)).astype(dt)
         self._weights = self._boundary_weights()
         self._q_cache: tuple[int, dict[int, np.ndarray]] | None = None
+
+    # ---- the other team ----
+    @property
+    def other(self) -> Solution:
+        """The solution that holds the other team's values. Identical teams: `self`, and
+        `opp` of our own arrays is the other team's value. `mdp_team.link` points two
+        solutions of different teams at each other."""
+        return self if self._other is None else self._other
 
     # ---- small helpers ----
     def _boundary_weights(self) -> np.ndarray:
@@ -358,14 +370,33 @@ class Solution:
             return w
         return t2
 
-    def _derive(self, v: np.ndarray, phase: str, ko: np.ndarray | None = None) -> _Post:
+    def _kicks(self, v: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+        """Value of receiving a kickoff and a free kick, from values of holding the ball."""
+        k = self.model.kern
+        ko = np.tensordot(k.kickoff[1:].astype(v.dtype), v[self.f10], axes=(0, 0))
+        fk = np.tensordot(k.free_kick[1:].astype(v.dtype), v[self.f10], axes=(0, 0))
+        return ko, fk
+
+    def _derive(
+        self,
+        v: np.ndarray,
+        phase: str,
+        ko: np.ndarray | None = None,
+        opp_kicks: tuple[np.ndarray, np.ndarray] | None = None,
+        fk: np.ndarray | None = None,
+    ) -> _Post:
+        """Values of the outcomes that end a possession, at one moment. `ko` and `fk` are
+        our values of receiving a kickoff and a free kick (computed from `v` if `ko` is
+        None; `fk` defaults to `ko`). `opp_kicks` is the other team's (kickoff, free kick)
+        values at that moment, held from its side; None means the teams are identical and
+        our own are used."""
         m = self.model
         if ko is None:
-            ko = np.tensordot(m.kern.kickoff[1:].astype(v.dtype), v[self.f10], axes=(0, 0))
-            fk = np.tensordot(m.kern.free_kick[1:].astype(v.dtype), v[self.f10], axes=(0, 0))
-        else:
+            ko, fk = self._kicks(v)
+        elif fk is None:
             fk = ko
-        opp_ko = self.opp(ko, phase)
+        oko, ofk = (ko, fk) if opp_kicks is None else opp_kicks
+        opp_ko = self.opp(oko, phase)
         td0 = opp_ko[self._shift(m.td_points)]
         xp = m.p_xp * opp_ko[self._shift(m.td_points + 1)] + (1.0 - m.p_xp) * td0
         two = m.p_two * opp_ko[self._shift(m.td_points + 2)] + (1.0 - m.p_two) * td0
@@ -376,43 +407,66 @@ class Solution:
             td=np.where(better, two, xp).astype(v.dtype),
             two=better,
             fg=opp_ko[self._shift(m.fg_points)],
-            safety=self.opp(fk, phase)[self._shift(-m.safety_points)],
+            safety=self.opp(ofk, phase)[self._shift(-m.safety_points)],
         )
+
+    def _base(self, t: int, phase: str) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+        """(value of holding the ball, of receiving a kickoff, of receiving a free kick)
+        at time t, seen from a play that started in `phase`, for this team only."""
+        key = (t, phase)
+        if key in self._bases:
+            return self._bases[key]
+        m = self.model
+        own = m.phase(t)
+        if own == phase:
+            v = self.native(t)
+            ko, fk = self._kicks(v)
+        elif phase == "mid" and own == "end":
+            # Entering the last 5:00: timeouts are drawn from the measured shares.
+            avg = np.einsum("fsab,sab->fs", self.native(t), self._weights.astype(m.dtype))
+            v = avg[:, :, None, None]
+            ko, fk = self._kicks(v)
+        elif phase == "first":
+            # Halftime: the half ends whatever the field state; the second half starts
+            # with a kickoff to the team whose flag says it receives (flag 0: the other
+            # team receives, and we hold 1 minus its value).
+            ko2 = self._base(m.clock.th, "mid")[1][:, 0, 0]
+            oko2 = self.other._base(m.clock.th, "mid")[1][:, 0, 0]
+            ht = np.stack([1.0 - oko2[::-1], ko2], axis=1)[:, :, None].astype(m.dtype)
+            v = np.broadcast_to(ht, (self.grid.nf, *ht.shape))
+            ko = fk = ht
+        else:
+            raise ValueError(f"time {t} is not reachable from phase {phase}")
+        self._bases[key] = (v, ko, fk)
+        return v, ko, fk
 
     def post(self, t: int, phase: str) -> _Post:
         """Values at time t as seen from a play that started in `phase`."""
         key = (t, phase)
         if key in self._posts:
             return self._posts[key]
-        m = self.model
-        own = m.phase(t)
-        if own == phase:
-            p = self._derive(self.native(t), phase)
-        elif phase == "mid" and own == "end":
-            # Entering the last 5:00: timeouts are drawn from the measured shares.
-            avg = np.einsum("fsab,sab->fs", self.native(t), self._weights.astype(m.dtype))
-            p = self._derive(avg[:, :, None, None], "mid")
-        elif phase == "first":
-            # Halftime: the half ends whatever the field state; the second half starts
-            # with a kickoff to the team whose flag says it receives.
-            ko = self.post(m.clock.th, "mid").ko[:, 0, 0]
-            ht = np.stack([1.0 - ko[::-1], ko], axis=1)[:, :, None].astype(m.dtype)
-            v = np.broadcast_to(ht, (self.grid.nf, *ht.shape))
-            p = self._derive(v, "first", ko=ht)
-        else:
-            raise ValueError(f"time {t} is not reachable from phase {phase}")
+        v, ko, fk = self._base(t, phase)
+        opp_kicks = None if self.other is self else self.other._base(t, phase)[1:]
+        p = self._derive(v, phase, ko=ko, opp_kicks=opp_kicks, fk=fk)
         self._posts[key] = p
         return p
 
-    def _aug(self, p: _Post, phase: str) -> np.ndarray:
+    def _aug(self, p: _Post, phase: str, po: _Post | None = None) -> np.ndarray:
+        """Values of every outcome column (see the `mdp` module docstring). `po` is the
+        other team's `_Post` at the same moment (None: identical teams, use `p`)."""
         g = self.grid
+        po = p if po is None else po
         aug = np.empty((g.na, *p.v.shape[1:]), dtype=p.v.dtype)
         aug[: g.nf] = p.v
-        aug[g.nf : g.nf + g.n_yl] = self.opp(p.v[self.f10], phase)
+        aug[g.nf : g.nf + g.n_yl] = self.opp(po.v[self.f10], phase)
         aug[g.col_td] = p.td
         aug[g.col_safety] = p.safety
-        aug[g.col_opp_td] = self.opp(p.td, phase)
+        aug[g.col_opp_td] = self.opp(po.td, phase)
         return aug
+
+    def _aug_at(self, t: int, phase: str) -> np.ndarray:
+        """`_aug` at time t, with the other team's values from `other`."""
+        return self._aug(self.post(t, phase), phase, self.other.post(t, phase))
 
     def _defense_rate(self, t: int) -> np.ndarray:
         """q[s, b]: probability the defense spends a timeout (empirical mode)."""
@@ -468,7 +522,7 @@ class Solution:
         phase = m.phase(t)
         shape = (g.nf, m.n_score, *m.extra_shape(phase))
         p1 = self.post(max(t - 1, 0), phase)
-        aug1 = self._aug(p1, phase).reshape(g.na, -1)
+        aug1 = self._aug_at(max(t - 1, 0), phase).reshape(g.na, -1)
         u = self._running_values(t, phase)
         v1 = aug1[: g.nf]
         q: dict[int, np.ndarray] = {}
@@ -488,8 +542,7 @@ class Solution:
             qf[~k.fg_ok] = -np.inf
             q[A_FG] = qf
         if k.punt_ok.any():
-            p2 = self.post(max(t - c.punt_ticks, 0), phase)
-            qp = self._k_punt @ self._aug(p2, phase).reshape(g.na, -1)
+            qp = self._k_punt @ self._aug_at(max(t - c.punt_ticks, 0), phase).reshape(g.na, -1)
             qp[~k.punt_ok] = -np.inf
             q[A_PUNT] = qp
         if k.kneel_ok.any():
@@ -584,7 +637,7 @@ class Solution:
             best = max(codes, key=lambda a: float(q[a][ix[1:]]))
             mode = {v: k for k, v in _MODE_CODE.items()}[best]
         key = c.kernel_key(mode, t)
-        aug = self._aug(self.post(t - 1, ph), ph)[(slice(None), *col)].astype(float)
+        aug = self._aug_at(t - 1, ph)[(slice(None), *col)].astype(float)
         u = self._running_values(t, ph)[mode][(slice(None), *col)].astype(float)
         row = self.model.kern.k_all[key][f].toarray().ravel()
         row_in = self.model.kern.k_in[key][f].toarray().ravel()
@@ -621,21 +674,32 @@ class GameState(NamedTuple):
     receives_second_half: int = 0
 
 
+def backward_induction(sols: list[Solution], progress: bool = False) -> float:
+    """Fill every solution's arrays, one time slice at a time, oldest slice first. All
+    solutions share one clock; at each t every solution's slice is solved before any
+    t + 1, because a team's backup at t reads the other team's values at earlier times
+    (`Solution.other`). Returns the seconds taken."""
+    n_ticks = sols[0].model.clock.n_ticks
+    t0 = time.time()
+    for sol in sols:
+        for ph in sol.v:
+            if sol.model.phase_range(ph)[0] == 0:
+                sol.v[ph][0] = sol.terminal[None, :, None, None]
+                sol.pol[ph][0] = A_OVER
+    for t in range(1, n_ticks + 1):
+        for sol in sols:
+            sol.solve_slice(t)
+        if progress and (t % 20 == 0 or t == n_ticks):
+            print(f"  t = {t:4d} / {n_ticks}   {time.time() - t0:7.1f} s", flush=True)
+    return time.time() - t0
+
+
 def solve(model: GameModel, progress: bool = False) -> Solution:
     """Backward induction over every time slice. Returns the solved game."""
     sol = Solution(model)
-    t0 = time.time()
-    for ph in sol.v:
-        lo = model.phase_range(ph)[0]
-        if lo == 0:
-            sol.v[ph][0] = sol.terminal[None, :, None, None]
-            sol.pol[ph][0] = A_OVER
-    for t in range(1, model.clock.n_ticks + 1):
-        sol.solve_slice(t)
-        if progress and (t % 20 == 0 or t == model.clock.n_ticks):
-            print(f"  t = {t:4d} / {model.clock.n_ticks}   {time.time() - t0:7.1f} s", flush=True)
+    seconds = backward_induction([sol], progress)
     sol.meta.update(
-        solve_seconds=time.time() - t0,
+        solve_seconds=seconds,
         peak_memory_gb=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024**2,
         n_states=model.n_states(),
     )
@@ -893,6 +957,8 @@ class Simulator:
         self.f10 = g.first10()
         self._two: dict[str, np.ndarray] = {}
         self._build_two_tables()
+        # The simulator of the other team (see `Solution.other`); itself for identical teams.
+        self.other: Simulator = self
 
     def _build_two_tables(self) -> None:
         """two[phase][t, s, e1, e2]: is the two-point try better after a touchdown at t?"""
@@ -1237,7 +1303,9 @@ class Simulator:
                         e = m.extra_shape(name)
                         e1 = np.minimum(aa[q], e[0] - 1) if name == "end" else rr[q] * (e[0] - 1)
                         e2 = np.minimum(bb[q], e[1] - 1) if name == "end" else 0
-                        two[q] = self._two[name][t1[j][q], ss[q] + m.score_max, e1, e2]
+                        ix = (t1[j][q], ss[q] + m.score_max, e1, e2)
+                        # A return touchdown is scored by the other team: its own choice.
+                        two[q] = np.where(mine[q], self._two[name][ix], self.other._two[name][ix])
             u = rng.random(len(j))
             pts[j] = m.td_points + np.where(two, 2 * (u < m.p_two), 1 * (u < m.p_xp))
         pts = np.where(kind == K_FG, m.fg_points, pts)
