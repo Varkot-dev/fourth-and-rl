@@ -7,6 +7,7 @@ name = "fourth-and-rl"
 version = "0.1.0"
 description = "NFL fourth-down decisions as a sequential decision problem: win-probability models, dynamic programming and reinforcement learning."
 requires-python = ">=3.11"
+license = "MIT"
 dependencies = [
     "nflreadpy>=0.1.5",
     "polars>=1.0",
@@ -23,13 +24,15 @@ dependencies = [
 [project.optional-dependencies]
 dev = ["pytest>=8", "ruff>=0.6"]
 rl = ["gymnasium>=1.0", "torch>=2.2", "stable-baselines3>=2.3", "d3rlpy>=2.5"]
-app = ["plotly>=5.20", "streamlit>=1.35"]
+app = ["plotly>=5.20", "streamlit>=1.50"]
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/fourth_and_rl"]
 
 [tool.ruff]
 line-length = 100
+# Generated notebooks are checked by running them, not by the linter.
+extend-exclude = ["notebooks/*.ipynb"]
 target-version = "py311"
 
 [tool.ruff.lint]

@@ -1,0 +1,1438 @@
+{
+ "schema_version": 1,
+ "synthetic": false,
+ "built_at": "2026-11-18T08:33:42+00:00",
+ "built_by": "scripts/m7_build_app_bundle.py",
+ "git_commit_at_build": "79283df",
+ "config": "configs/app.yaml",
+ "axes": {
+  "contexts": [
+   {
+    "seconds": 3300,
+    "opp_timeouts": 3,
+    "spread": -7.0
+   },
+   {
+    "seconds": 3300,
+    "opp_timeouts": 3,
+    "spread": 0.0
+   },
+   {
+    "seconds": 3300,
+    "opp_timeouts": 3,
+    "spread": 7.0
+   },
+   {
+    "seconds": 2400,
+    "opp_timeouts": 3,
+    "spread": -7.0
+   },
+   {
+    "seconds": 2400,
+    "opp_timeouts": 3,
+    "spread": 0.0
+   },
+   {
+    "seconds": 2400,
+    "opp_timeouts": 3,
+    "spread": 7.0
+   },
+   {
+    "seconds": 1500,
+    "opp_timeouts": 3,
+    "spread": -7.0
+   },
+   {
+    "seconds": 1500,
+    "opp_timeouts": 3,
+    "spread": 0.0
+   },
+   {
+    "seconds": 1500,
+    "opp_timeouts": 3,
+    "spread": 7.0
+   },
+   {
+    "seconds": 900,
+    "opp_timeouts": 3,
+    "spread": -7.0
+   },
+   {
+    "seconds": 900,
+    "opp_timeouts": 3,
+    "spread": 0.0
+   },
+   {
+    "seconds": 900,
+    "opp_timeouts": 3,
+    "spread": 7.0
+   },
+   {
+    "seconds": 600,
+    "opp_timeouts": 3,
+    "spread": -7.0
+   },
+   {
+    "seconds": 600,
+    "opp_timeouts": 3,
+    "spread": 0.0
+   },
+   {
+    "seconds": 600,
+    "opp_timeouts": 3,
+    "spread": 7.0
+   },
+   {
+    "seconds": 300,
+    "opp_timeouts": 0,
+    "spread": -7.0
+   },
+   {
+    "seconds": 300,
+    "opp_timeouts": 0,
+    "spread": 0.0
+   },
+   {
+    "seconds": 300,
+    "opp_timeouts": 0,
+    "spread": 7.0
+   },
+   {
+    "seconds": 300,
+    "opp_timeouts": 1,
+    "spread": -7.0
+   },
+   {
+    "seconds": 300,
+    "opp_timeouts": 1,
+    "spread": 0.0
+   },
+   {
+    "seconds": 300,
+    "opp_timeouts": 1,
+    "spread": 7.0
+   },
+   {
+    "seconds": 300,
+    "opp_timeouts": 2,
+    "spread": -7.0
+   },
+   {
+    "seconds": 300,
+    "opp_timeouts": 2,
+    "spread": 0.0
+   },
+   {
+    "seconds": 300,
+    "opp_timeouts": 2,
+    "spread": 7.0
+   },
+   {
+    "seconds": 300,
+    "opp_timeouts": 3,
+    "spread": -7.0
+   },
+   {
+    "seconds": 300,
+    "opp_timeouts": 3,
+    "spread": 0.0
+   },
+   {
+    "seconds": 300,
+    "opp_timeouts": 3,
+    "spread": 7.0
+   },
+   {
+    "seconds": 240,
+    "opp_timeouts": 0,
+    "spread": -7.0
+   },
+   {
+    "seconds": 240,
+    "opp_timeouts": 0,
+    "spread": 0.0
+   },
+   {
+    "seconds": 240,
+    "opp_timeouts": 0,
+    "spread": 7.0
+   },
+   {
+    "seconds": 240,
+    "opp_timeouts": 1,
+    "spread": -7.0
+   },
+   {
+    "seconds": 240,
+    "opp_timeouts": 1,
+    "spread": 0.0
+   },
+   {
+    "seconds": 240,
+    "opp_timeouts": 1,
+    "spread": 7.0
+   },
+   {
+    "seconds": 240,
+    "opp_timeouts": 2,
+    "spread": -7.0
+   },
+   {
+    "seconds": 240,
+    "opp_timeouts": 2,
+    "spread": 0.0
+   },
+   {
+    "seconds": 240,
+    "opp_timeouts": 2,
+    "spread": 7.0
+   },
+   {
+    "seconds": 240,
+    "opp_timeouts": 3,
+    "spread": -7.0
+   },
+   {
+    "seconds": 240,
+    "opp_timeouts": 3,
+    "spread": 0.0
+   },
+   {
+    "seconds": 240,
+    "opp_timeouts": 3,
+    "spread": 7.0
+   },
+   {
+    "seconds": 180,
+    "opp_timeouts": 0,
+    "spread": -7.0
+   },
+   {
+    "seconds": 180,
+    "opp_timeouts": 0,
+    "spread": 0.0
+   },
+   {
+    "seconds": 180,
+    "opp_timeouts": 0,
+    "spread": 7.0
+   },
+   {
+    "seconds": 180,
+    "opp_timeouts": 1,
+    "spread": -7.0
+   },
+   {
+    "seconds": 180,
+    "opp_timeouts": 1,
+    "spread": 0.0
+   },
+   {
+    "seconds": 180,
+    "opp_timeouts": 1,
+    "spread": 7.0
+   },
+   {
+    "seconds": 180,
+    "opp_timeouts": 2,
+    "spread": -7.0
+   },
+   {
+    "seconds": 180,
+    "opp_timeouts": 2,
+    "spread": 0.0
+   },
+   {
+    "seconds": 180,
+    "opp_timeouts": 2,
+    "spread": 7.0
+   },
+   {
+    "seconds": 180,
+    "opp_timeouts": 3,
+    "spread": -7.0
+   },
+   {
+    "seconds": 180,
+    "opp_timeouts": 3,
+    "spread": 0.0
+   },
+   {
+    "seconds": 180,
+    "opp_timeouts": 3,
+    "spread": 7.0
+   },
+   {
+    "seconds": 120,
+    "opp_timeouts": 0,
+    "spread": -7.0
+   },
+   {
+    "seconds": 120,
+    "opp_timeouts": 0,
+    "spread": 0.0
+   },
+   {
+    "seconds": 120,
+    "opp_timeouts": 0,
+    "spread": 7.0
+   },
+   {
+    "seconds": 120,
+    "opp_timeouts": 1,
+    "spread": -7.0
+   },
+   {
+    "seconds": 120,
+    "opp_timeouts": 1,
+    "spread": 0.0
+   },
+   {
+    "seconds": 120,
+    "opp_timeouts": 1,
+    "spread": 7.0
+   },
+   {
+    "seconds": 120,
+    "opp_timeouts": 2,
+    "spread": -7.0
+   },
+   {
+    "seconds": 120,
+    "opp_timeouts": 2,
+    "spread": 0.0
+   },
+   {
+    "seconds": 120,
+    "opp_timeouts": 2,
+    "spread": 7.0
+   },
+   {
+    "seconds": 120,
+    "opp_timeouts": 3,
+    "spread": -7.0
+   },
+   {
+    "seconds": 120,
+    "opp_timeouts": 3,
+    "spread": 0.0
+   },
+   {
+    "seconds": 120,
+    "opp_timeouts": 3,
+    "spread": 7.0
+   },
+   {
+    "seconds": 60,
+    "opp_timeouts": 0,
+    "spread": -7.0
+   },
+   {
+    "seconds": 60,
+    "opp_timeouts": 0,
+    "spread": 0.0
+   },
+   {
+    "seconds": 60,
+    "opp_timeouts": 0,
+    "spread": 7.0
+   },
+   {
+    "seconds": 60,
+    "opp_timeouts": 1,
+    "spread": -7.0
+   },
+   {
+    "seconds": 60,
+    "opp_timeouts": 1,
+    "spread": 0.0
+   },
+   {
+    "seconds": 60,
+    "opp_timeouts": 1,
+    "spread": 7.0
+   },
+   {
+    "seconds": 60,
+    "opp_timeouts": 2,
+    "spread": -7.0
+   },
+   {
+    "seconds": 60,
+    "opp_timeouts": 2,
+    "spread": 0.0
+   },
+   {
+    "seconds": 60,
+    "opp_timeouts": 2,
+    "spread": 7.0
+   },
+   {
+    "seconds": 60,
+    "opp_timeouts": 3,
+    "spread": -7.0
+   },
+   {
+    "seconds": 60,
+    "opp_timeouts": 3,
+    "spread": 0.0
+   },
+   {
+    "seconds": 60,
+    "opp_timeouts": 3,
+    "spread": 7.0
+   },
+   {
+    "seconds": 30,
+    "opp_timeouts": 0,
+    "spread": -7.0
+   },
+   {
+    "seconds": 30,
+    "opp_timeouts": 0,
+    "spread": 0.0
+   },
+   {
+    "seconds": 30,
+    "opp_timeouts": 0,
+    "spread": 7.0
+   },
+   {
+    "seconds": 30,
+    "opp_timeouts": 1,
+    "spread": -7.0
+   },
+   {
+    "seconds": 30,
+    "opp_timeouts": 1,
+    "spread": 0.0
+   },
+   {
+    "seconds": 30,
+    "opp_timeouts": 1,
+    "spread": 7.0
+   },
+   {
+    "seconds": 30,
+    "opp_timeouts": 2,
+    "spread": -7.0
+   },
+   {
+    "seconds": 30,
+    "opp_timeouts": 2,
+    "spread": 0.0
+   },
+   {
+    "seconds": 30,
+    "opp_timeouts": 2,
+    "spread": 7.0
+   },
+   {
+    "seconds": 30,
+    "opp_timeouts": 3,
+    "spread": -7.0
+   },
+   {
+    "seconds": 30,
+    "opp_timeouts": 3,
+    "spread": 0.0
+   },
+   {
+    "seconds": 30,
+    "opp_timeouts": 3,
+    "spread": 7.0
+   }
+  ],
+  "exact_contexts": [
+   {
+    "seconds": 3300,
+    "opp_timeouts": 3,
+    "spread": 0.0
+   },
+   {
+    "seconds": 2400,
+    "opp_timeouts": 3,
+    "spread": 0.0
+   },
+   {
+    "seconds": 1500,
+    "opp_timeouts": 3,
+    "spread": 0.0
+   },
+   {
+    "seconds": 900,
+    "opp_timeouts": 3,
+    "spread": 0.0
+   },
+   {
+    "seconds": 600,
+    "opp_timeouts": 3,
+    "spread": 0.0
+   },
+   {
+    "seconds": 300,
+    "opp_timeouts": 0,
+    "spread": 0.0
+   },
+   {
+    "seconds": 300,
+    "opp_timeouts": 1,
+    "spread": 0.0
+   },
+   {
+    "seconds": 300,
+    "opp_timeouts": 2,
+    "spread": 0.0
+   },
+   {
+    "seconds": 300,
+    "opp_timeouts": 3,
+    "spread": 0.0
+   },
+   {
+    "seconds": 240,
+    "opp_timeouts": 0,
+    "spread": 0.0
+   },
+   {
+    "seconds": 240,
+    "opp_timeouts": 1,
+    "spread": 0.0
+   },
+   {
+    "seconds": 240,
+    "opp_timeouts": 2,
+    "spread": 0.0
+   },
+   {
+    "seconds": 240,
+    "opp_timeouts": 3,
+    "spread": 0.0
+   },
+   {
+    "seconds": 180,
+    "opp_timeouts": 0,
+    "spread": 0.0
+   },
+   {
+    "seconds": 180,
+    "opp_timeouts": 1,
+    "spread": 0.0
+   },
+   {
+    "seconds": 180,
+    "opp_timeouts": 2,
+    "spread": 0.0
+   },
+   {
+    "seconds": 180,
+    "opp_timeouts": 3,
+    "spread": 0.0
+   },
+   {
+    "seconds": 120,
+    "opp_timeouts": 0,
+    "spread": 0.0
+   },
+   {
+    "seconds": 120,
+    "opp_timeouts": 1,
+    "spread": 0.0
+   },
+   {
+    "seconds": 120,
+    "opp_timeouts": 2,
+    "spread": 0.0
+   },
+   {
+    "seconds": 120,
+    "opp_timeouts": 3,
+    "spread": 0.0
+   },
+   {
+    "seconds": 60,
+    "opp_timeouts": 0,
+    "spread": 0.0
+   },
+   {
+    "seconds": 60,
+    "opp_timeouts": 1,
+    "spread": 0.0
+   },
+   {
+    "seconds": 60,
+    "opp_timeouts": 2,
+    "spread": 0.0
+   },
+   {
+    "seconds": 60,
+    "opp_timeouts": 3,
+    "spread": 0.0
+   },
+   {
+    "seconds": 30,
+    "opp_timeouts": 0,
+    "spread": 0.0
+   },
+   {
+    "seconds": 30,
+    "opp_timeouts": 1,
+    "spread": 0.0
+   },
+   {
+    "seconds": 30,
+    "opp_timeouts": 2,
+    "spread": 0.0
+   },
+   {
+    "seconds": 30,
+    "opp_timeouts": 3,
+    "spread": 0.0
+   }
+  ],
+  "scores": [
+   -14,
+   -13,
+   -12,
+   -11,
+   -10,
+   -9,
+   -8,
+   -7,
+   -6,
+   -5,
+   -4,
+   -3,
+   -2,
+   -1,
+   0,
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7,
+   8,
+   9,
+   10,
+   11,
+   12,
+   13,
+   14
+  ],
+  "distances": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7,
+   8,
+   9,
+   10,
+   11,
+   12,
+   13,
+   14,
+   15
+  ],
+  "yardlines": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7,
+   8,
+   9,
+   10,
+   11,
+   12,
+   13,
+   14,
+   15,
+   16,
+   17,
+   18,
+   19,
+   20,
+   21,
+   22,
+   23,
+   24,
+   25,
+   26,
+   27,
+   28,
+   29,
+   30,
+   31,
+   32,
+   33,
+   34,
+   35,
+   36,
+   37,
+   38,
+   39,
+   40,
+   41,
+   42,
+   43,
+   44,
+   45,
+   46,
+   47,
+   48,
+   49,
+   50,
+   51,
+   52,
+   53,
+   54,
+   55,
+   56,
+   57,
+   58,
+   59,
+   60,
+   61,
+   62,
+   63,
+   64,
+   65,
+   66,
+   67,
+   68,
+   69,
+   70,
+   71,
+   72,
+   73,
+   74,
+   75,
+   76,
+   77,
+   78,
+   79,
+   80,
+   81,
+   82,
+   83,
+   84,
+   85,
+   86,
+   87,
+   88,
+   89,
+   90,
+   91,
+   92,
+   93,
+   94,
+   95,
+   96,
+   97,
+   98,
+   99
+  ],
+  "clocks": [
+   {
+    "seconds": 3300,
+    "label": "Q1 10:00"
+   },
+   {
+    "seconds": 2400,
+    "label": "Q2 10:00"
+   },
+   {
+    "seconds": 1500,
+    "label": "Q3 10:00"
+   },
+   {
+    "seconds": 900,
+    "label": "Q4 15:00"
+   },
+   {
+    "seconds": 600,
+    "label": "Q4 10:00"
+   },
+   {
+    "seconds": 300,
+    "label": "Q4 5:00"
+   },
+   {
+    "seconds": 240,
+    "label": "Q4 4:00"
+   },
+   {
+    "seconds": 180,
+    "label": "Q4 3:00"
+   },
+   {
+    "seconds": 120,
+    "label": "Q4 2:00"
+   },
+   {
+    "seconds": 60,
+    "label": "Q4 1:00"
+   },
+   {
+    "seconds": 30,
+    "label": "Q4 0:30"
+   }
+  ],
+  "array_axes": "[context, score, distance - 1, yardline_100 - 1]"
+ },
+ "fixed": {
+  "own_timeouts": 3,
+  "opp_timeouts_before_endgame": 3,
+  "receive_2h_ko": 0,
+  "is_home": 0,
+  "endgame_seconds": 300,
+  "spread_min_seconds": 0
+ },
+ "encoding": {
+  "wp_scale": 10000,
+  "gain_scale": 10000,
+  "wp_not_available": 65535,
+  "gain_not_available": -32768,
+  "max_roundtrip_error": 4.9999999172212206e-05
+ },
+ "one_step": {
+  "what": "headline one-step engine (decision.load_engine), point estimates",
+  "wp_model": "data/models/wp.joblib",
+  "wp_model_stamp": {
+   "what": "M1 headline model (version 2)",
+   "seasons": [
+    2010,
+    2011,
+    2012,
+    2013,
+    2014,
+    2015,
+    2016,
+    2017,
+    2018,
+    2019,
+    2020,
+    2021,
+    2022,
+    2023
+   ],
+   "n_games": 3793,
+   "n_rows": 637141,
+   "fitted_at": "2026-11-17T07:22:33+00:00",
+   "spec": "v2",
+   "train_seasons": [
+    2010,
+    2011,
+    2012,
+    2013,
+    2014,
+    2015,
+    2016,
+    2017,
+    2018,
+    2019,
+    2020,
+    2021,
+    2022,
+    2023
+   ],
+   "calib_seasons": [],
+   "allow_test_seasons": false,
+   "reason": null
+  },
+  "components": "data/models/components_dev.joblib",
+  "components_stamp": {
+   "what": "component models",
+   "seasons": [
+    2010,
+    2011,
+    2012,
+    2013,
+    2014,
+    2015,
+    2016,
+    2017,
+    2018,
+    2019,
+    2020,
+    2021,
+    2022,
+    2023
+   ],
+   "n_games": 3793,
+   "n_rows": 637141,
+   "fitted_at": "2026-11-17T08:27:32+00:00",
+   "config_hash": "fff6405221c9aa66",
+   "data_fingerprint_sha1": "4cb84db6dad7",
+   "test_seasons_allowed": false,
+   "reason": null,
+   "kickoff_rule_tables": {
+    "touchback_at_25": {
+     "seasons": [
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023
+     ],
+     "n_used": 16741,
+     "uses_test_seasons": false,
+     "reason": null,
+     "data_fingerprint_sha1": "c692985f35ee"
+    },
+    "dynamic_kickoff_2024": {
+     "seasons": [
+      2024
+     ],
+     "n_used": 2920,
+     "uses_test_seasons": true,
+     "reason": "rule constant; no data under this rule exists before the season",
+     "data_fingerprint_sha1": "af4744ec9d61"
+    },
+    "dynamic_kickoff_2025": {
+     "seasons": [
+      2025
+     ],
+     "n_used": 2893,
+     "uses_test_seasons": true,
+     "reason": "rule constant; no data under this rule exists before the season",
+     "data_fingerprint_sha1": "bf5390cd5f41"
+    }
+   }
+  },
+  "kickoff_rule": "latest rule era's kickoff table (hypothetical states)",
+  "punt_not_available_inside_yardline_100": 31,
+  "seconds": 191.4
+ },
+ "bootstrap": {
+  "what": "game-level bootstrap replicates of M3, each refitted on resampled development games and evaluated on every cell",
+  "n_boot": 101,
+  "seed": 20261117,
+  "directory": "data/models/boot/seed_20261117_none",
+  "thresholds": {
+   "confident": 0.83,
+   "lean": 0.67
+  },
+  "interval": [
+   0.05,
+   0.95
+  ],
+  "interval_note": "order statistics of the replicate values (6th and 96th of 101): a 90% interval; under-covers for tree models (M3b, about 77%)",
+  "replicate_key_tags": [
+   "14fe4d24c6",
+   "beaf39fbb7",
+   "56a521e1a2",
+   "7538b1867e",
+   "1cef69dfb3",
+   "d3e2266121",
+   "665e97a964",
+   "7c4546df95",
+   "749d813893",
+   "9c103dd45f",
+   "d2d5bfd743",
+   "9f56e817d7",
+   "48bac152ee",
+   "c2f65f4e1a",
+   "ae0df2045d",
+   "d94b6c4d27",
+   "a337cfe15b",
+   "af0c84086d",
+   "afd55dd970",
+   "e323f70d35",
+   "8b0981ede8",
+   "255676a173",
+   "6abb84488e",
+   "6f00311d9e",
+   "c78598593b",
+   "52a794e50b",
+   "fd1b5e55b2",
+   "3ec44272c1",
+   "394f3024fb",
+   "8b08d12547",
+   "2952798b88",
+   "be7e4819e9",
+   "e7d142b5a8",
+   "c432a6fd7a",
+   "3f95c0d0fc",
+   "0c04df8f6a",
+   "db3832f88a",
+   "19a633cb0e",
+   "d13b223a74",
+   "1c1de7a107",
+   "2e4b3a305a",
+   "89c34c63d0",
+   "e61a5da41c",
+   "894a80c43b",
+   "752c8c21be",
+   "3af53e230a",
+   "adec5885ab",
+   "a56dfd56ee",
+   "3ac1801cd0",
+   "b538fa7aa7",
+   "3e325ed2c4",
+   "fb11fd2f5a",
+   "8fdc31ee3a",
+   "f1e9a99f15",
+   "47ef37dae9",
+   "4303f6a0a4",
+   "c19f36172c",
+   "1eb81fcf0e",
+   "8892bd64c4",
+   "b991141eed",
+   "f163a7f98a",
+   "e989a219d7",
+   "b6908e703a",
+   "2af0e61322",
+   "e368a0a74f",
+   "5403f792d4",
+   "eff8741a35",
+   "ad6ff1168e",
+   "b9ff9e712d",
+   "0a7c9676b6",
+   "6d722c3f67",
+   "4952a34192",
+   "392d4b80af",
+   "258d826528",
+   "413663f6ed",
+   "ec1a62f9e6",
+   "c61d95a357",
+   "633927d939",
+   "d564f95c64",
+   "b252fe2ff5",
+   "314aea030a",
+   "83735f7397",
+   "29309c635a",
+   "a7046a0669",
+   "85d5c766ea",
+   "35c7714c74",
+   "2af7cbc266",
+   "b25d7bfeb1",
+   "8d3c32c8e9",
+   "d5b9b037bc",
+   "3665c15c24",
+   "d9ab2c0798",
+   "d7545a9329",
+   "da6b102fca",
+   "2694af9631",
+   "e70f6060db",
+   "9b73c6a4b5",
+   "29d7728273",
+   "7cac9daac0",
+   "69b7e37ecc",
+   "f167d8b031"
+  ],
+  "seconds_this_run": 15675.8
+ },
+ "exact": {
+  "what": "exactly solved game (mdp_game.load_solution, data/mdp)",
+  "stamp": {
+   "what": "solved game model (components plus count, mode and coach tables)",
+   "seasons": [
+    2010,
+    2011,
+    2012,
+    2013,
+    2014,
+    2015,
+    2016,
+    2017,
+    2018,
+    2019,
+    2020,
+    2021,
+    2022,
+    2023
+   ],
+   "tables": {
+    "what": "game-model tables (count, mode, coach)",
+    "seasons": [
+     2010,
+     2011,
+     2012,
+     2013,
+     2014,
+     2015,
+     2016,
+     2017,
+     2018,
+     2019,
+     2020,
+     2021,
+     2022,
+     2023
+    ],
+    "n_games": 3793,
+    "n_rows": 637141
+   },
+   "components": {
+    "what": "component models",
+    "seasons": [
+     2010,
+     2011,
+     2012,
+     2013,
+     2014,
+     2015,
+     2016,
+     2017,
+     2018,
+     2019,
+     2020,
+     2021,
+     2022,
+     2023
+    ],
+    "n_games": 3793,
+    "n_rows": 637141,
+    "config_hash": "fff6405221c9aa66",
+    "data_fingerprint_sha1": "4cb84db6dad7",
+    "test_seasons_allowed": false,
+    "reason": null,
+    "kickoff_rule_tables": {
+     "touchback_at_25": {
+      "seasons": [
+       2018,
+       2019,
+       2020,
+       2021,
+       2022,
+       2023
+      ],
+      "n_used": 16741,
+      "uses_test_seasons": false,
+      "reason": null,
+      "data_fingerprint_sha1": "c692985f35ee"
+     },
+     "dynamic_kickoff_2024": {
+      "seasons": [
+       2024
+      ],
+      "n_used": 2920,
+      "uses_test_seasons": true,
+      "reason": "rule constant; no data under this rule exists before the season",
+      "data_fingerprint_sha1": "af4744ec9d61"
+     },
+     "dynamic_kickoff_2025": {
+      "seasons": [
+       2025
+      ],
+      "n_used": 2893,
+      "uses_test_seasons": true,
+      "reason": "rule constant; no data under this rule exists before the season",
+      "data_fingerprint_sha1": "bf5390cd5f41"
+     }
+    }
+   },
+   "note": "the only test-season content is the components' kickoff rule tables; the solved game uses the latest rule's table for every kickoff"
+  },
+  "solve_seed": 20261117,
+  "tick_seconds": 5,
+  "dist_exact": 10,
+  "dist_bins": [
+   [
+    11,
+    15,
+    13
+   ],
+   [
+    16,
+    99,
+    20
+   ]
+  ],
+  "score_max": 21,
+  "go": "best of the play modes (neutral, protect, chase) on fourth down",
+  "seconds": 7.9
+ },
+ "coverage": {
+  "interpolated": "nothing; every number is a computed grid cell and the app snaps its controls to the grid",
+  "not_covered": [
+   "clocks other than the listed ones (for example the end of the first half)",
+   "score differentials beyond -14..+14",
+   "the team with the ball holding fewer than 3 timeouts",
+   "opponent timeouts other than 3 before the last 5:00",
+   "spreads other than -7, 0 and +7, and any spread in the exact game (identical teams)",
+   "receiving the second-half kickoff (both engines assume the team with the ball does not)",
+   "overtime"
+  ],
+  "exact_distance_bins": "the exact game treats 11 to 15 yards to go as one bin valued at 13 yards"
+ },
+ "checks": {
+  "question1_exact_map": {
+   "cells": 19840,
+   "max_abs_difference": 4.999790191650977e-05,
+   "tolerance": 0.0001,
+   "source": "results/questions/q1_late_lead_dp.json"
+  },
+  "spread_check": {
+   "what": "one-step values with spread -7 or +7 minus spread 0, late in the game (why the spread is a grid axis at every clock)",
+   "max_abs_change": 0.1625836183318305,
+   "max_share_best_action_changes": 0.17753623188405798,
+   "rows": [
+    {
+     "seconds": 600,
+     "score": -7,
+     "spread": -7.0,
+     "max_abs_change": 0.11764950469635238,
+     "mean_abs_change": 0.07139509559967805,
+     "share_best_action_changes": 0.08623188405797101
+    },
+    {
+     "seconds": 600,
+     "score": -7,
+     "spread": 7.0,
+     "max_abs_change": 0.14048079799069163,
+     "mean_abs_change": 0.10337985962114116,
+     "share_best_action_changes": 0.14202898550724638
+    },
+    {
+     "seconds": 600,
+     "score": -3,
+     "spread": -7.0,
+     "max_abs_change": 0.14239684155149251,
+     "mean_abs_change": 0.109700225876002,
+     "share_best_action_changes": 0.07753623188405798
+    },
+    {
+     "seconds": 600,
+     "score": -3,
+     "spread": 7.0,
+     "max_abs_change": 0.16152623334742028,
+     "mean_abs_change": 0.13618482737790832,
+     "share_best_action_changes": 0.17753623188405798
+    },
+    {
+     "seconds": 600,
+     "score": 0,
+     "spread": -7.0,
+     "max_abs_change": 0.14254302946603986,
+     "mean_abs_change": 0.127223020063819,
+     "share_best_action_changes": 0.07971014492753623
+    },
+    {
+     "seconds": 600,
+     "score": 0,
+     "spread": 7.0,
+     "max_abs_change": 0.1625836183318305,
+     "mean_abs_change": 0.14011421963322268,
+     "share_best_action_changes": 0.1681159420289855
+    },
+    {
+     "seconds": 600,
+     "score": 3,
+     "spread": -7.0,
+     "max_abs_change": 0.14782518956990265,
+     "mean_abs_change": 0.12947841627651335,
+     "share_best_action_changes": 0.07608695652173914
+    },
+    {
+     "seconds": 600,
+     "score": 3,
+     "spread": 7.0,
+     "max_abs_change": 0.14858043417054506,
+     "mean_abs_change": 0.12399056057617489,
+     "share_best_action_changes": 0.13405797101449277
+    },
+    {
+     "seconds": 600,
+     "score": 7,
+     "spread": -7.0,
+     "max_abs_change": 0.12861257949796023,
+     "mean_abs_change": 0.10331302143186637,
+     "share_best_action_changes": 0.059420289855072465
+    },
+    {
+     "seconds": 600,
+     "score": 7,
+     "spread": 7.0,
+     "max_abs_change": 0.12894207288174508,
+     "mean_abs_change": 0.08220187968237654,
+     "share_best_action_changes": 0.10507246376811594
+    },
+    {
+     "seconds": 300,
+     "score": -7,
+     "spread": -7.0,
+     "max_abs_change": 0.08382842913873595,
+     "mean_abs_change": 0.04333107331851533,
+     "share_best_action_changes": 0.04057971014492753
+    },
+    {
+     "seconds": 300,
+     "score": -7,
+     "spread": 7.0,
+     "max_abs_change": 0.10900838474444924,
+     "mean_abs_change": 0.07201142576088722,
+     "share_best_action_changes": 0.1644927536231884
+    },
+    {
+     "seconds": 300,
+     "score": -3,
+     "spread": -7.0,
+     "max_abs_change": 0.10669733776626006,
+     "mean_abs_change": 0.07775207994779422,
+     "share_best_action_changes": 0.09420289855072464
+    },
+    {
+     "seconds": 300,
+     "score": -3,
+     "spread": 7.0,
+     "max_abs_change": 0.13535643350542742,
+     "mean_abs_change": 0.1094354906639144,
+     "share_best_action_changes": 0.14782608695652175
+    },
+    {
+     "seconds": 300,
+     "score": 0,
+     "spread": -7.0,
+     "max_abs_change": 0.11696981299042913,
+     "mean_abs_change": 0.10248667059611441,
+     "share_best_action_changes": 0.11594202898550725
+    },
+    {
+     "seconds": 300,
+     "score": 0,
+     "spread": 7.0,
+     "max_abs_change": 0.1338343416970183,
+     "mean_abs_change": 0.11047732070086387,
+     "share_best_action_changes": 0.15797101449275364
+    },
+    {
+     "seconds": 300,
+     "score": 3,
+     "spread": -7.0,
+     "max_abs_change": 0.12106624541060573,
+     "mean_abs_change": 0.1047791446153443,
+     "share_best_action_changes": 0.08043478260869565
+    },
+    {
+     "seconds": 300,
+     "score": 3,
+     "spread": 7.0,
+     "max_abs_change": 0.1129147114261333,
+     "mean_abs_change": 0.09478209158976085,
+     "share_best_action_changes": 0.15217391304347827
+    },
+    {
+     "seconds": 300,
+     "score": 7,
+     "spread": -7.0,
+     "max_abs_change": 0.10082769989168394,
+     "mean_abs_change": 0.07362759414765262,
+     "share_best_action_changes": 0.0463768115942029
+    },
+    {
+     "seconds": 300,
+     "score": 7,
+     "spread": 7.0,
+     "max_abs_change": 0.09248478233007351,
+     "mean_abs_change": 0.056190119074993744,
+     "share_best_action_changes": 0.1
+    },
+    {
+     "seconds": 120,
+     "score": -7,
+     "spread": -7.0,
+     "max_abs_change": 0.05515835070915745,
+     "mean_abs_change": 0.015456090123560277,
+     "share_best_action_changes": 0.0
+    },
+    {
+     "seconds": 120,
+     "score": -7,
+     "spread": 7.0,
+     "max_abs_change": 0.07204646025435701,
+     "mean_abs_change": 0.035845397830878846,
+     "share_best_action_changes": 0.02608695652173913
+    },
+    {
+     "seconds": 120,
+     "score": -3,
+     "spread": -7.0,
+     "max_abs_change": 0.08195306227886817,
+     "mean_abs_change": 0.03955050527401991,
+     "share_best_action_changes": 0.11159420289855072
+    },
+    {
+     "seconds": 120,
+     "score": -3,
+     "spread": 7.0,
+     "max_abs_change": 0.09758722412773874,
+     "mean_abs_change": 0.07017170909592699,
+     "share_best_action_changes": 0.09420289855072464
+    },
+    {
+     "seconds": 120,
+     "score": 0,
+     "spread": -7.0,
+     "max_abs_change": 0.0915713625991389,
+     "mean_abs_change": 0.07617382141664933,
+     "share_best_action_changes": 0.08478260869565217
+    },
+    {
+     "seconds": 120,
+     "score": 0,
+     "spread": 7.0,
+     "max_abs_change": 0.10977970056942393,
+     "mean_abs_change": 0.08456806620704814,
+     "share_best_action_changes": 0.12536231884057972
+    },
+    {
+     "seconds": 120,
+     "score": 3,
+     "spread": -7.0,
+     "max_abs_change": 0.11365252317642782,
+     "mean_abs_change": 0.07949953178461626,
+     "share_best_action_changes": 0.17391304347826086
+    },
+    {
+     "seconds": 120,
+     "score": 3,
+     "spread": 7.0,
+     "max_abs_change": 0.07510386912974043,
+     "mean_abs_change": 0.05707379748218776,
+     "share_best_action_changes": 0.04710144927536232
+    },
+    {
+     "seconds": 120,
+     "score": 7,
+     "spread": -7.0,
+     "max_abs_change": 0.077226705866139,
+     "mean_abs_change": 0.04328766598251473,
+     "share_best_action_changes": 0.07028985507246377
+    },
+    {
+     "seconds": 120,
+     "score": 7,
+     "spread": 7.0,
+     "max_abs_change": 0.06827733833602401,
+     "mean_abs_change": 0.02767537007687369,
+     "share_best_action_changes": 0.0014492753623188406
+    }
+   ]
+  }
+ },
+ "limits": [
+  "The exact game has identical, league-average teams; it must not be read for anything that depends on team strength.",
+  "Conversion chances where coaches almost never go for it are extrapolated from third downs (the central caveat of M4 and question 1).",
+  "The one-step engine trusts a win-probability model fitted on real games for everything after the next play; the exact game assumes optimal play by both teams afterwards.",
+  "Bootstrap intervals cover refitting on resampled games, not model form; they are somewhat too narrow (M3b)."
+ ],
+ "seasons": {
+  "fit": "development seasons 2010 to 2023 for every model",
+  "test": "none read"
+ },
+ "runtime": {
+  "total_seconds": 15926.7,
+  "threads": 3,
+  "peak_memory_gb": 6.89244
+ }
+}

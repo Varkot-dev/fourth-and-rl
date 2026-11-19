@@ -1,0 +1,318 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fourth Down Explorer</title>
+<!-- Built by scripts/m7_build_static_page.py from the app bundle (app/data/). Do not edit by hand. -->
+<script src="{{PLOTLY_CDN}}"></script>
+<style>
+  :root {
+    --surface: #fcfcfb; --ink: #0b0b0b; --ink2: #52514e; --muted: #898781; --grid: #e1e0d9;
+    --axis: #c3c2b7; --go: #2a78d6; --fg: #eb6834; --punt: #1baf7a; --toss: #c3c2b7;
+    --panel: #f3f2ee;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--surface); color: var(--ink);
+         font-family: "DejaVu Sans", Arial, Helvetica, sans-serif; line-height: 1.45; }
+  main { max-width: 980px; margin: 0 auto; padding: 18px 16px 40px; }
+  h1 { font-size: 1.7rem; margin: 6px 0 6px; }
+  h2 { font-size: 1.1rem; margin: 22px 0 8px; }
+  p { margin: 6px 0; }
+  .lede { color: var(--ink2); }
+  .small { font-size: 0.84rem; color: var(--ink2); }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+              gap: 12px 18px; margin: 16px 0 8px; }
+  label { display: block; font-size: 0.85rem; color: var(--ink2); margin-bottom: 3px; }
+  select, input[type=range] { width: 100%; font-size: 1rem; }
+  select { padding: 6px; border: 1px solid var(--axis); border-radius: 6px; background: white; }
+  input[type=range] { accent-color: var(--go); }
+  .value { font-weight: bold; color: var(--ink); }
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px;
+           margin-top: 12px; }
+  .card { background: var(--panel); border-radius: 10px; padding: 12px 14px; }
+  .card h3 { margin: 0 0 4px; font-size: 0.95rem; color: var(--ink2); font-weight: normal; }
+  .call { font-size: 1.35rem; font-weight: bold; margin: 2px 0 6px; }
+  .row { display: flex; justify-content: space-between; gap: 8px; padding: 3px 0;
+         border-bottom: 1px solid var(--grid); }
+  .row:last-child { border-bottom: none; }
+  .sw { display: inline-block; width: 11px; height: 11px; border-radius: 2px; margin-right: 6px;
+        vertical-align: -1px; }
+  .note { background: #eef4fc; border-radius: 10px; padding: 10px 14px; margin-top: 14px; }
+  .toggle { margin: 16px 0 0; display: flex; flex-wrap: wrap; gap: 14px; font-size: 0.92rem; }
+  #chart { width: 100%; height: 420px; }
+  footer { margin-top: 26px; border-top: 1px solid var(--grid); padding-top: 12px; }
+  .warn { color: #b3261e; font-weight: bold; }
+  @media (max-width: 560px) { #chart { height: 360px; } h1 { font-size: 1.4rem; } }
+</style>
+</head>
+<body>
+<main>
+  <h1>Fourth down: go, kick or punt?</h1>
+  <p class="lede">Pick a game situation. Two methods answer: the standard one-step analysis, with how
+  many of <span id="nboot">the</span> bootstrap refits agree, and the exact solution of the whole game for two identical
+  teams. Every number comes from a precomputed grid; nothing is fitted or interpolated in your browser.</p>
+  <p id="synthetic" class="warn" hidden>This page was built from a synthetic test bundle: the numbers are made up.</p>
+  <p id="status" class="small">Loading data...</p>
+
+  <div class="controls">
+    <div><label for="clock">Game clock</label><select id="clock"></select></div>
+    <div><label for="score">Score (team with the ball)</label><select id="score"></select></div>
+    <div><label for="opp">Opponent's timeouts</label><select id="opp"></select></div>
+    <div><label for="spread">Pregame spread</label><select id="spread"></select></div>
+    <div><label for="own">Ball on: <span class="value" id="ownv"></span></label>
+         <input type="range" id="own" min="1" max="99" step="1"></div>
+    <div><label for="togo">Yards to go: <span class="value" id="togov"></span></label>
+         <input type="range" id="togo" min="1" max="15" step="1"></div>
+  </div>
+
+  <div class="cards">
+    <div class="card" id="onecard"></div>
+    <div class="card" id="exactcard"></div>
+  </div>
+  <div class="note small" id="why"></div>
+
+  <div class="toggle">
+    <label style="display:inline"><input type="radio" name="by" value="one" checked> One play ahead, with confidence</label>
+    <label style="display:inline"><input type="radio" name="by" value="exact"> Exact full game</label>
+  </div>
+  <div id="chart"></div>
+  <p class="small">Every fourth down in this situation. Full colour: 83% or more of the refits agree
+  with the call; paler: 67% to 83%; grey: too close to call. Tap a cell to select it.</p>
+
+  <footer class="small">
+    <p><b>Models.</b> One step: a gradient-boosted win-probability model and play-outcome models
+    fitted on the 2010 to 2023 seasons; confidence from refits on resampled whole games (the rule
+    of Brill, Yurko and Wyner, arXiv 2311.03490: confident at 83% agreement, lean at 67%). Exact:
+    the game solved by backward induction on a 5-second clock grid.</p>
+    <p><b>Limits.</b> The exact game has identical, league-average teams that both play optimally
+    afterwards, and ignores the spread. Conversion chances where coaches almost never go for it are
+    extrapolated from third downs. Bootstrap intervals are somewhat too narrow. No overtime (a tie is
+    worth one half). The exact game treats 11 to 15 yards to go as one bin.</p>
+    <p><b>Grid.</b> <span id="gridtext"></span> The team with the ball holds 3 timeouts and does
+    not receive the second-half kickoff. Per-action intervals are left out of this page to keep it
+    small; the Streamlit app in the same repository shows them.</p>
+    <p id="build"></p>
+  </footer>
+</main>
+
+<script id="meta" type="application/json">{{META_JSON}}</script>
+<script id="data" type="text/plain">{{DATA_B64}}</script>
+<script>
+"use strict";
+const META = JSON.parse(document.getElementById("meta").textContent);
+const P = META.palette;
+const ACTIONS = ["go", "field_goal", "punt"];
+const LABEL = {go: "Go for it", field_goal: "Field goal", punt: "Punt"};
+const COLOR = {go: P.actions.go, field_goal: P.actions.field_goal, punt: P.actions.punt};
+const nS = META.scores.length, nD = META.distances.length, nY = META.yardlines.length;
+let A = null;   // decoded arrays
+
+async function decode() {
+  const b64 = document.getElementById("data").textContent.trim();
+  const bin = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
+  const stream = new Blob([bin]).stream().pipeThrough(new DecompressionStream("gzip"));
+  const buf = await new Response(stream).arrayBuffer();
+  const out = {};
+  for (const m of META.arrays) {
+    if (m.dtype === "uint8") { out[m.name] = new Uint8Array(buf, m.offset, m.bytes); continue; }
+    const d = new Int16Array(buf, m.offset, m.bytes / 2);
+    const v = new Int32Array(d.length);
+    const row = m.shape[m.shape.length - 1];
+    for (let i = 0; i < d.length; i += row) {
+      let acc = 0;
+      for (let j = 0; j < row; j++) { acc += d[i + j]; v[i + j] = acc; }
+    }
+    out[m.name] = v;
+  }
+  return out;
+}
+
+const $ = id => document.getElementById(id);
+const pct = (x, k = 1) => (x === null || isNaN(x)) ? "n/a" : (100 * x).toFixed(k) + "%";
+const pts = x => (x === null || isNaN(x)) ? "n/a" : (x >= 0 ? "+" : "") + (100 * x).toFixed(1);
+const fieldLabel = y => y === 50 ? "midfield" : (y > 50 ? "own " + (100 - y) : "opponent's " + y);
+const scoreLabel = s => s === 0 ? "Tied" : (s > 0 ? "Up " + s : "Down " + (-s));
+const wp = v => v === 0 ? NaN : v / META.scale;
+const gain = v => v / META.scale;
+
+function ctxIndex(sec, opp, spread) {
+  return META.contexts.findIndex(c => c.seconds === sec && c.opp_timeouts === opp && c.spread === spread);
+}
+function exactIndex(sec, opp) {
+  return META.exact_contexts.findIndex(c => c.seconds === sec && c.opp_timeouts === opp);
+}
+const flat = (c, s, d, y) => ((c * nS + s) * nD + d) * nY + y;
+
+function best(vals) {
+  if (isNaN(vals[0])) return -1;
+  let b = 0;
+  for (let i = 1; i < 3; i++) if (!isNaN(vals[i]) && vals[i] > vals[b]) b = i;
+  return b;
+}
+
+function cell(state, d, y) {
+  const c = ctxIndex(state.sec, state.opp, state.spread), e = exactIndex(state.sec, state.opp);
+  const k = flat(c, state.si, d, y), ke = flat(e, state.si, d, y);
+  const one = [wp(A.one_go[k]), wp(A.one_fg[k]), wp(A.one_punt[k])];
+  const ex = [wp(A.exact_go[ke]), wp(A.exact_fg[ke]), wp(A.exact_punt[ke])];
+  const counts = [A.n_go[k], A.n_fg[k], A.n_punt[k]];
+  const b = best(one), eb = best(ex);
+  const pctAgree = b >= 0 ? counts[b] / META.n_boot : NaN;
+  const t = META.thresholds;
+  const cat = b < 0 ? -1 : (pctAgree >= t.confident ? 0 : (pctAgree >= t.lean ? 1 : 2));
+  const kick = Math.max(isNaN(one[1]) ? -1 : one[1], isNaN(one[2]) ? -1 : one[2]);
+  const ekick = Math.max(isNaN(ex[1]) ? -1 : ex[1], isNaN(ex[2]) ? -1 : ex[2]);
+  return {one, ex, counts, b, eb, cat, pctAgree,
+          gain: one[0] - kick, egain: ex[0] - ekick,
+          lo: gain(A.gain_lo[k]), hi: gain(A.gain_hi[k])};
+}
+
+function readState() {
+  const sec = +$("clock").value;
+  const opp = +$("opp").value, spread = +$("spread").value;
+  const si = META.scores.indexOf(+$("score").value);
+  const yl = 100 - +$("own").value;
+  const maxD = Math.min(META.distances[nD - 1], yl);
+  $("togo").max = maxD;
+  if (+$("togo").value > maxD) $("togo").value = maxD;
+  return {sec, opp, spread, si, score: +$("score").value, yl, togo: +$("togo").value};
+}
+
+function fillOptions(sel, values, fmt, keep) {
+  const old = keep !== undefined ? keep : sel.value;
+  sel.innerHTML = "";
+  for (const v of values) {
+    const o = document.createElement("option");
+    o.value = v; o.textContent = fmt(v); sel.appendChild(o);
+  }
+  sel.value = values.map(String).includes(String(old)) ? old : values[values.length - 1];
+  sel.disabled = values.length < 2;
+}
+
+function updateClockOptions() {
+  const sec = +$("clock").value;
+  const cs = META.contexts.filter(c => c.seconds === sec);
+  fillOptions($("opp"), [...new Set(cs.map(c => c.opp_timeouts))].sort(),
+              v => v + (cs.length && new Set(cs.map(c => c.opp_timeouts)).size < 2 ? " (fixed before 5:00)" : ""));
+  const spreads = [...new Set(cs.map(c => c.spread))].sort((a, b) => a - b);
+  fillOptions($("spread"), spreads, v => v === 0 ? "Even" : (v > 0 ? "Favoured by " + v : "Underdog by " + (-v)),
+              spreads.includes(0) ? 0 : undefined);
+}
+
+function render() {
+  const s = readState();
+  $("ownv").textContent = fieldLabel(s.yl);
+  $("togov").textContent = s.togo + (s.togo === s.yl ? " (goal to go)" : "");
+  const c = cell(s, s.togo - 1, s.yl - 1);
+  const catText = ["confident", "lean", "too close to call"][c.cat] || "";
+  let call = c.b < 0 ? "n/a" : LABEL[ACTIONS[c.b]];
+  if (c.cat === 2) call = "Too close to call";
+  if (c.cat === 1) call = "Lean: " + LABEL[ACTIONS[c.b]].toLowerCase();
+  const rows = (vals, extra) => ACTIONS.map((a, i) =>
+    `<div class="row"><span><span class="sw" style="background:${COLOR[a]}"></span>${LABEL[a]}</span>` +
+    `<span>${pct(vals[i])}</span></div>`).join("") + (extra || "");
+  $("onecard").innerHTML = `<h3>One play ahead (standard analysis)</h3><div class="call">${call}</div>` +
+    (c.b >= 0 ? `<p class="small">${c.counts[c.b]} of ${META.n_boot} refits prefer ${LABEL[ACTIONS[c.b]].toLowerCase()} (${catText}).
+       Go minus the better kick ${pts(c.gain)} points, 90% interval [${pts(c.lo)}, ${pts(c.hi)}].</p>` : "") +
+    rows(c.one);
+  $("exactcard").innerHTML = `<h3>Exact full game (dynamic programming)</h3>` +
+    `<div class="call">${c.eb < 0 ? "n/a" : LABEL[ACTIONS[c.eb]]}</div>` +
+    `<p class="small">Go minus the better kick ${pts(c.egain)} points. Identical teams; the spread is ignored` +
+    (s.togo > META.dist_exact ? "; 11 to 15 yards to go are one bin" : "") + `.</p>` + rows(c.ex);
+  const same = c.b === c.eb;
+  $("why").innerHTML = (same ? `Both methods say <b>${LABEL[ACTIONS[c.b]].toLowerCase()}</b>. `
+      : `They disagree: one play ahead says <b>${c.b < 0 ? "n/a" : LABEL[ACTIONS[c.b]].toLowerCase()}</b>, the full game <b>${c.eb < 0 ? "n/a" : LABEL[ACTIONS[c.eb]].toLowerCase()}</b>. `) +
+    "Why they can differ: the one-step answer looks one play ahead and then trusts a win-probability model " +
+    "fitted on real games, which carries real coaches' later choices and real team differences; the exact " +
+    "answer plays out the whole game for two identical teams that both play the model's best policy, " +
+    "with the clock and timeouts tracked to the five seconds.";
+  drawChart(s);
+}
+
+function drawChart(s) {
+  const exact = document.querySelector("input[name=by]:checked").value === "exact";
+  const cells = P.cells, n = cells.length;
+  const scale = [];
+  cells.forEach((col, k) => { scale.push([k / n, col]); scale.push([(k + 1) / n, col]); });
+  const x = [], z = [], text = [];
+  for (let yl = 99; yl >= 1; yl--) x.push(100 - yl);
+  for (let d = 1; d <= nD; d++) {
+    const zr = [], tr = [];
+    for (let yl = 99; yl >= 1; yl--) {
+      if (d > yl) { zr.push(null); tr.push(""); continue; }
+      const c = cell(s, d - 1, yl - 1);
+      const b = exact ? c.eb : c.b;
+      zr.push(b < 0 ? null : 3 * b + (exact ? 0 : Math.max(c.cat, 0)));
+      const v = exact ? c.ex : c.one;
+      tr.push(`<b>${fieldLabel(yl)}, 4th and ${d}</b><br>go ${pct(v[0])} · FG ${pct(v[1])} · punt ${pct(v[2])}` +
+              (exact ? "" : `<br>${pct(c.pctAgree, 0)} of refits agree`));
+    }
+    z.push(zr); text.push(tr);
+  }
+  const shapes = [
+    {type: "rect", x0: -10, x1: 0, y0: 0.5, y1: nD + 0.5, fillcolor: P.grid, line: {width: 0}, layer: "below"},
+    {type: "rect", x0: 100, x1: 110, y0: 0.5, y1: nD + 0.5, fillcolor: P.grid, line: {width: 0}, layer: "below"},
+    {type: "line", x0: 100 - s.yl, x1: 100 - s.yl, y0: 0.5, y1: nD + 0.5, line: {color: P.ink, width: 1, dash: "dot"}},
+  ];
+  for (let xv = 10; xv < 100; xv += 10)
+    shapes.push({type: "line", x0: xv, x1: xv, y0: 0.5, y1: nD + 0.5, line: {color: P.surface, width: 1.2}});
+  const data = [
+    {type: "heatmap", z, x, y: META.distances, text, hovertemplate: "%{text}<extra></extra>",
+     colorscale: scale, zmin: -0.5, zmax: n - 0.5, showscale: false, xgap: 0.4, ygap: 0.8},
+    {type: "scatter", x: [100 - s.yl], y: [s.togo], mode: "markers", hoverinfo: "skip", showlegend: false,
+     marker: {size: 14, color: "rgba(0,0,0,0)", line: {color: P.ink, width: 2.5}}},
+  ];
+  const legend = exact ? [0, 3, 6] : [0, 3, 6, 1, 2];
+  const names = {0: "Go for it", 3: "Field goal", 6: "Punt", 1: "Lean (paler)", 2: "Too close to call"};
+  for (const k of legend)
+    data.push({type: "scatter", x: [null], y: [null], mode: "markers", name: names[k],
+               marker: {symbol: "square", size: 12, color: cells[k]}});
+  const layout = {
+    margin: {l: 40, r: 8, t: 8, b: 40}, paper_bgcolor: P.surface, plot_bgcolor: P.surface,
+    font: {family: "DejaVu Sans, Arial, sans-serif", color: P.ink, size: 12}, shapes,
+    xaxis: {range: [-10, 110], tickvals: [10, 20, 30, 40, 50, 60, 70, 80, 90],
+            ticktext: ["10", "20", "30", "40", "50", "40", "30", "20", "10"], showgrid: false,
+            zeroline: false, fixedrange: true, title: {text: "Own goal line on the left", font: {color: P.ink_2}}},
+    yaxis: {range: [0.5, nD + 0.5], dtick: 2, showgrid: false, zeroline: false, fixedrange: true,
+            title: {text: "Yards to go", font: {color: P.ink_2}}},
+    legend: {orientation: "h", y: -0.2, x: 0}, showlegend: true,
+  };
+  Plotly.react("chart", data, layout, {displayModeBar: false, responsive: true});
+}
+
+async function init() {
+  if (META.synthetic) $("synthetic").hidden = false;
+  $("nboot").textContent = META.n_boot;
+  try { A = await decode(); }
+  catch (e) { $("status").textContent = "This browser could not unpack the data (" + e + ")."; return; }
+  $("status").hidden = true;
+  fillOptions($("clock"), META.clocks.map(c => c.seconds), v => META.clocks.find(c => c.seconds === +v).label,
+              META.clocks.some(c => c.seconds === 240) ? 240 : META.clocks[0].seconds);
+  fillOptions($("score"), META.scores, v => scoreLabel(+v), META.scores.includes(4) ? 4 : META.scores[0]);
+  $("own").min = 101 - META.yardlines[nY - 1]; $("own").max = 100 - META.yardlines[0];
+  $("own").value = Math.min(Math.max(40, +$("own").min), +$("own").max);
+  $("togo").value = 2;
+  updateClockOptions();
+  $("clock").addEventListener("change", () => { updateClockOptions(); render(); });
+  for (const id of ["score", "opp", "spread", "own", "togo"]) $(id).addEventListener("input", render);
+  for (const r of document.querySelectorAll("input[name=by]")) r.addEventListener("change", render);
+  render();
+  document.getElementById("chart").on("plotly_click", ev => {
+    const pt = ev.points.find(p => p.data.type === "heatmap");
+    if (!pt || pt.z === null) return;
+    $("own").value = pt.x; $("togo").value = pt.y; render();
+  });
+  const sc = META.scores, all = META.all_scores;
+  $("gridtext").textContent = `${META.clocks.length} game clocks (${META.clocks.map(c => c.label).join(", ")}); ` +
+    `scores ${sc[0]} to ${sc[sc.length - 1]}` + (sc.length < all.length ? ` (a slice of the bundle's ${all.length} scores)` : " (every point)") +
+    `; every yard line; 1 to ${META.distances[nD - 1]} yards to go; opponent's timeouts 0 to 3 in the last 5:00 (3 before); ` +
+    (META.all_spreads.length > [...new Set(META.contexts.map(c => c.spread))].length
+      ? `an even pregame spread only (the full bundle, with spreads -7 and +7 too, is in the Streamlit app; it would make this page too large). `
+      : `spreads ${META.all_spreads.join(", ")}. `) + `Nothing is interpolated.`;
+  $("build").textContent = `Data built ${META.built_at || "n/a"} (commit ${META.commit || "n/a"}).`;
+}
+init();
+</script>
+</body>
+</html>
