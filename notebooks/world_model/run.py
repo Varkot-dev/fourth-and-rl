@@ -615,17 +615,20 @@ def run_stage(run: Run, stage: str, fn=None) -> dict:
     "interrupted" and re-raised after the stage's output file is written.
     """
     fn = fn or STAGE_FUNCS[stage]
+    # A Run subclass with its own stages (ground_truth_run.GTRun) supplies its own graph.
+    upstream = getattr(run, "upstream", UPSTREAM)
+    sources = getattr(run, "stage_sources", STAGE_SOURCES)
     h = run.stage_hash(stage)
     if stage != "package" and run.is_done(stage):
         out = read_json(run.output_path(stage))
         mk = read_json(run.marker(stage))
         run.log(f"[{stage}] already done (hash {h}); skipping")
         if mk.get("src") and mk["src"] != run.stage_src(stage):
-            run.log(f"[{stage}] note: {', '.join(STAGE_SOURCES[stage])} changed since this "
+            run.log(f"[{stage}] note: {', '.join(sources.get(stage, []))} changed since this "
                     "stage finished; its results are kept (stages are keyed on config and "
                     f"data). Pass force=('{stage}',) to recompute.")
         return out
-    for up in UPSTREAM[stage]:
+    for up in upstream[stage]:
         if not run.is_done(up):
             out = {"status": "skipped", "reason": f"upstream stage '{up}' has not finished",
                    "hash": h}

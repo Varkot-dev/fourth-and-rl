@@ -898,16 +898,20 @@ def benchmark(sim, n_games: int = 2000, seed: int = 0, chunk_games: int = 1000,
 
 
 def precompute(n_states: int = 300, n_rollouts: int = 16000, n_workers: int = 3,
-               out_dir: Path = GT_DIR, name: str = GT_NAME) -> dict:  # fmt: skip
+               out_dir: Path = GT_DIR, name: str = GT_NAME, game=None,
+               strata=DEFAULT_STRATA, n_pool_games: int = 4000, max_abs_diff: int = 16,
+               headline: bool = True, bench: bool = True) -> dict:  # fmt: skip
     """Build the evaluation states and their ground truth and save them (see the README of
-    the experiment: gt_v1.npz, gt_v1.json, gt_v1_states.npz)."""
+    the experiment: gt_v1.npz, gt_v1.json, gt_v1_states.npz). `game` is an already loaded
+    (solution, simulator) pair; by default the solved game under data/mdp is loaded."""
     t0 = time.time()
-    sol, sim = load_simulator()
+    sol, sim = game if game is not None else load_simulator()
     t_load = time.time() - t0
-    bench = benchmark(sim, 3000, seed=0, n_workers=1)
-    bench_par = benchmark(sim, 3000, seed=0, n_workers=n_workers)
+    bench_one = benchmark(sim, 3000, seed=0, n_workers=1) if bench else None
+    bench_par = benchmark(sim, 3000, seed=0, n_workers=n_workers) if bench else None
     t1 = time.time()
-    ev = evaluation_states(sim, n_states, EVAL_SEED, n_workers=n_workers)
+    ev = evaluation_states(sim, n_states, EVAL_SEED, n_pool_games=n_pool_games, strata=strata,
+                           max_abs_diff=max_abs_diff, n_workers=n_workers, headline=headline)
     t_eval = time.time() - t1
     t2 = time.time()
     gt = ground_truth(sim, sol, ev, n_rollouts, GT_SEED, n_workers=n_workers)
@@ -928,14 +932,16 @@ def precompute(n_states: int = 300, n_rollouts: int = 16000, n_workers: int = 3,
                   "streams": {"games": STREAM_GAMES, "eval": STREAM_EVAL,
                               "headline": STREAM_HEADLINE, "ground_truth": STREAM_GT}},
         "n_states": len(ev), "n_rollouts": n_rollouts, "policy": "coach", "post": "coach",
-        "strata_seconds": [list(s) for s in DEFAULT_STRATA], "max_abs_diff": 16,
-        "headline": HEADLINE, "headline_index": int(np.nonzero(ev.kind == 1)[0][0]),
+        "strata_seconds": [list(s) for s in strata], "max_abs_diff": max_abs_diff,
+        "headline": HEADLINE if headline else None,
+        "headline_index": int(np.nonzero(ev.kind == 1)[0][0]) if headline else None,
         "se_coach": {"max": float(se.max()), "mean": float(se.mean()),
                      "median": float(np.median(se))},
         "outcomes_true_vs_clipped_differ": int(gt["outcomes_true_vs_clipped_differ"]),
         "timing_seconds": {"load_simulator": round(t_load, 1), "eval_states": round(t_eval, 1),
                            "ground_truth": round(t_gt, 1)},
-        "benchmark": {"one_process": bench, "parallel": bench_par, "cpu_count": os.cpu_count()},
+        "benchmark": {"one_process": bench_one, "parallel": bench_par,
+                      "cpu_count": os.cpu_count()},
         "files": {f: os.path.getsize(out_dir / f) for f in (f"{name}.npz", f"{name}_states.npz")},
     }  # fmt: skip
     (out_dir / f"{name}.json").write_text(json.dumps(meta, indent=1, default=float) + "\n")
