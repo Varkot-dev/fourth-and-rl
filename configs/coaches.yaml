@@ -1,0 +1,160 @@
+# M7 coach evaluation and the coach cost ledger. Read by fourth_and_rl.coaches.load_config.
+# Seasons come from configs/splits.yaml; every other constant that shapes a result is here.
+seed: 20261117
+n_threads: 3                  # LightGBM threads for the fold refits (machine is shared)
+
+# Which real fourth downs are graded. 2010 is a development season but is not graded:
+# the coach table and the team-strength ratings (M8) start in 2011.
+grade_seasons: [2011, 2025]
+
+# Leave-seasons-out folds over the development seasons. Each fold's seasons are graded by
+# a win-probability model (version 2 spec, no calibration map) and a play-outcome bundle
+# fitted on the OTHER development seasons only. The test seasons are graded by the
+# headline models (fitted on every development season), and never enter any fold fit.
+folds:
+  # Two consecutive seasons per fold (2010-11, ..., 2022-23), as in the win-probability
+  # cross-fit (configs/wp.yaml). A first run used four (2010-13, ..., 2022-23); it was
+  # replaced because the play-outcome count tables use 2018 onward only, so the 2018-21
+  # fold's tables came from two seasons and the league trend jumped at fold boundaries.
+  fold_size: 2
+  models_dir: data/models/coaches   # fold models and replicates (not committed)
+
+# Bootstrap categories. Test seasons reuse the 101-replicate M3 categories
+# (data/processed/fourth_down_decisions.parquet). Development seasons get a cheaper
+# game-level bootstrap inside each fold: the fold's fit seasons are resampled by whole
+# games and both models refitted, n_boot times.
+bootstrap:
+  n_boot: 31
+  thresholds: {confident: 0.83, lean: 0.67}   # the M3 rule (Brill, Yurko and Wyner)
+
+# Intervals and shrinkage for the coach and team tables.
+tables:
+  n_boot: 2000                # game-bootstrap draws for every interval in the tables
+  interval: [0.05, 0.95]      # 90% intervals
+  min_games: 32               # coaches with fewer graded games are left out of the ranking
+  games_per_season: 17        # costs are shown per 17 games (one regular season) as well
+  team_window: [2021, 2025]   # the team aggressiveness figure: the last five seasons
+  n_shown: 12                 # coaches shown at each end of the ledger figure
+
+# The coach cost ledger: penalties the owner assigns to the head coach (his assumption,
+# tested in the assumption-test section before it is used).
+penalties:
+  cache_dir: data/m7_penalties          # raw nflverse penalty columns, one file per season
+  coach_types: ["False Start", "Delay of Game"]
+  # Recorded so the exclusion is explicit; these are never assigned to the coach.
+  not_coach_types: ["Encroachment", "Defensive Offside", "Neutral Zone Infraction"]
+  # Delay of game counted as deliberate (excluded): the offense was lined up to punt or
+  # kick ("Punt formation" or "Field Goal formation" in the play description), or the foul
+  # came on fourth down and the offense's next snap was a punt or field-goal attempt.
+  deliberate_formations: ["Punt formation", "Field Goal formation"]
+  # Situations for the assumption test's model.
+  long_distance: 7            # "third or fourth and long" means at least this many yards
+  # Variance-component model of the coach's share (Poisson, crossed random effects,
+  # Laplace approximation). Starting log-variances for the optimizer.
+  mixed_model:
+    start_log_var: -3.0
+    # Profile grid for the coach standard deviation (log variances); the bottom value
+    # (sd 0.007) stands for "no coach effect".
+    profile_log_var: [-10.0, -7.0, -6.0, -5.0, -4.5, -4.0, -3.5, -3.0, -2.5, -2.0, -1.5]
+  # The rule for using the assumption, written down before the penalty data was read.
+  # Penalties go into the coach's ledger total only if all three hold; otherwise they are
+  # reported in a separate column with the statement that assigning them is not supported.
+  #   1. the 95% profile interval of the coach standard deviation excludes the grid bottom
+  #   2. the coach's share of the systematic variance (coach + franchise + team-season)
+  #      is at least min_coach_share
+  #   3. the rate follows the coach: the correlation for coaches who moved is at least
+  #      as large as for teams that changed coach
+  verdict: {min_coach_share: 0.33}
+
+# Exact game solution (M4) is read for the malpractice cases where the clock matters.
+exact_solution: true
+
+# The case study (plan section 5): Lions at 49ers, NFC Championship (2023 season).
+case_study:
+  game_id: 2023_21_DET_SF
+  team: DET
+
+# Malpractice check, part one: the cases from research-kit/x/2_twitter_findings.md
+# (sections 1, 8.7 and 9.2) that happened before the 2026 season. Each was located by hand
+# in the play-by-play (game, team, clock, distance) and is pinned here by play id; where a
+# post does not say which play it means, every candidate play of that kind is scored. The
+# outrage column quotes the label used on X (unverified posts, see that file's rules).
+# 2026 cases are pending the final holdout evaluation.
+malpractice:
+  cases:
+    - key: nfc_title_2023_first
+      label: "Lions go on 4th and 2 at the SF 28, up 14, 7:03 in Q3 (NFC Championship)"
+      game_id: 2023_21_DET_SF
+      play_ids: [2682]
+      outrage: "'Wonder if Dan Campbell wants that fourth-down decision back' (section 1, case 10)"
+    - key: nfc_title_2023_second
+      label: "Lions go on 4th and 3 at the SF 30, down 3, 7:38 in Q4 (NFC Championship)"
+      game_id: 2023_21_DET_SF
+      play_ids: [3608]
+      outrage: "'now insist that he should be kicking' (section 1, case 10)"
+    - key: campbell_gb_2024
+      label: "Campbell goes for the win, 4th and 1 at the GB 21, tied, 0:43 (praised)"
+      game_id: 2024_14_GB_DET
+      play_ids: [4248]
+      outrage: "praised: 'you can't shrink when the moment is biggest' (section 1, case 5)"
+    - key: harbaugh_buf_2025
+      label: "Harbaugh punts on 4th and 3 at his own 38, up 2, 1:33 left"
+      game_id: 2025_01_BAL_BUF
+      play_ids: [4391]
+      outrage: "'The game was over the moment the Ravens punted' (section 1, case 3)"
+    - key: daboll_chi_2025
+      label: "Daboll kicks from the 1, up 7, 10:21 left"
+      game_id: 2025_10_NYG_CHI
+      play_ids: [3362]
+      outrage: "debated, coach explained it (section 1, case 7)"
+    - key: lions_gb_thanksgiving_2025
+      label: "Lions go on 4th and 3 at the GB 21, down 10, 10:55 left (failed)"
+      game_id: 2025_13_GB_DET
+      play_ids: [3316]
+      outrage: "'came down to fourth downs' (section 1, case 9)"
+    - key: tomlin_punt_2025
+      label: "Tomlin punts on 4th and 9 at his own 23, down 3, 2:01 left"
+      game_id: 2025_12_PIT_CHI
+      play_ids: [4272]
+      outrage: "'There are cowardly punts, and then there is this one' (section 9.2)"
+    - key: lafleur_punt_2025
+      label: "LaFleur 'cowardly punt' (GB vs CIN): the post does not say which; both punts"
+      game_id: 2025_06_CIN_GB
+      play_ids: [1040, 1722]
+      outrage: "'Cowardly punt. LaFleur come on dude.' (section 9.2)"
+    - key: mcdermott_punt_2025
+      label: "McDermott 'cowardly punt' (BUF at ATL): the post does not say which; all punts after the first quarter"
+      game_id: 2025_06_BUF_ATL
+      play_ids: [1300, 1538, 1966, 3459, 3647]
+      outrage: "'McDermott cowardly punt. Horrific decision' (section 9.2)"
+    - key: bears_punt_divisional_2025
+      label: "Bears punt on 4th and 2 at their own 45, tied, start of Q4 (divisional round)"
+      game_id: 2025_20_LA_CHI
+      play_ids: [3014]
+      outrage: "'one of the dumbest punts imaginable' (section 1, case 4)"
+    - key: payton_afc_title_2025
+      label: "Payton goes on 4th and 1 at the NE 14, up 7, Q2 (AFC Championship)"
+      game_id: 2025_21_NE_DEN
+      play_ids: [1163]
+      outrage: "'recklessly ignoring a comfortable field goal' (section 1, case 2)"
+    - key: eagles_wild_card_2025
+      label: "Eagles' last fourth down, 4th and 11 at the SF 21, down 4, 0:43 (wild card)"
+      game_id: 2025_19_SF_PHI
+      play_ids: [4063]
+      outrage: "'Malpractice.' (about the play design after Sirianni's timeout, section 9.2)"
+  notes:
+    - "Bears: the post says 'last regulation possession'; the only 4th and 2 punt by Chicago in that game came on the first play of the fourth quarter."
+    - "Eagles: the post says 4th and 8; the play-by-play has the Eagles' last fourth down as 4th and 11 at the SF 21 with 0:43 left. Their only other fourth-quarter go was 4th and 5 at 2:21."
+    - "Harbaugh: the 40-25 lead was at 4:48; by the punt (1:33 left) the lead was 2."
+  not_scoreable:
+    - "Bowles kneels with 0:38 left instead of a timeout (section 8.7): a timeout decision; the one-step engine has no timeout action."
+    - "Bowles sends an injured quarterback out for a Hail Mary (section 8.7): play design and personnel."
+    - "Unnamed 'fireable offense' of 2025-09-08 (section 9.2): the post names neither coach nor play."
+    - "Sirianni's timeout before the last fourth down (section 9.2): a timeout decision, not scored; the fourth down itself is."
+  pending_2026:
+    - "Lions go on 4th and 1 at their own 24, tied, 4:53 left (GB at DET, 2026-10-25)"
+    - "Bowles goes on 4th and goal at the 1 up 14 (TB vs DAL, 2026-10-08)"
+    - "Chiefs kick a long field goal to go up 6 (KC vs DEN, 2026-11-01)"
+    - "Quinn runs with 13 seconds and no timeouts (WAS vs NYG, 2026-10-11)"
+    - "Quinn calls for the field goal after a failed fourth down (2026-10-19)"
+    - "Schottenheimer punts on 4th and inches (2026-09-13)"

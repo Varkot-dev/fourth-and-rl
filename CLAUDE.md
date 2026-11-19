@@ -10,8 +10,8 @@ Varshith owns this repo. He is building it to learn the material deeply and to s
 
 ## How to work
 1. One milestone at a time, in the order in `docs/PLAN.md`. Do not start the next until the current one meets its "done when" criteria.
-2. Teach before you build. At the start of each milestone, explain the concepts it needs with intuition and math together and two or three worked examples, using plain text math (no LaTeX). Then build.
-3. After each milestone, quiz him on it one question at a time, waiting for each answer. Use the question list at the end of the plan and add your own.
+2. Build first, teach at the end. Work through the milestones autonomously without stopping for lessons. While building, keep notes for the final teaching pass in `docs/NOTES.md`: for each milestone, the concepts it used, the design decisions made and why, and what the results showed. Once the milestones are built, teach the whole project from those notes with intuition and math together and two or three worked examples per concept, using plain text math (no LaTeX).
+3. After the teaching pass, quiz him one question at a time, waiting for each answer. Use the question list at the end of the plan and add your own.
 4. Keep `docs/PLAN.md` current: tick off milestones, and record changed decisions and why in a "Decision log" section at the bottom.
 5. The plan was written in November 2026. Before using any library API, dataset location or package name from it, check the current documentation. If something changed, follow the current docs and note it in the decision log.
 

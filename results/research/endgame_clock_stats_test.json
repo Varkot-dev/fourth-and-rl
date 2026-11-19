@@ -1,0 +1,1780 @@
+{
+  "source": "test seasons via fourth_and_rl.splits.load_test_plays()",
+  "split": "test",
+  "n_rows": 92821,
+  "seasons": [
+    2024,
+    2025
+  ],
+  "elapsed_seconds_snap_to_snap": {
+    "dropped_for_bad_gap": 31,
+    "all_regulation": {
+      "run_in_bounds": {
+        "n": 22287,
+        "p10": 30.0,
+        "p25": 36.0,
+        "median": 39.0,
+        "p75": 42.0,
+        "p90": 45.0,
+        "mean": 38.2
+      },
+      "run_out_of_bounds": {
+        "n": 1964,
+        "p10": 10.0,
+        "p25": 32.0,
+        "median": 38.0,
+        "p75": 41.0,
+        "p90": 43.0,
+        "mean": 34.4
+      },
+      "pass_complete_in_bounds": {
+        "n": 14734,
+        "p10": 23.0,
+        "p25": 32.0,
+        "median": 39.0,
+        "p75": 43.0,
+        "p90": 45.0,
+        "mean": 36.4
+      },
+      "pass_complete_out_of_bounds": {
+        "n": 4417,
+        "p10": 6.0,
+        "p25": 21.0,
+        "median": 35.0,
+        "p75": 39.0,
+        "p90": 42.0,
+        "mean": 29.2
+      },
+      "pass_incomplete": {
+        "n": 11155,
+        "p10": 3.0,
+        "p25": 4.0,
+        "median": 5.0,
+        "p75": 6.0,
+        "p90": 7.0,
+        "mean": 4.9
+      },
+      "sack": {
+        "n": 2039,
+        "p10": 29.0,
+        "p25": 37.0,
+        "median": 41.0,
+        "p75": 44.0,
+        "p90": 46.0,
+        "mean": 39.3
+      },
+      "kneel": {
+        "n": 302,
+        "p10": 20.1,
+        "p25": 30.0,
+        "median": 38.0,
+        "p75": 41.0,
+        "p90": 42.0,
+        "mean": 34.5
+      },
+      "spike": {
+        "n": 114,
+        "p10": 1.0,
+        "p25": 1.0,
+        "median": 1.0,
+        "p75": 1.0,
+        "p90": 1.0,
+        "mean": 1.0
+      },
+      "punt": {
+        "n": 3729,
+        "p10": 7.0,
+        "p25": 7.0,
+        "median": 9.0,
+        "p75": 11.0,
+        "p90": 13.0,
+        "mean": 9.3
+      },
+      "field_goal": {
+        "n": 2035,
+        "p10": 3.0,
+        "p25": 3.0,
+        "median": 4.0,
+        "p75": 5.0,
+        "p90": 5.0,
+        "mean": 4.0
+      },
+      "kickoff": {
+        "n": 5307,
+        "p10": 0.0,
+        "p25": 0.0,
+        "median": 4.0,
+        "p75": 6.0,
+        "p90": 7.0,
+        "mean": 3.1
+      }
+    },
+    "q4_leading": {
+      "run_in_bounds": {
+        "n": 2772,
+        "p10": 36.0,
+        "p25": 39.0,
+        "median": 42.0,
+        "p75": 44.0,
+        "p90": 46.0,
+        "mean": 41.0
+      },
+      "run_out_of_bounds": {
+        "n": 181,
+        "p10": 6.0,
+        "p25": 34.0,
+        "median": 39.0,
+        "p75": 42.0,
+        "p90": 44.0,
+        "mean": 34.3
+      },
+      "pass_complete_in_bounds": {
+        "n": 997,
+        "p10": 31.6,
+        "p25": 38.0,
+        "median": 42.0,
+        "p75": 45.0,
+        "p90": 47.0,
+        "mean": 40.0
+      },
+      "pass_complete_out_of_bounds": {
+        "n": 253,
+        "p10": 7.0,
+        "p25": 31.0,
+        "median": 38.0,
+        "p75": 41.0,
+        "p90": 43.0,
+        "mean": 32.7
+      },
+      "pass_incomplete": {
+        "n": 798,
+        "p10": 3.0,
+        "p25": 4.0,
+        "median": 5.0,
+        "p75": 6.0,
+        "p90": 7.0,
+        "mean": 4.7
+      },
+      "sack": {
+        "n": 132,
+        "p10": 37.0,
+        "p25": 41.0,
+        "median": 43.0,
+        "p75": 45.0,
+        "p90": 47.0,
+        "mean": 41.9
+      },
+      "kneel": {
+        "n": 292,
+        "p10": 21.0,
+        "p25": 30.0,
+        "median": 38.0,
+        "p75": 41.0,
+        "p90": 42.0,
+        "mean": 34.8
+      },
+      "spike": {
+        "n": 0
+      },
+      "punt": {
+        "n": 523,
+        "p10": 6.0,
+        "p25": 7.0,
+        "median": 9.0,
+        "p75": 11.0,
+        "p90": 13.0,
+        "mean": 9.2
+      },
+      "field_goal": {
+        "n": 277,
+        "p10": 3.0,
+        "p25": 3.0,
+        "median": 4.0,
+        "p75": 5.0,
+        "p90": 5.0,
+        "mean": 4.0
+      },
+      "kickoff": {
+        "n": 396,
+        "p10": 0.0,
+        "p25": 0.0,
+        "median": 1.0,
+        "p75": 5.0,
+        "p90": 7.0,
+        "mean": 2.7
+      }
+    },
+    "q4_trailing": {
+      "run_in_bounds": {
+        "n": 2142,
+        "p10": 23.0,
+        "p25": 31.0,
+        "median": 38.0,
+        "p75": 41.0,
+        "p90": 44.0,
+        "mean": 35.5
+      },
+      "run_out_of_bounds": {
+        "n": 249,
+        "p10": 7.0,
+        "p25": 9.0,
+        "median": 34.0,
+        "p75": 40.0,
+        "p90": 43.0,
+        "mean": 28.1
+      },
+      "pass_complete_in_bounds": {
+        "n": 2815,
+        "p10": 19.0,
+        "p25": 23.0,
+        "median": 30.0,
+        "p75": 39.0,
+        "p90": 43.0,
+        "mean": 30.5
+      },
+      "pass_complete_out_of_bounds": {
+        "n": 794,
+        "p10": 5.0,
+        "p25": 6.0,
+        "median": 16.5,
+        "p75": 34.0,
+        "p90": 39.0,
+        "mean": 19.4
+      },
+      "pass_incomplete": {
+        "n": 2238,
+        "p10": 3.0,
+        "p25": 4.0,
+        "median": 5.0,
+        "p75": 6.0,
+        "p90": 7.0,
+        "mean": 4.9
+      },
+      "sack": {
+        "n": 394,
+        "p10": 23.0,
+        "p25": 30.0,
+        "median": 39.0,
+        "p75": 43.0,
+        "p90": 46.0,
+        "mean": 36.4
+      },
+      "kneel": {
+        "n": 5,
+        "p10": 15.0,
+        "p25": 30.0,
+        "median": 38.0,
+        "p75": 40.0,
+        "p90": 40.6,
+        "mean": 30.8
+      },
+      "spike": {
+        "n": 57,
+        "p10": 1.0,
+        "p25": 1.0,
+        "median": 1.0,
+        "p75": 1.0,
+        "p90": 1.0,
+        "mean": 1.0
+      },
+      "punt": {
+        "n": 301,
+        "p10": 7.0,
+        "p25": 7.0,
+        "median": 9.0,
+        "p75": 11.0,
+        "p90": 13.0,
+        "mean": 9.4
+      },
+      "field_goal": {
+        "n": 225,
+        "p10": 3.0,
+        "p25": 3.0,
+        "median": 4.0,
+        "p75": 5.0,
+        "p90": 5.0,
+        "mean": 4.1
+      },
+      "kickoff": {
+        "n": 748,
+        "p10": 0.0,
+        "p25": 0.0,
+        "median": 0.0,
+        "p75": 6.0,
+        "p90": 7.0,
+        "mean": 2.7
+      }
+    },
+    "last5_leading_1_to_8": {
+      "run_in_bounds": {
+        "n": 253,
+        "p10": 38.2,
+        "p25": 41.0,
+        "median": 43.0,
+        "p75": 45.0,
+        "p90": 46.0,
+        "mean": 41.7
+      },
+      "run_out_of_bounds": {
+        "n": 16,
+        "p10": 5.0,
+        "p25": 5.8,
+        "median": 6.0,
+        "p75": 7.0,
+        "p90": 7.5,
+        "mean": 6.2
+      },
+      "pass_complete_in_bounds": {
+        "n": 82,
+        "p10": 0.4,
+        "p25": 41.0,
+        "median": 44.0,
+        "p75": 46.0,
+        "p90": 47.0,
+        "mean": 38.2
+      },
+      "pass_complete_out_of_bounds": {
+        "n": 32,
+        "p10": 5.0,
+        "p25": 5.0,
+        "median": 6.0,
+        "p75": 7.0,
+        "p90": 8.0,
+        "mean": 7.2
+      },
+      "pass_incomplete": {
+        "n": 110,
+        "p10": 2.0,
+        "p25": 3.2,
+        "median": 4.0,
+        "p75": 5.0,
+        "p90": 6.0,
+        "mean": 4.2
+      },
+      "sack": {
+        "n": 13,
+        "p10": 13.8,
+        "p25": 41.0,
+        "median": 42.0,
+        "p75": 45.0,
+        "p90": 45.8,
+        "mean": 37.8
+      },
+      "kneel": {
+        "n": 114,
+        "p10": 20.0,
+        "p25": 27.0,
+        "median": 36.5,
+        "p75": 41.0,
+        "p90": 41.7,
+        "mean": 33.5
+      },
+      "spike": {
+        "n": 0
+      },
+      "punt": {
+        "n": 120,
+        "p10": 6.0,
+        "p25": 7.0,
+        "median": 9.0,
+        "p75": 11.0,
+        "p90": 12.0,
+        "mean": 9.3
+      },
+      "field_goal": {
+        "n": 59,
+        "p10": 3.0,
+        "p25": 3.0,
+        "median": 4.0,
+        "p75": 5.0,
+        "p90": 5.0,
+        "mean": 4.1
+      },
+      "kickoff": {
+        "n": 110,
+        "p10": 0.0,
+        "p25": 0.0,
+        "median": 1.0,
+        "p75": 5.0,
+        "p90": 6.0,
+        "mean": 2.4
+      }
+    },
+    "last5_trailing_1_to_8": {
+      "run_in_bounds": {
+        "n": 265,
+        "p10": 21.0,
+        "p25": 26.0,
+        "median": 37.0,
+        "p75": 42.0,
+        "p90": 44.0,
+        "mean": 34.0
+      },
+      "run_out_of_bounds": {
+        "n": 42,
+        "p10": 6.0,
+        "p25": 7.0,
+        "median": 8.0,
+        "p75": 8.8,
+        "p90": 9.9,
+        "mean": 8.2
+      },
+      "pass_complete_in_bounds": {
+        "n": 448,
+        "p10": 15.0,
+        "p25": 19.0,
+        "median": 24.0,
+        "p75": 36.0,
+        "p90": 42.0,
+        "mean": 26.5
+      },
+      "pass_complete_out_of_bounds": {
+        "n": 201,
+        "p10": 4.0,
+        "p25": 5.0,
+        "median": 6.0,
+        "p75": 7.0,
+        "p90": 8.0,
+        "mean": 6.3
+      },
+      "pass_incomplete": {
+        "n": 550,
+        "p10": 3.0,
+        "p25": 4.0,
+        "median": 5.0,
+        "p75": 6.0,
+        "p90": 7.0,
+        "mean": 4.9
+      },
+      "sack": {
+        "n": 52,
+        "p10": 17.2,
+        "p25": 23.8,
+        "median": 33.5,
+        "p75": 42.0,
+        "p90": 43.0,
+        "mean": 31.6
+      },
+      "kneel": {
+        "n": 2,
+        "p10": 30.8,
+        "p25": 32.0,
+        "median": 34.0,
+        "p75": 36.0,
+        "p90": 37.2,
+        "mean": 34.0
+      },
+      "spike": {
+        "n": 28,
+        "p10": 1.0,
+        "p25": 1.0,
+        "median": 1.0,
+        "p75": 1.0,
+        "p90": 1.0,
+        "mean": 1.0
+      },
+      "punt": {
+        "n": 32,
+        "p10": 7.0,
+        "p25": 7.0,
+        "median": 9.0,
+        "p75": 11.0,
+        "p90": 12.0,
+        "mean": 9.2
+      },
+      "field_goal": {
+        "n": 57,
+        "p10": 3.0,
+        "p25": 4.0,
+        "median": 4.0,
+        "p75": 5.0,
+        "p90": 5.0,
+        "mean": 4.1
+      },
+      "kickoff": {
+        "n": 135,
+        "p10": 0.0,
+        "p25": 0.0,
+        "median": 0.0,
+        "p75": 6.0,
+        "p90": 7.0,
+        "mean": 2.7
+      }
+    },
+    "followed_by_defensive_timeout": {
+      "run_in_bounds": {
+        "n": 1147,
+        "p10": 4.0,
+        "p25": 4.0,
+        "median": 5.0,
+        "p75": 7.0,
+        "p90": 18.0,
+        "mean": 8.5
+      },
+      "pass_complete_in_bounds": {
+        "n": 444,
+        "p10": 5.0,
+        "p25": 6.0,
+        "median": 8.0,
+        "p75": 15.0,
+        "p90": 37.7,
+        "mean": 13.7
+      },
+      "sack": {
+        "n": 136,
+        "p10": 4.0,
+        "p25": 5.0,
+        "median": 6.0,
+        "p75": 8.0,
+        "p90": 19.5,
+        "mean": 9.4
+      },
+      "kneel": {
+        "n": 24,
+        "p10": 1.0,
+        "p25": 1.8,
+        "median": 3.0,
+        "p75": 3.0,
+        "p90": 4.7,
+        "mean": 3.3
+      }
+    },
+    "followed_by_offensive_timeout": {
+      "run_in_bounds": {
+        "n": 634,
+        "p10": 5.0,
+        "p25": 9.0,
+        "median": 42.0,
+        "p75": 45.0,
+        "p90": 47.0,
+        "mean": 31.5
+      },
+      "pass_complete_in_bounds": {
+        "n": 677,
+        "p10": 5.0,
+        "p25": 6.0,
+        "median": 8.0,
+        "p75": 36.0,
+        "p90": 46.0,
+        "mean": 17.2
+      },
+      "sack": {
+        "n": 125,
+        "p10": 5.0,
+        "p25": 6.0,
+        "median": 9.0,
+        "p75": 45.0,
+        "p90": 46.0,
+        "mean": 20.5
+      },
+      "kneel": {
+        "n": 17,
+        "p10": 8.2,
+        "p25": 22.0,
+        "median": 35.0,
+        "p75": 42.0,
+        "p90": 42.8,
+        "mean": 29.5
+      }
+    },
+    "five_second_grid": {
+      "last5_leading_1_to_8": {
+        "run_in_bounds": {
+          "n": 253,
+          "share_by_5s_tick_1_to_10": [
+            0.036,
+            0.004,
+            0.0,
+            0.0,
+            0.0,
+            0.004,
+            0.032,
+            0.292,
+            0.577,
+            0.055
+          ]
+        },
+        "pass_complete_in_bounds": {
+          "n": 82,
+          "share_by_5s_tick_1_to_10": [
+            0.122,
+            0.0,
+            0.0,
+            0.012,
+            0.012,
+            0.012,
+            0.037,
+            0.183,
+            0.524,
+            0.098
+          ]
+        },
+        "pass_incomplete": {
+          "n": 110,
+          "share_by_5s_tick_1_to_10": [
+            0.973,
+            0.027,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ]
+        }
+      },
+      "last5_trailing_1_to_8": {
+        "run_in_bounds": {
+          "n": 265,
+          "share_by_5s_tick_1_to_10": [
+            0.03,
+            0.004,
+            0.019,
+            0.098,
+            0.136,
+            0.064,
+            0.177,
+            0.279,
+            0.177,
+            0.015
+          ]
+        },
+        "pass_complete_in_bounds": {
+          "n": 448,
+          "share_by_5s_tick_1_to_10": [
+            0.033,
+            0.018,
+            0.109,
+            0.266,
+            0.19,
+            0.089,
+            0.06,
+            0.143,
+            0.078,
+            0.013
+          ]
+        },
+        "pass_incomplete": {
+          "n": 550,
+          "share_by_5s_tick_1_to_10": [
+            0.938,
+            0.058,
+            0.002,
+            0.002,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ]
+        }
+      }
+    }
+  },
+  "defensive_timeout_usage": {
+    "before_warning": {
+      "defense_has_1": {
+        "n": 71,
+        "rate": 0.676
+      },
+      "defense_has_2": {
+        "n": 148,
+        "rate": 0.622
+      },
+      "defense_has_3": {
+        "n": 227,
+        "rate": 0.357
+      }
+    },
+    "after_warning": {
+      "defense_has_1": {
+        "n": 92,
+        "rate": 0.837
+      },
+      "defense_has_2": {
+        "n": 63,
+        "rate": 0.968
+      },
+      "defense_has_3": {
+        "n": 44,
+        "rate": 0.977
+      }
+    }
+  },
+  "timeouts_entering_last_5_min": {
+    "n_games": 328,
+    "trailing_team_share": {
+      "0": 0.04,
+      "1": 0.076,
+      "2": 0.244,
+      "3": 0.64
+    },
+    "leading_team_share": {
+      "0": 0.015,
+      "1": 0.137,
+      "2": 0.287,
+      "3": 0.561
+    },
+    "rounding": "largest-remainder, so each set of shares sums to exactly 1"
+  },
+  "run_share": {
+    "lead_9_plus": {
+      "quarters_1_to_3": {
+        "n": 5340,
+        "rate": 0.471
+      },
+      "q4_15_to_10_min": {
+        "n": 1200,
+        "rate": 0.57
+      },
+      "q4_10_to_5_min": {
+        "n": 1290,
+        "rate": 0.669
+      },
+      "q4_5_to_2_min": {
+        "n": 827,
+        "rate": 0.811
+      },
+      "q4_last_2_min": {
+        "n": 178,
+        "rate": 0.927
+      }
+    },
+    "lead_1_to_8": {
+      "quarters_1_to_3": {
+        "n": 10533,
+        "rate": 0.44
+      },
+      "q4_15_to_10_min": {
+        "n": 1167,
+        "rate": 0.479
+      },
+      "q4_10_to_5_min": {
+        "n": 1040,
+        "rate": 0.484
+      },
+      "q4_5_to_2_min": {
+        "n": 835,
+        "rate": 0.647
+      },
+      "q4_last_2_min": {
+        "n": 317,
+        "rate": 0.814
+      }
+    },
+    "tied": {
+      "quarters_1_to_3": {
+        "n": 11288,
+        "rate": 0.454
+      },
+      "q4_15_to_10_min": {
+        "n": 251,
+        "rate": 0.462
+      },
+      "q4_10_to_5_min": {
+        "n": 284,
+        "rate": 0.43
+      },
+      "q4_5_to_2_min": {
+        "n": 203,
+        "rate": 0.379
+      },
+      "q4_last_2_min": {
+        "n": 271,
+        "rate": 0.362
+      }
+    },
+    "trail_1_to_8": {
+      "quarters_1_to_3": {
+        "n": 14226,
+        "rate": 0.434
+      },
+      "q4_15_to_10_min": {
+        "n": 1263,
+        "rate": 0.439
+      },
+      "q4_10_to_5_min": {
+        "n": 1060,
+        "rate": 0.413
+      },
+      "q4_5_to_2_min": {
+        "n": 931,
+        "rate": 0.313
+      },
+      "q4_last_2_min": {
+        "n": 1272,
+        "rate": 0.185
+      }
+    },
+    "trail_9_plus": {
+      "quarters_1_to_3": {
+        "n": 7777,
+        "rate": 0.388
+      },
+      "q4_15_to_10_min": {
+        "n": 1729,
+        "rate": 0.292
+      },
+      "q4_10_to_5_min": {
+        "n": 1745,
+        "rate": 0.242
+      },
+      "q4_5_to_2_min": {
+        "n": 1430,
+        "rate": 0.185
+      },
+      "q4_last_2_min": {
+        "n": 810,
+        "rate": 0.24
+      }
+    }
+  },
+  "trailing_drives_down_4_to_8": {
+    "n_drives": 149,
+    "n_games": 135,
+    "td_rate": {
+      "n": 149,
+      "rate": 0.376
+    },
+    "trailing_team_win_rate": 0.176,
+    "result_counts": {
+      "End of half": 9,
+      "Field goal": 1,
+      "Punt": 10,
+      "Safety": 1,
+      "Touchdown": 56,
+      "Turnover": 29,
+      "Turnover on downs": 43
+    },
+    "by_field_position": [
+      {
+        "field_bin": "opp_territory",
+        "n": 6,
+        "touchdowns": 4,
+        "td_rate": 0.667,
+        "trailing_team_win_rate": 0.333
+      },
+      {
+        "field_bin": "own_1_to_20",
+        "n": 42,
+        "touchdowns": 11,
+        "td_rate": 0.262,
+        "trailing_team_win_rate": 0.095
+      },
+      {
+        "field_bin": "own_21_to_30",
+        "n": 45,
+        "touchdowns": 17,
+        "td_rate": 0.378,
+        "trailing_team_win_rate": 0.244
+      },
+      {
+        "field_bin": "own_31_to_50",
+        "n": 56,
+        "touchdowns": 24,
+        "td_rate": 0.429,
+        "trailing_team_win_rate": 0.164
+      }
+    ],
+    "by_time": [
+      {
+        "time_bin": "1_to_2_min",
+        "n": 50,
+        "touchdowns": 14,
+        "td_rate": 0.28,
+        "trailing_team_win_rate": 0.102
+      },
+      {
+        "time_bin": "2_to_3_min",
+        "n": 38,
+        "touchdowns": 12,
+        "td_rate": 0.316,
+        "trailing_team_win_rate": 0.211
+      },
+      {
+        "time_bin": "3_to_4_min",
+        "n": 30,
+        "touchdowns": 18,
+        "td_rate": 0.6,
+        "trailing_team_win_rate": 0.2
+      },
+      {
+        "time_bin": "4_to_5_min",
+        "n": 31,
+        "touchdowns": 12,
+        "td_rate": 0.387,
+        "trailing_team_win_rate": 0.226
+      }
+    ],
+    "by_timeouts": [
+      {
+        "timeout_bin": "0_or_1",
+        "n": 66,
+        "touchdowns": 23,
+        "td_rate": 0.348,
+        "trailing_team_win_rate": 0.123
+      },
+      {
+        "timeout_bin": "2",
+        "n": 29,
+        "touchdowns": 13,
+        "td_rate": 0.448,
+        "trailing_team_win_rate": 0.207
+      },
+      {
+        "timeout_bin": "3",
+        "n": 54,
+        "touchdowns": 20,
+        "td_rate": 0.37,
+        "trailing_team_win_rate": 0.222
+      }
+    ],
+    "by_deficit": [
+      {
+        "deficit_bin": "down_4_or_5",
+        "n": 64,
+        "touchdowns": 24,
+        "td_rate": 0.375,
+        "trailing_team_win_rate": 0.286
+      },
+      {
+        "deficit_bin": "down_6_or_7",
+        "n": 66,
+        "touchdowns": 26,
+        "td_rate": 0.394,
+        "trailing_team_win_rate": 0.106
+      },
+      {
+        "deficit_bin": "down_8",
+        "n": 19,
+        "touchdowns": 6,
+        "td_rate": 0.316,
+        "trailing_team_win_rate": 0.053
+      }
+    ],
+    "by_field_and_time": [
+      {
+        "field_bin": "opp_territory",
+        "time_bin": "3_to_4_min",
+        "n": 4,
+        "touchdowns": 4,
+        "td_rate": 1.0,
+        "trailing_team_win_rate": 0.5
+      },
+      {
+        "field_bin": "opp_territory",
+        "time_bin": "4_to_5_min",
+        "n": 2,
+        "touchdowns": 0,
+        "td_rate": 0.0,
+        "trailing_team_win_rate": 0.0
+      },
+      {
+        "field_bin": "own_1_to_20",
+        "time_bin": "1_to_2_min",
+        "n": 11,
+        "touchdowns": 0,
+        "td_rate": 0.0,
+        "trailing_team_win_rate": 0.0
+      },
+      {
+        "field_bin": "own_1_to_20",
+        "time_bin": "2_to_3_min",
+        "n": 14,
+        "touchdowns": 3,
+        "td_rate": 0.214,
+        "trailing_team_win_rate": 0.143
+      },
+      {
+        "field_bin": "own_1_to_20",
+        "time_bin": "3_to_4_min",
+        "n": 7,
+        "touchdowns": 4,
+        "td_rate": 0.571,
+        "trailing_team_win_rate": 0.0
+      },
+      {
+        "field_bin": "own_1_to_20",
+        "time_bin": "4_to_5_min",
+        "n": 10,
+        "touchdowns": 4,
+        "td_rate": 0.4,
+        "trailing_team_win_rate": 0.2
+      },
+      {
+        "field_bin": "own_21_to_30",
+        "time_bin": "1_to_2_min",
+        "n": 16,
+        "touchdowns": 4,
+        "td_rate": 0.25,
+        "trailing_team_win_rate": 0.062
+      },
+      {
+        "field_bin": "own_21_to_30",
+        "time_bin": "2_to_3_min",
+        "n": 8,
+        "touchdowns": 4,
+        "td_rate": 0.5,
+        "trailing_team_win_rate": 0.375
+      },
+      {
+        "field_bin": "own_21_to_30",
+        "time_bin": "3_to_4_min",
+        "n": 8,
+        "touchdowns": 3,
+        "td_rate": 0.375,
+        "trailing_team_win_rate": 0.25
+      },
+      {
+        "field_bin": "own_21_to_30",
+        "time_bin": "4_to_5_min",
+        "n": 13,
+        "touchdowns": 6,
+        "td_rate": 0.462,
+        "trailing_team_win_rate": 0.385
+      },
+      {
+        "field_bin": "own_31_to_50",
+        "time_bin": "1_to_2_min",
+        "n": 23,
+        "touchdowns": 10,
+        "td_rate": 0.435,
+        "trailing_team_win_rate": 0.182
+      },
+      {
+        "field_bin": "own_31_to_50",
+        "time_bin": "2_to_3_min",
+        "n": 16,
+        "touchdowns": 5,
+        "td_rate": 0.312,
+        "trailing_team_win_rate": 0.188
+      },
+      {
+        "field_bin": "own_31_to_50",
+        "time_bin": "3_to_4_min",
+        "n": 11,
+        "touchdowns": 7,
+        "td_rate": 0.636,
+        "trailing_team_win_rate": 0.182
+      },
+      {
+        "field_bin": "own_31_to_50",
+        "time_bin": "4_to_5_min",
+        "n": 6,
+        "touchdowns": 2,
+        "td_rate": 0.333,
+        "trailing_team_win_rate": 0.0
+      }
+    ],
+    "by_time_and_timeouts": [
+      {
+        "time_bin": "1_to_2_min",
+        "timeout_bin": "0_or_1",
+        "n": 39,
+        "touchdowns": 11,
+        "td_rate": 0.282,
+        "trailing_team_win_rate": 0.053
+      },
+      {
+        "time_bin": "1_to_2_min",
+        "timeout_bin": "2",
+        "n": 7,
+        "touchdowns": 2,
+        "td_rate": 0.286,
+        "trailing_team_win_rate": 0.286
+      },
+      {
+        "time_bin": "1_to_2_min",
+        "timeout_bin": "3",
+        "n": 4,
+        "touchdowns": 1,
+        "td_rate": 0.25,
+        "trailing_team_win_rate": 0.25
+      },
+      {
+        "time_bin": "2_to_3_min",
+        "timeout_bin": "0_or_1",
+        "n": 18,
+        "touchdowns": 6,
+        "td_rate": 0.333,
+        "trailing_team_win_rate": 0.222
+      },
+      {
+        "time_bin": "2_to_3_min",
+        "timeout_bin": "2",
+        "n": 6,
+        "touchdowns": 2,
+        "td_rate": 0.333,
+        "trailing_team_win_rate": 0.167
+      },
+      {
+        "time_bin": "2_to_3_min",
+        "timeout_bin": "3",
+        "n": 14,
+        "touchdowns": 4,
+        "td_rate": 0.286,
+        "trailing_team_win_rate": 0.214
+      },
+      {
+        "time_bin": "3_to_4_min",
+        "timeout_bin": "0_or_1",
+        "n": 8,
+        "touchdowns": 6,
+        "td_rate": 0.75,
+        "trailing_team_win_rate": 0.25
+      },
+      {
+        "time_bin": "3_to_4_min",
+        "timeout_bin": "2",
+        "n": 8,
+        "touchdowns": 5,
+        "td_rate": 0.625,
+        "trailing_team_win_rate": 0.125
+      },
+      {
+        "time_bin": "3_to_4_min",
+        "timeout_bin": "3",
+        "n": 14,
+        "touchdowns": 7,
+        "td_rate": 0.5,
+        "trailing_team_win_rate": 0.214
+      },
+      {
+        "time_bin": "4_to_5_min",
+        "timeout_bin": "0_or_1",
+        "n": 1,
+        "touchdowns": 0,
+        "td_rate": 0.0,
+        "trailing_team_win_rate": 0.0
+      },
+      {
+        "time_bin": "4_to_5_min",
+        "timeout_bin": "2",
+        "n": 8,
+        "touchdowns": 4,
+        "td_rate": 0.5,
+        "trailing_team_win_rate": 0.25
+      },
+      {
+        "time_bin": "4_to_5_min",
+        "timeout_bin": "3",
+        "n": 22,
+        "touchdowns": 8,
+        "td_rate": 0.364,
+        "trailing_team_win_rate": 0.227
+      }
+    ],
+    "by_field_time_timeouts": [
+      {
+        "field_bin": "opp_territory",
+        "time_bin": "3_to_4_min",
+        "timeout_bin": "0_or_1",
+        "n": 2,
+        "touchdowns": 2,
+        "td_rate": 1.0,
+        "trailing_team_win_rate": 0.5
+      },
+      {
+        "field_bin": "opp_territory",
+        "time_bin": "3_to_4_min",
+        "timeout_bin": "2",
+        "n": 1,
+        "touchdowns": 1,
+        "td_rate": 1.0,
+        "trailing_team_win_rate": 0.0
+      },
+      {
+        "field_bin": "opp_territory",
+        "time_bin": "3_to_4_min",
+        "timeout_bin": "3",
+        "n": 1,
+        "touchdowns": 1,
+        "td_rate": 1.0,
+        "trailing_team_win_rate": 1.0
+      },
+      {
+        "field_bin": "opp_territory",
+        "time_bin": "4_to_5_min",
+        "timeout_bin": "3",
+        "n": 2,
+        "touchdowns": 0,
+        "td_rate": 0.0,
+        "trailing_team_win_rate": 0.0
+      },
+      {
+        "field_bin": "own_1_to_20",
+        "time_bin": "1_to_2_min",
+        "timeout_bin": "0_or_1",
+        "n": 10,
+        "touchdowns": 0,
+        "td_rate": 0.0,
+        "trailing_team_win_rate": 0.0
+      },
+      {
+        "field_bin": "own_1_to_20",
+        "time_bin": "1_to_2_min",
+        "timeout_bin": "3",
+        "n": 1,
+        "touchdowns": 0,
+        "td_rate": 0.0,
+        "trailing_team_win_rate": 0.0
+      },
+      {
+        "field_bin": "own_1_to_20",
+        "time_bin": "2_to_3_min",
+        "timeout_bin": "0_or_1",
+        "n": 7,
+        "touchdowns": 1,
+        "td_rate": 0.143,
+        "trailing_team_win_rate": 0.143
+      },
+      {
+        "field_bin": "own_1_to_20",
+        "time_bin": "2_to_3_min",
+        "timeout_bin": "2",
+        "n": 2,
+        "touchdowns": 1,
+        "td_rate": 0.5,
+        "trailing_team_win_rate": 0.0
+      },
+      {
+        "field_bin": "own_1_to_20",
+        "time_bin": "2_to_3_min",
+        "timeout_bin": "3",
+        "n": 5,
+        "touchdowns": 1,
+        "td_rate": 0.2,
+        "trailing_team_win_rate": 0.2
+      },
+      {
+        "field_bin": "own_1_to_20",
+        "time_bin": "3_to_4_min",
+        "timeout_bin": "0_or_1",
+        "n": 1,
+        "touchdowns": 1,
+        "td_rate": 1.0,
+        "trailing_team_win_rate": 0.0
+      },
+      {
+        "field_bin": "own_1_to_20",
+        "time_bin": "3_to_4_min",
+        "timeout_bin": "2",
+        "n": 3,
+        "touchdowns": 2,
+        "td_rate": 0.667,
+        "trailing_team_win_rate": 0.0
+      },
+      {
+        "field_bin": "own_1_to_20",
+        "time_bin": "3_to_4_min",
+        "timeout_bin": "3",
+        "n": 3,
+        "touchdowns": 1,
+        "td_rate": 0.333,
+        "trailing_team_win_rate": 0.0
+      },
+      {
+        "field_bin": "own_1_to_20",
+        "time_bin": "4_to_5_min",
+        "timeout_bin": "2",
+        "n": 2,
+        "touchdowns": 1,
+        "td_rate": 0.5,
+        "trailing_team_win_rate": 0.5
+      },
+      {
+        "field_bin": "own_1_to_20",
+        "time_bin": "4_to_5_min",
+        "timeout_bin": "3",
+        "n": 8,
+        "touchdowns": 3,
+        "td_rate": 0.375,
+        "trailing_team_win_rate": 0.125
+      },
+      {
+        "field_bin": "own_21_to_30",
+        "time_bin": "1_to_2_min",
+        "timeout_bin": "0_or_1",
+        "n": 12,
+        "touchdowns": 4,
+        "td_rate": 0.333,
+        "trailing_team_win_rate": 0.083
+      },
+      {
+        "field_bin": "own_21_to_30",
+        "time_bin": "1_to_2_min",
+        "timeout_bin": "2",
+        "n": 3,
+        "touchdowns": 0,
+        "td_rate": 0.0,
+        "trailing_team_win_rate": 0.0
+      },
+      {
+        "field_bin": "own_21_to_30",
+        "time_bin": "1_to_2_min",
+        "timeout_bin": "3",
+        "n": 1,
+        "touchdowns": 0,
+        "td_rate": 0.0,
+        "trailing_team_win_rate": 0.0
+      },
+      {
+        "field_bin": "own_21_to_30",
+        "time_bin": "2_to_3_min",
+        "timeout_bin": "0_or_1",
+        "n": 3,
+        "touchdowns": 1,
+        "td_rate": 0.333,
+        "trailing_team_win_rate": 0.0
+      },
+      {
+        "field_bin": "own_21_to_30",
+        "time_bin": "2_to_3_min",
+        "timeout_bin": "2",
+        "n": 2,
+        "touchdowns": 1,
+        "td_rate": 0.5,
+        "trailing_team_win_rate": 0.5
+      },
+      {
+        "field_bin": "own_21_to_30",
+        "time_bin": "2_to_3_min",
+        "timeout_bin": "3",
+        "n": 3,
+        "touchdowns": 2,
+        "td_rate": 0.667,
+        "trailing_team_win_rate": 0.667
+      },
+      {
+        "field_bin": "own_21_to_30",
+        "time_bin": "3_to_4_min",
+        "timeout_bin": "0_or_1",
+        "n": 2,
+        "touchdowns": 1,
+        "td_rate": 0.5,
+        "trailing_team_win_rate": 0.5
+      },
+      {
+        "field_bin": "own_21_to_30",
+        "time_bin": "3_to_4_min",
+        "timeout_bin": "2",
+        "n": 1,
+        "touchdowns": 0,
+        "td_rate": 0.0,
+        "trailing_team_win_rate": 0.0
+      },
+      {
+        "field_bin": "own_21_to_30",
+        "time_bin": "3_to_4_min",
+        "timeout_bin": "3",
+        "n": 5,
+        "touchdowns": 2,
+        "td_rate": 0.4,
+        "trailing_team_win_rate": 0.2
+      },
+      {
+        "field_bin": "own_21_to_30",
+        "time_bin": "4_to_5_min",
+        "timeout_bin": "2",
+        "n": 4,
+        "touchdowns": 2,
+        "td_rate": 0.5,
+        "trailing_team_win_rate": 0.25
+      },
+      {
+        "field_bin": "own_21_to_30",
+        "time_bin": "4_to_5_min",
+        "timeout_bin": "3",
+        "n": 9,
+        "touchdowns": 4,
+        "td_rate": 0.444,
+        "trailing_team_win_rate": 0.444
+      },
+      {
+        "field_bin": "own_31_to_50",
+        "time_bin": "1_to_2_min",
+        "timeout_bin": "0_or_1",
+        "n": 17,
+        "touchdowns": 7,
+        "td_rate": 0.412,
+        "trailing_team_win_rate": 0.062
+      },
+      {
+        "field_bin": "own_31_to_50",
+        "time_bin": "1_to_2_min",
+        "timeout_bin": "2",
+        "n": 4,
+        "touchdowns": 2,
+        "td_rate": 0.5,
+        "trailing_team_win_rate": 0.5
+      },
+      {
+        "field_bin": "own_31_to_50",
+        "time_bin": "1_to_2_min",
+        "timeout_bin": "3",
+        "n": 2,
+        "touchdowns": 1,
+        "td_rate": 0.5,
+        "trailing_team_win_rate": 0.5
+      },
+      {
+        "field_bin": "own_31_to_50",
+        "time_bin": "2_to_3_min",
+        "timeout_bin": "0_or_1",
+        "n": 8,
+        "touchdowns": 4,
+        "td_rate": 0.5,
+        "trailing_team_win_rate": 0.375
+      },
+      {
+        "field_bin": "own_31_to_50",
+        "time_bin": "2_to_3_min",
+        "timeout_bin": "2",
+        "n": 2,
+        "touchdowns": 0,
+        "td_rate": 0.0,
+        "trailing_team_win_rate": 0.0
+      },
+      {
+        "field_bin": "own_31_to_50",
+        "time_bin": "2_to_3_min",
+        "timeout_bin": "3",
+        "n": 6,
+        "touchdowns": 1,
+        "td_rate": 0.167,
+        "trailing_team_win_rate": 0.0
+      },
+      {
+        "field_bin": "own_31_to_50",
+        "time_bin": "3_to_4_min",
+        "timeout_bin": "0_or_1",
+        "n": 3,
+        "touchdowns": 2,
+        "td_rate": 0.667,
+        "trailing_team_win_rate": 0.0
+      },
+      {
+        "field_bin": "own_31_to_50",
+        "time_bin": "3_to_4_min",
+        "timeout_bin": "2",
+        "n": 3,
+        "touchdowns": 2,
+        "td_rate": 0.667,
+        "trailing_team_win_rate": 0.333
+      },
+      {
+        "field_bin": "own_31_to_50",
+        "time_bin": "3_to_4_min",
+        "timeout_bin": "3",
+        "n": 5,
+        "touchdowns": 3,
+        "td_rate": 0.6,
+        "trailing_team_win_rate": 0.2
+      },
+      {
+        "field_bin": "own_31_to_50",
+        "time_bin": "4_to_5_min",
+        "timeout_bin": "0_or_1",
+        "n": 1,
+        "touchdowns": 0,
+        "td_rate": 0.0,
+        "trailing_team_win_rate": 0.0
+      },
+      {
+        "field_bin": "own_31_to_50",
+        "time_bin": "4_to_5_min",
+        "timeout_bin": "2",
+        "n": 2,
+        "touchdowns": 1,
+        "td_rate": 0.5,
+        "trailing_team_win_rate": 0.0
+      },
+      {
+        "field_bin": "own_31_to_50",
+        "time_bin": "4_to_5_min",
+        "timeout_bin": "3",
+        "n": 3,
+        "touchdowns": 1,
+        "td_rate": 0.333,
+        "trailing_team_win_rate": 0.0
+      }
+    ],
+    "td_drive_seconds_used": {
+      "n": 54,
+      "p10": 52.9,
+      "p25": 71.2,
+      "median": 107.5,
+      "p75": 145.5,
+      "p90": 189.5,
+      "mean": 112.3
+    },
+    "td_drive_plays": {
+      "n": 54,
+      "p10": 4.0,
+      "p25": 5.2,
+      "median": 7.0,
+      "p75": 9.0,
+      "p90": 11.0,
+      "mean": 7.4
+    },
+    "seconds_per_play_all_drives": {
+      "n": 123,
+      "p10": 7.9,
+      "p25": 10.4,
+      "median": 13.4,
+      "p75": 18.3,
+      "p90": 21.6,
+      "mean": 14.4
+    },
+    "after_trailing_touchdown": {
+      "n_touchdown_drives": 56,
+      "leader_gets_ball_in_regulation": {
+        "n": 56,
+        "rate": 0.911
+      },
+      "seconds_left_at_answer_drive": {
+        "n": 51,
+        "p10": 16.0,
+        "p25": 32.5,
+        "median": 60.0,
+        "p75": 107.5,
+        "p90": 151.0,
+        "mean": 73.2
+      },
+      "share_with_30s_or_more": {
+        "n": 56,
+        "rate": 0.714
+      },
+      "share_with_60s_or_more": {
+        "n": 56,
+        "rate": 0.464
+      },
+      "original_leader_win_rate": 0.527
+    },
+    "answer_drive_needing_points": {
+      "n": 35,
+      "scores_td_or_fg": {
+        "n": 35,
+        "rate": 0.486
+      },
+      "original_leader_win_rate": 0.471,
+      "by_seconds_left": [
+        {
+          "bin": "30_to_59",
+          "n": 13,
+          "scores_td_or_fg": 0.462,
+          "original_leader_win_rate": 0.5
+        },
+        {
+          "bin": "60_to_119",
+          "n": 13,
+          "scores_td_or_fg": 0.538,
+          "original_leader_win_rate": 0.538
+        },
+        {
+          "bin": "120_plus",
+          "n": 9,
+          "scores_td_or_fg": 0.444,
+          "original_leader_win_rate": 0.333
+        }
+      ]
+    },
+    "after_no_touchdown": {
+      "n": 93,
+      "original_leader_win_rate": 1.0
+    }
+  },
+  "kneels": {
+    "n_games_ending_in_kneels": 331,
+    "n_games_ending_in_kneels_lead_1_to_8": 159,
+    "kneel_seconds_used": 3.0,
+    "lead_1_to_8_share_above_formula_threshold": 0.0126,
+    "lead_1_to_8_share_above_threshold_plus_10s": 0.0,
+    "first_kneel_on_first_down_lead_1_to_8": {
+      "defense_has_0": {
+        "n": 105,
+        "median": 59.0,
+        "p90": 109.0,
+        "p95": 120.0,
+        "max": 120.0,
+        "formula_threshold": 120.0,
+        "n_above_threshold": 0,
+        "n_above_threshold_plus_10s": 0,
+        "n_within_10s_below_threshold": 10
+      },
+      "defense_has_1": {
+        "n": 39,
+        "median": 40.0,
+        "p90": 67.0,
+        "p95": 79.4,
+        "max": 87.0,
+        "formula_threshold": 89.0,
+        "n_above_threshold": 0,
+        "n_above_threshold_plus_10s": 0,
+        "n_within_10s_below_threshold": 2
+      },
+      "defense_has_2": {
+        "n": 11,
+        "median": 27.0,
+        "p90": 40.0,
+        "p95": 45.5,
+        "max": 51.0,
+        "formula_threshold": 49.0,
+        "n_above_threshold": 1,
+        "n_above_threshold_plus_10s": 0,
+        "n_within_10s_below_threshold": 1
+      },
+      "defense_has_3": {
+        "n": 2,
+        "median": 5.5,
+        "p90": 6.7,
+        "p95": 6.8,
+        "max": 7.0,
+        "formula_threshold": 9.0,
+        "n_above_threshold": 0,
+        "n_above_threshold_plus_10s": 0,
+        "n_within_10s_below_threshold": 2
+      }
+    },
+    "first_kneel_on_first_down_lead_9_plus": {
+      "defense_has_0": {
+        "n": 75,
+        "median": 63.0,
+        "p90": 116.4,
+        "p95": 120.0,
+        "max": 120.0,
+        "formula_threshold": 120.0,
+        "n_above_threshold": 0,
+        "n_above_threshold_plus_10s": 0,
+        "n_within_10s_below_threshold": 11
+      },
+      "defense_has_1": {
+        "n": 33,
+        "median": 55.0,
+        "p90": 113.8,
+        "p95": 117.0,
+        "max": 120.0,
+        "formula_threshold": 89.0,
+        "n_above_threshold": 5,
+        "n_above_threshold_plus_10s": 5,
+        "n_within_10s_below_threshold": 1
+      },
+      "defense_has_2": {
+        "n": 22,
+        "median": 73.0,
+        "p90": 119.6,
+        "p95": 120.0,
+        "max": 120.0,
+        "formula_threshold": 49.0,
+        "n_above_threshold": 15,
+        "n_above_threshold_plus_10s": 14,
+        "n_within_10s_below_threshold": 1
+      },
+      "defense_has_3": {
+        "n": 32,
+        "median": 102.0,
+        "p90": 120.0,
+        "p95": 120.0,
+        "max": 151.0,
+        "formula_threshold": 9.0,
+        "n_above_threshold": 32,
+        "n_above_threshold_plus_10s": 31,
+        "n_within_10s_below_threshold": 0
+      }
+    },
+    "formula_thresholds_first_down": {
+      "0": 120.0,
+      "1": 89.0,
+      "2": 49.0,
+      "3": 9.0
+    },
+    "formula_thresholds_second_down": {
+      "0": 86.0,
+      "1": 46.0,
+      "2": 6.0,
+      "3": 6.0
+    },
+    "formula_thresholds_third_down": {
+      "0": 43.0,
+      "1": 3.0,
+      "2": 3.0,
+      "3": 3.0
+    },
+    "first_down_inside_threshold_lead_1_to_8": {
+      "n": 158,
+      "kneel_share": 0.987,
+      "leading_team_win_rate": 1.0
+    },
+    "first_down_5_to_45s_outside_threshold_lead_1_to_8": {
+      "n": 55,
+      "kneel_share": 0.036,
+      "leading_team_win_rate": 1.0
+    }
+  },
+  "overtime": {
+    "n_games_total": 570,
+    "n_overtime_games": 32,
+    "share_of_games_reaching_overtime": 0.0561,
+    "n_ties": 1,
+    "n_overtime_regular_season": 30,
+    "n_overtime_playoffs": 2,
+    "n_overtime_2025_season": 16,
+    "home_team_win_value": 0.609,
+    "favorite_win_value": 0.797,
+    "favorite_win_value_by_spread": {
+      "0.5_to_2.5": {
+        "n": 10,
+        "value": 0.9
+      },
+      "3_to_6.5": {
+        "n": 17,
+        "value": 0.824
+      },
+      "7_plus": {
+        "n": 5,
+        "value": 0.5
+      }
+    },
+    "win_value_slope_per_spread_point": 0.0391,
+    "note": "a tie counts as 0.5; slope is least squares of (value - 0.5) on the spread"
+  },
+  "state_space": {
+    "field_states": 4752,
+    "score_states": 43,
+    "timeout_states": 16,
+    "endgame_5min_5s": {
+      "time_steps": 60,
+      "states": 196162560,
+      "states_per_time_slice": 3269376
+    },
+    "endgame_5min_10s": {
+      "time_steps": 30,
+      "states": 98081280,
+      "states_per_time_slice": 3269376
+    },
+    "endgame_8min_5s": {
+      "time_steps": 96,
+      "states": 313860096,
+      "states_per_time_slice": 3269376
+    },
+    "endgame_8min_10s": {
+      "time_steps": 48,
+      "states": 156930048,
+      "states_per_time_slice": 3269376
+    },
+    "early_game_20s_no_timeouts": {
+      "time_steps": 165,
+      "states": 33715440
+    },
+    "early_game_30s_no_timeouts": {
+      "time_steps": 110,
+      "states": 22476960
+    },
+    "whole_game_recommended": 218639520,
+    "whole_game_at_1s_with_timeouts": 11769753600,
+    "float32_gigabytes_recommended": 0.87
+  }
+}

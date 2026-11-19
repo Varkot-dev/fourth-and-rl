@@ -1,0 +1,64 @@
+# M1 play-outcome ("component") models. Read by fourth_and_rl.components.load_config.
+
+# All fits are deterministic (no random numbers are drawn). The seed is recorded with
+# the fitted bundle so later, random steps (bootstrap refits) can reuse it.
+seed: 20261117
+
+# Which seasons may be fitted on is NOT decided here: configs/splits.yaml is the single
+# source. scripts/fit_components.py fits the development bundle (components_dev.joblib) on
+# the development seasons, scores it once on the test seasons, and separately fits the
+# all-seasons bundle (components_all.joblib) for forward-looking use only.
+
+# Model selection inside the development seasons (no test season is involved): each
+# variant is fitted on the seasons before a block and scored on the block.
+selection:
+  validation_blocks: [[2020, 2021], [2022, 2023]]
+
+# Count-based distributions (yards gained, punts, turnovers, clock, extra points) use
+# only seasons from this one on, so they describe the current game. The logistic models
+# (conversion, field goal) use every season in the table and carry a season trend.
+era_first_season: 2018
+
+go:
+  max_ydstogo: 30          # longer distances are treated as 30
+  season_trend: true       # linear trend in the log-odds, evaluated at the last season fitted
+  fourth_by_distance: false # true lets the fourth-down effect change with distance
+  use_spread: true         # pregame spread as a team-strength control; predictions are at spread 0
+  fit_downs: [3, 4]        # downs used for the conversion regression
+  distance_knots: [1, 2, 3, 4, 6, 8, 10, 13, 17, 22, 30]  # dense where the curve bends
+  yardline_knots: [1, 5, 10, 20, 40, 60, 80, 99]
+  min_turnover_n: 100      # failures needed before a distance group gets its own turnover share
+
+field_goal:
+  snap_to_kick_yards: 18   # kick distance = yardline_100 + 18 (checked against kick_distance)
+  miss_spot_yards: 8       # after a miss the opponent takes over 8 yards behind the line of scrimmage
+  miss_min_own_yardline: 20  # ... but never inside their own 20
+  season_trend: true       # linear trend in the log-odds, evaluated at the last season fitted
+  # The range limit is NOT a constant here: FieldGoalModel.fit sets it to the longest made
+  # kick in the rows it is given. Beyond that distance the fitted curve fades to 0 over
+  # tail_yards yards (0 = hard cap at the longest made kick).
+  tail_yards: 3
+
+punt:
+  bandwidth: 2.0           # Gaussian kernel width in yards of field position
+  min_effective_n: 400     # widen the kernel until it covers this many punts
+  landing_below: 50        # inside this yardline_100, smooth the landing spot, not the net yards
+
+play:
+  min_cell_n: 300          # plays needed before a (down, distance, field) cell stands alone
+  min_turnover_n: 50
+
+kickoff:
+  # The kickoff start table is treated as a rule constant: one table per rule era, fitted
+  # on that era's own kickoffs. The 2024 and 2025 tables are the one logged exception to
+  # "nothing is fitted on test seasons" (no kickoff under those rules exists earlier).
+  # A real play is evaluated with the table of its season; hypothetical situations use the
+  # latest era. touchback_yardline_100 is the receiving team's spot after a touchback, from
+  # the rule book, used only by the fixed-spot sensitivity check.
+  rule_eras:
+    - {name: touchback_at_25, seasons: [2018, 2023], touchback_yardline_100: 75}
+    - {name: dynamic_kickoff_2024, seasons: [2024, 2024], touchback_yardline_100: 70}
+    - {name: dynamic_kickoff_2025, seasons: [2025, 2025], touchback_yardline_100: 65}
+
+drives:
+  recent_first_season: 2021

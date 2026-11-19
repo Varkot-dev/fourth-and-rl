@@ -1,0 +1,2577 @@
+{
+  "what": "M8 team ratings from earlier games only, and whether they predict beyond the pregame spread (scripts/m8_team_strength.py)",
+  "seasons": {
+    "ratings_from": 2011,
+    "models_fitted_on": [
+      2012,
+      2013,
+      2014,
+      2015,
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023
+    ],
+    "validation_blocks": [
+      [
+        2012,
+        2014
+      ],
+      [
+        2015,
+        2017
+      ],
+      [
+        2018,
+        2020
+      ],
+      [
+        2021,
+        2023
+      ]
+    ]
+  },
+  "samples": {
+    "conversion_plays": 29816,
+    "drives": 70027,
+    "games": 3526
+  },
+  "filter": {
+    "conv": {
+      "score": "log loss per play",
+      "grid_points": 288,
+      "final_params": {
+        "tau_off": 0.03,
+        "tau_def": 0.02,
+        "rho": 0.75,
+        "q_frac": 0.0,
+        "league_sd": 0.02
+      },
+      "no_team_effect_score_per_row": 0.6607764286137092,
+      "final_score_per_row": 0.6602295788643748,
+      "in_sample_gain_per_row": 0.000546849749334449,
+      "best_five": [
+        {
+          "tau_off": 0.03,
+          "tau_def": 0.02,
+          "rho": 0.75,
+          "q_frac": 0.0,
+          "league_sd": 0.02,
+          "gain_per_row": 0.000546849749334449
+        },
+        {
+          "tau_off": 0.02,
+          "tau_def": 0.01,
+          "rho": 0.75,
+          "q_frac": 0.03,
+          "league_sd": 0.02,
+          "gain_per_row": 0.0005384801773163407
+        },
+        {
+          "tau_off": 0.02,
+          "tau_def": 0.01,
+          "rho": 0.9,
+          "q_frac": 0.01,
+          "league_sd": 0.02,
+          "gain_per_row": 0.0005304654013836082
+        },
+        {
+          "tau_off": 0.03,
+          "tau_def": 0.01,
+          "rho": 0.75,
+          "q_frac": 0.0,
+          "league_sd": 0.02,
+          "gain_per_row": 0.0005234247323108442
+        },
+        {
+          "tau_off": 0.03,
+          "tau_def": 0.01,
+          "rho": 0.9,
+          "q_frac": 0.0,
+          "league_sd": 0.02,
+          "gain_per_row": 0.0005123513261132062
+        }
+      ],
+      "folds": [
+        {
+          "block": [
+            2012,
+            2014
+          ],
+          "params": {
+            "tau_off": 0.02,
+            "tau_def": 0.01,
+            "rho": 0.75,
+            "q_frac": 0.03,
+            "league_sd": 0.02
+          },
+          "n_rows": 6580,
+          "held_out_gain_per_row": 0.000545163952902649
+        },
+        {
+          "block": [
+            2015,
+            2017
+          ],
+          "params": {
+            "tau_off": 0.03,
+            "tau_def": 0.01,
+            "rho": 0.9,
+            "q_frac": 0.0,
+            "league_sd": 0.02
+          },
+          "n_rows": 6435,
+          "held_out_gain_per_row": 0.00032597741801290914
+        },
+        {
+          "block": [
+            2018,
+            2020
+          ],
+          "params": {
+            "tau_off": 0.03,
+            "tau_def": 0.02,
+            "rho": 0.75,
+            "q_frac": 0.0,
+            "league_sd": 0.02
+          },
+          "n_rows": 6766,
+          "held_out_gain_per_row": 0.00017022696157413078
+        },
+        {
+          "block": [
+            2021,
+            2023
+          ],
+          "params": {
+            "tau_off": 0.03,
+            "tau_def": 0.02,
+            "rho": 0.75,
+            "q_frac": 0.0,
+            "league_sd": 0.02
+          },
+          "n_rows": 7934,
+          "held_out_gain_per_row": 0.0007225512049907776
+        }
+      ]
+    },
+    "drive": {
+      "score": "squared error per drive (points squared)",
+      "grid_points": 375,
+      "final_params": {
+        "tau_off": 0.3,
+        "tau_def": 0.2,
+        "rho": 0.5,
+        "q_frac": 0.06,
+        "league_sd": 0.3
+      },
+      "no_team_effect_score_per_row": 9.045002337678797,
+      "final_score_per_row": 8.947528532694218,
+      "in_sample_gain_per_row": 0.09747380498457889,
+      "best_five": [
+        {
+          "tau_off": 0.3,
+          "tau_def": 0.2,
+          "rho": 0.5,
+          "q_frac": 0.06,
+          "league_sd": 0.3,
+          "gain_per_row": 0.09747380498457889
+        },
+        {
+          "tau_off": 0.3,
+          "tau_def": 0.2,
+          "rho": 0.5,
+          "q_frac": 0.03,
+          "league_sd": 0.3,
+          "gain_per_row": 0.09667636975060555
+        },
+        {
+          "tau_off": 0.3,
+          "tau_def": 0.15,
+          "rho": 0.5,
+          "q_frac": 0.06,
+          "league_sd": 0.3,
+          "gain_per_row": 0.09613177477888439
+        },
+        {
+          "tau_off": 0.3,
+          "tau_def": 0.15,
+          "rho": 0.5,
+          "q_frac": 0.1,
+          "league_sd": 0.3,
+          "gain_per_row": 0.0960069747819598
+        },
+        {
+          "tau_off": 0.3,
+          "tau_def": 0.2,
+          "rho": 0.5,
+          "q_frac": 0.1,
+          "league_sd": 0.3,
+          "gain_per_row": 0.0959029626932445
+        }
+      ],
+      "folds": [
+        {
+          "block": [
+            2012,
+            2014
+          ],
+          "params": {
+            "tau_off": 0.3,
+            "tau_def": 0.2,
+            "rho": 0.5,
+            "q_frac": 0.06,
+            "league_sd": 0.3
+          },
+          "n_rows": 16524,
+          "held_out_gain_per_row": 0.10729381264353818
+        },
+        {
+          "block": [
+            2015,
+            2017
+          ],
+          "params": {
+            "tau_off": 0.3,
+            "tau_def": 0.2,
+            "rho": 0.5,
+            "q_frac": 0.06,
+            "league_sd": 0.3
+          },
+          "n_rows": 16145,
+          "held_out_gain_per_row": 0.07820777434077097
+        },
+        {
+          "block": [
+            2018,
+            2020
+          ],
+          "params": {
+            "tau_off": 0.3,
+            "tau_def": 0.2,
+            "rho": 0.5,
+            "q_frac": 0.06,
+            "league_sd": 0.3
+          },
+          "n_rows": 15554,
+          "held_out_gain_per_row": 0.1158368074886413
+        },
+        {
+          "block": [
+            2021,
+            2023
+          ],
+          "params": {
+            "tau_off": 0.3,
+            "tau_def": 0.2,
+            "rho": 0.5,
+            "q_frac": 0.06,
+            "league_sd": 0.3
+          },
+          "n_rows": 16218,
+          "held_out_gain_per_row": 0.089036643635432
+        }
+      ]
+    }
+  },
+  "ratings_summary": {
+    "conv_off": {
+      "sd_across_team_seasons": 0.016642700260094453,
+      "mean_posterior_sd": 0.024788464907949906
+    },
+    "conv_def": {
+      "sd_across_team_seasons": 0.008393679156662079,
+      "mean_posterior_sd": 0.018082383080394553
+    },
+    "drive_off": {
+      "sd_across_team_seasons": 0.35095516361449636,
+      "mean_posterior_sd": 0.30402678975706304
+    },
+    "drive_def": {
+      "sd_across_team_seasons": 0.20257331858934516,
+      "mean_posterior_sd": 0.2364482336693863
+    }
+  },
+  "development_cv": {
+    "conversion": {
+      "spread_only": {
+        "log_loss": 0.6597736087468972,
+        "n": 27715
+      },
+      "conversion_ratings": {
+        "log_loss": 0.6595696021831076,
+        "n": 27715,
+        "minus_spread_only": {
+          "mean": -0.00020400656378964711,
+          "lo": -0.00047172750138197215,
+          "hi": 6.272578551332942e-05,
+          "n_rows": 27715,
+          "n_games": 3257
+        },
+        "by_block": {
+          "2012-2014": -0.00018397224037104747,
+          "2015-2017": -0.00012610595420083618,
+          "2018-2020": -0.00016599213450518908,
+          "2021-2023": -0.0003162225833682994
+        }
+      },
+      "drive_ratings": {
+        "log_loss": 0.6595210272289197,
+        "n": 27715,
+        "minus_spread_only": {
+          "mean": -0.000252581517977425,
+          "lo": -0.0006572482274603337,
+          "hi": 0.00013585049910614373,
+          "n_rows": 27715,
+          "n_games": 3257
+        },
+        "by_block": {
+          "2012-2014": -0.0006950081181157751,
+          "2015-2017": -0.00011249548128717785,
+          "2018-2020": -0.0007983860799029767,
+          "2021-2023": 0.0004661766177418698
+        }
+      },
+      "all_ratings": {
+        "log_loss": 0.6594711112753507,
+        "n": 27715,
+        "minus_spread_only": {
+          "mean": -0.0003024974715465454,
+          "lo": -0.0007202183333144161,
+          "hi": 0.00010362328071121334,
+          "n_rows": 27715,
+          "n_games": 3257
+        },
+        "by_block": {
+          "2012-2014": -0.0006747700103932731,
+          "2015-2017": -0.00023602882615320503,
+          "2018-2020": -0.0007392978760390614,
+          "2021-2023": 0.0003248303718239722
+        }
+      },
+      "diagnostic_no_spread": {
+        "log_loss": 0.6595923103017748,
+        "n": 27715,
+        "minus_spread_only": {
+          "mean": -0.00018129844512242239,
+          "lo": -0.0007596201491069407,
+          "hi": 0.0003566537243752081,
+          "n_rows": 27715,
+          "n_games": 3257
+        },
+        "by_block": {
+          "2012-2014": -0.00039640665826243753,
+          "2015-2017": 8.508102847405991e-05,
+          "2018-2020": -0.001089792850691841,
+          "2021-2023": 0.0005557992707775802
+        }
+      }
+    },
+    "drive": {
+      "spread_only": {
+        "log_loss": 0.8745502012699393,
+        "n": 64441
+      },
+      "drive_ratings": {
+        "log_loss": 0.8723788656814143,
+        "n": 64441,
+        "minus_spread_only": {
+          "mean": -0.0021713355885249626,
+          "lo": -0.0027081864133982887,
+          "hi": -0.0016097603638727193,
+          "n_rows": 64441,
+          "n_games": 3259
+        },
+        "by_block": {
+          "2012-2014": -0.00239497312488092,
+          "2015-2017": -0.001913477156574131,
+          "2018-2020": -0.0029242134649781386,
+          "2021-2023": -0.0014781228152327952
+        }
+      },
+      "all_ratings": {
+        "log_loss": 0.8724149979963215,
+        "n": 64441,
+        "minus_spread_only": {
+          "mean": -0.002135203273617677,
+          "lo": -0.002667149354961075,
+          "hi": -0.0015810896931978174,
+          "n_rows": 64441,
+          "n_games": 3259
+        },
+        "by_block": {
+          "2012-2014": -0.002377793756623062,
+          "2015-2017": -0.001827003924973524,
+          "2018-2020": -0.0029110627273704138,
+          "2021-2023": -0.00145075361268592
+        }
+      },
+      "diagnostic_no_spread": {
+        "log_loss": 0.8731918205409993,
+        "n": 64441,
+        "minus_spread_only": {
+          "mean": -0.0013583807289398648,
+          "lo": -0.0020823999551119973,
+          "hi": -0.0006027483793078077,
+          "n_rows": 64441,
+          "n_games": 3259
+        },
+        "by_block": {
+          "2012-2014": -0.0014875736611175978,
+          "2015-2017": -0.0010347917020300972,
+          "2018-2020": -0.0025773401831078696,
+          "2021-2023": -0.0003798300739900678
+        }
+      }
+    }
+  },
+  "primary": {
+    "conversion": "conversion_ratings",
+    "drive": "drive_ratings"
+  },
+  "final_models": {
+    "conversion_coef": {
+      "conv_spread": {
+        "intercept": 0.040043811292684056,
+        "spread_per_10": 0.13768671827221765
+      },
+      "conv_team": {
+        "intercept": 0.038906973452938205,
+        "spread_per_10": 0.11748935753054648,
+        "off_conv": 0.02983422066192861,
+        "def_conv": 0.026512789236463254
+      },
+      "conv_with_spread": {
+        "intercept": 0.04181509205735119,
+        "spread_per_10": 0.07421997002185825,
+        "off_conv": 0.02024111735140723,
+        "def_conv": 0.008936087974665751,
+        "off_drive": 0.16275331417982966,
+        "def_drive": 0.28025500251141444
+      },
+      "conv_no_spread": {
+        "intercept": 0.04282903802859446,
+        "off_conv": 0.02170081309418857,
+        "def_conv": 0.0075431348582900605,
+        "off_drive": 0.23646226349984856,
+        "def_drive": 0.3660869982977302
+      }
+    },
+    "drive_rating_coef_by_class": {
+      "drive_spread": null,
+      "drive_team": {
+        "none": {
+          "off_drive": 0.0,
+          "def_drive": 0.0
+        },
+        "fg": {
+          "off_drive": 0.24062397888374204,
+          "def_drive": 0.36401342749994897
+        },
+        "td": {
+          "off_drive": 0.6383734209443639,
+          "def_drive": 0.577212153498893
+        }
+      },
+      "drive_with_spread": {
+        "none": {
+          "off_conv": 0.0,
+          "def_conv": 0.0,
+          "off_drive": 0.0,
+          "def_drive": 0.0
+        },
+        "fg": {
+          "off_conv": 0.007492243680732462,
+          "def_conv": -0.00840223735633301,
+          "off_drive": 0.22339643352314015,
+          "def_drive": 0.379463224472765
+        },
+        "td": {
+          "off_conv": 0.004378463956479752,
+          "def_conv": -0.0037823087707140137,
+          "off_drive": 0.6282587772060888,
+          "def_drive": 0.5842128299034601
+        }
+      },
+      "drive_no_spread": {
+        "none": {
+          "off_conv": 0.0,
+          "def_conv": 0.0,
+          "off_drive": 0.0,
+          "def_drive": 0.0
+        },
+        "fg": {
+          "off_conv": 0.009347029180536957,
+          "def_conv": -0.010045198634944217,
+          "off_drive": 0.32095536767243926,
+          "def_drive": 0.49177463233074264
+        },
+        "td": {
+          "off_conv": 0.007890631283943518,
+          "def_conv": -0.007015748816367543,
+          "off_drive": 0.8140770729616723,
+          "def_drive": 0.8015246272238927
+        }
+      }
+    }
+  },
+  "spread_contains": {
+    "spread_on_ratings": {
+      "coef": {
+        "us_conv_off": 0.018957510769695672,
+        "us_conv_def": -0.05354787725604726,
+        "us_drive_off": 11.49075799923162,
+        "us_drive_def": -12.66838121732005,
+        "them_conv_off": -0.01895751076969665,
+        "them_conv_def": 0.05354787725604668,
+        "them_drive_off": -11.49075799923161,
+        "them_drive_def": 12.668381217320034
+      },
+      "r2_uncentered": 0.6397663939968417,
+      "n": 6518
+    },
+    "implied_effects": {
+      "average_base_conversion": 0.5933690896948779,
+      "conv_with_spread": {
+        "offense_top_minus_bottom_points": 5.371964907532933,
+        "defense_worst_minus_best_points": 4.316374657531785
+      },
+      "conv_no_spread": {
+        "offense_top_minus_bottom_points": 7.304422027979429,
+        "defense_worst_minus_best_points": 5.5225801563476455
+      },
+      "drive_with_spread": {
+        "from_own_25": {
+          "top_offense": {
+            "p_td": 0.2779161702665778,
+            "p_fg": 0.13583296152371316,
+            "points": 2.352912076437184
+          },
+          "bottom_offense": {
+            "p_td": 0.170404207546666,
+            "p_fg": 0.12633040459050532,
+            "points": 1.5718206665981778
+          },
+          "vs_worst_defense": {
+            "p_td": 0.24489102648227484,
+            "p_fg": 0.1388340682171614,
+            "points": 2.1307393900274083
+          },
+          "vs_best_defense": {
+            "p_td": 0.19171678395712233,
+            "p_fg": 0.1237173140953269,
+            "points": 1.7131694299858369
+          }
+        },
+        "offense_top_minus_bottom_points_per_drive": 0.7810914098390063,
+        "defense_worst_minus_best_points_per_drive": 0.41756996004157143
+      },
+      "drive_no_spread": {
+        "from_own_25": {
+          "top_offense": {
+            "p_td": 0.29716150800521257,
+            "p_fg": 0.13805665313150367,
+            "points": 2.494300515430999
+          },
+          "bottom_offense": {
+            "p_td": 0.1577695485182453,
+            "p_fg": 0.12251262635200166,
+            "points": 1.4719247186837219
+          },
+          "vs_worst_defense": {
+            "p_td": 0.25506520220676915,
+            "p_fg": 0.1403164418621517,
+            "points": 2.206405741033839
+          },
+          "vs_best_defense": {
+            "p_td": 0.18218333749910617,
+            "p_fg": 0.12135717542252349,
+            "points": 1.6393548887613136
+          }
+        },
+        "offense_top_minus_bottom_points_per_drive": 1.0223757967472773,
+        "defense_worst_minus_best_points_per_drive": 0.5670508522725253
+      }
+    }
+  },
+  "groups": {
+    "average": {
+      "conv_off": 0.0,
+      "drive_off": 0.0,
+      "conv_def": 0.0,
+      "drive_def": 0.0
+    },
+    "top": {
+      "conv_off": 0.015745040429980994,
+      "drive_off": 0.5295160989842835
+    },
+    "bottom": {
+      "conv_off": -0.01099328987107827,
+      "drive_off": -0.5200919383578283
+    },
+    "worst": {
+      "conv_def": 0.006646130579305645,
+      "drive_def": 0.28350845888502635
+    },
+    "best": {
+      "conv_def": -0.004940853456168299,
+      "drive_def": -0.3228946155355426
+    }
+  },
+  "drive_constants": {
+    "seconds": {
+      "none": 131.51911408524558,
+      "fg": 249.1002012498676,
+      "td": 216.81687972692592
+    },
+    "next_start_intercept": 96.6249104455115,
+    "next_start_slope": -0.3598965663224332,
+    "n_none_with_next": 38073
+  },
+  "evaluation_plan": {
+    "written_at": "2026-11-17T21:11:33+00:00",
+    "test_seasons": [
+      2024,
+      2025
+    ],
+    "filter_constants": {
+      "conv": {
+        "tau_off": 0.03,
+        "tau_def": 0.02,
+        "rho": 0.75,
+        "q_frac": 0.0,
+        "league_sd": 0.02
+      },
+      "drive": {
+        "tau_off": 0.3,
+        "tau_def": 0.2,
+        "rho": 0.5,
+        "q_frac": 0.06,
+        "league_sd": 0.3
+      }
+    },
+    "residual_bases": "fitted on development seasons 2010-2023 for both test seasons",
+    "ratings": "pre-game, from the filter run forward through the test seasons with the frozen constants (online updating, no refit)",
+    "models_fitted_on": [
+      2012,
+      2013,
+      2014,
+      2015,
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023
+    ],
+    "primary_conversion_variant": "conversion_ratings",
+    "primary_drive_variant": "drive_ratings",
+    "comparison": "mean log loss per row, primary minus spread_only, 95% interval from 2000 resamples of test-season games",
+    "conversion_rows": "third and fourth downs, 1 to 3 to go, runs and passes",
+    "drive_rows": "regulation drives starting with more than 120 s left in the half",
+    "reading": "an interval entirely below 0 is an improvement; an interval that includes 0, or a mean within 0.001 of 0, means the spread already carries what the ratings know",
+    "hash": "ebce69d03e102ca4"
+  },
+  "test": {
+    "scored_at": "2026-11-17T21:11:37+00:00",
+    "plan_hash": "ebce69d03e102ca4",
+    "seasons": [
+      2024,
+      2025
+    ],
+    "conversion": {
+      "spread_only": {
+        "log_loss": 0.6526571372605137,
+        "n": 5355
+      },
+      "conversion_ratings": {
+        "log_loss": 0.6524488224292431,
+        "n": 5355,
+        "minus_spread_only": {
+          "mean": -0.00020831483127059617,
+          "lo": -0.0008438835278420441,
+          "hi": 0.0004544126528621191,
+          "n_rows": 5355,
+          "n_games": 570
+        },
+        "by_block": {
+          "2024-2024": -0.0003160398050824585,
+          "2025-2025": -0.00010542745212060275
+        }
+      }
+    },
+    "drive": {
+      "spread_only": {
+        "log_loss": 0.9183679954476683,
+        "n": 10500
+      },
+      "drive_ratings": {
+        "log_loss": 0.9149120941465579,
+        "n": 10500,
+        "minus_spread_only": {
+          "mean": -0.0034559013011105245,
+          "lo": -0.005032704063166747,
+          "hi": -0.0018877377031723099,
+          "n_rows": 10500,
+          "n_games": 570
+        },
+        "by_block": {
+          "2024-2024": -0.0033048329371850077,
+          "2025-2025": -0.0036099921948260093
+        }
+      }
+    },
+    "observed_conversion_rate": 0.6098972922502335,
+    "predicted_conversion_rate_spread_only": 0.6123514327151304,
+    "ratings_season_end": {
+      "2024": [
+        {
+          "season": 2024,
+          "team": "ARI",
+          "conv_off": 0.012448915224103616,
+          "conv_off_sd": 0.02475359515885602,
+          "conv_def": 0.00952927142949635,
+          "conv_def_sd": 0.017909682318921646,
+          "drive_off": 0.2762079949263442,
+          "drive_off_sd": 0.31752006208087746,
+          "drive_def": 0.1152296868244178,
+          "drive_def_sd": 0.2462489637502966
+        },
+        {
+          "season": 2024,
+          "team": "ATL",
+          "conv_off": 0.003872551578276665,
+          "conv_off_sd": 0.024294425301410478,
+          "conv_def": 0.01235299767842788,
+          "conv_def_sd": 0.017879217380582988,
+          "drive_off": 0.04556766695923908,
+          "drive_off_sd": 0.32013878072043045,
+          "drive_def": 0.22226835551624166,
+          "drive_def_sd": 0.24699900754846968
+        },
+        {
+          "season": 2024,
+          "team": "BAL",
+          "conv_off": 0.03996369721507659,
+          "conv_off_sd": 0.02419150167726961,
+          "conv_def": -0.02302164517544806,
+          "conv_def_sd": 0.017765766207749504,
+          "drive_off": 0.8009645611841292,
+          "drive_off_sd": 0.30143875764550354,
+          "drive_def": -0.17099392424827134,
+          "drive_def_sd": 0.23539890426009621
+        },
+        {
+          "season": 2024,
+          "team": "BUF",
+          "conv_off": 0.027985165171614392,
+          "conv_off_sd": 0.02323712602213857,
+          "conv_def": 0.0005409822781430166,
+          "conv_def_sd": 0.01785827264551235,
+          "drive_off": 0.766856971303768,
+          "drive_off_sd": 0.29316038515928916,
+          "drive_def": 0.09933828761619724,
+          "drive_def_sd": 0.23232734345104447
+        },
+        {
+          "season": 2024,
+          "team": "CAR",
+          "conv_off": -0.008501669961109749,
+          "conv_off_sd": 0.024307162278869806,
+          "conv_def": 0.017076632207123885,
+          "conv_def_sd": 0.01786053701583354,
+          "drive_off": -0.22995560479462498,
+          "drive_off_sd": 0.3194009006092811,
+          "drive_def": 0.4694845609643586,
+          "drive_def_sd": 0.2452927475787133
+        },
+        {
+          "season": 2024,
+          "team": "CHI",
+          "conv_off": -0.008879997438812121,
+          "conv_off_sd": 0.024511375414221825,
+          "conv_def": 0.002289075121756526,
+          "conv_def_sd": 0.01794364040864101,
+          "drive_off": -0.42060617552123614,
+          "drive_off_sd": 0.3161242191178981,
+          "drive_def": -0.11410032602543109,
+          "drive_def_sd": 0.242653298529705
+        },
+        {
+          "season": 2024,
+          "team": "CIN",
+          "conv_off": -0.0033623548362065226,
+          "conv_off_sd": 0.023921862443195593,
+          "conv_def": 0.004300023817252735,
+          "conv_def_sd": 0.017779365172952328,
+          "drive_off": 0.319821848661333,
+          "drive_off_sd": 0.31972286768035624,
+          "drive_def": 0.24326197402271799,
+          "drive_def_sd": 0.2459458596498476
+        },
+        {
+          "season": 2024,
+          "team": "CLE",
+          "conv_off": -0.019067460539553185,
+          "conv_off_sd": 0.024271563871045173,
+          "conv_def": -0.013447963366884535,
+          "conv_def_sd": 0.01792265974798475,
+          "drive_off": -0.8629074788795219,
+          "drive_off_sd": 0.3059067358370479,
+          "drive_def": -0.19111321908251497,
+          "drive_def_sd": 0.23791036915486014
+        },
+        {
+          "season": 2024,
+          "team": "DAL",
+          "conv_off": 0.02409392753941772,
+          "conv_off_sd": 0.024351031774543317,
+          "conv_def": 0.005790937210166987,
+          "conv_def_sd": 0.01771012619382503,
+          "drive_off": -0.26369616997391704,
+          "drive_off_sd": 0.31132457960082305,
+          "drive_def": -0.062372446698124445,
+          "drive_def_sd": 0.24181121478956252
+        },
+        {
+          "season": 2024,
+          "team": "DEN",
+          "conv_off": 0.0016157356740509304,
+          "conv_off_sd": 0.02398866917217287,
+          "conv_def": -0.006815416841512225,
+          "conv_def_sd": 0.01780060037446885,
+          "drive_off": 0.06295322008352339,
+          "drive_off_sd": 0.3104462119304089,
+          "drive_def": -0.215984426697955,
+          "drive_def_sd": 0.23886075284659725
+        },
+        {
+          "season": 2024,
+          "team": "DET",
+          "conv_off": 0.011552309516337725,
+          "conv_off_sd": 0.023552391143320875,
+          "conv_def": 0.0012925409979076194,
+          "conv_def_sd": 0.018029187767420393,
+          "drive_off": 0.9578680126652951,
+          "drive_off_sd": 0.3018928318151032,
+          "drive_def": 0.05498212034375533,
+          "drive_def_sd": 0.23677559032760445
+        },
+        {
+          "season": 2024,
+          "team": "GB",
+          "conv_off": 0.0033055244351471178,
+          "conv_off_sd": 0.024099337877319684,
+          "conv_def": 0.006947977446811461,
+          "conv_def_sd": 0.01762322815285795,
+          "drive_off": 0.3385257088400762,
+          "drive_off_sd": 0.3053581603956783,
+          "drive_def": -0.16418466060081907,
+          "drive_def_sd": 0.2381761831757141
+        },
+        {
+          "season": 2024,
+          "team": "HOU",
+          "conv_off": -0.005697132381205088,
+          "conv_off_sd": 0.024166650894511133,
+          "conv_def": 0.005984165134619059,
+          "conv_def_sd": 0.017804049232925764,
+          "drive_off": -0.31599538039279884,
+          "drive_off_sd": 0.2970192891077569,
+          "drive_def": -0.12284391625076904,
+          "drive_def_sd": 0.23346099616340377
+        },
+        {
+          "season": 2024,
+          "team": "IND",
+          "conv_off": -0.009876113883822977,
+          "conv_off_sd": 0.023996031481823155,
+          "conv_def": -0.006925563025196509,
+          "conv_def_sd": 0.017579685891786538,
+          "drive_off": -0.12522462220625769,
+          "drive_off_sd": 0.3106795550306694,
+          "drive_def": 0.1461446817811547,
+          "drive_def_sd": 0.24134664485015114
+        },
+        {
+          "season": 2024,
+          "team": "JAX",
+          "conv_off": -0.02545190723866188,
+          "conv_off_sd": 0.024176548325534737,
+          "conv_def": 0.006103585240867558,
+          "conv_def_sd": 0.017740834529028436,
+          "drive_off": -0.07363347460692107,
+          "drive_off_sd": 0.31834139993616384,
+          "drive_def": 0.29399016617945994,
+          "drive_def_sd": 0.24555814326219005
+        },
+        {
+          "season": 2024,
+          "team": "KC",
+          "conv_off": 0.01402842253769972,
+          "conv_off_sd": 0.023455114866696283,
+          "conv_def": 0.00855314230513206,
+          "conv_def_sd": 0.017435889540606906,
+          "drive_off": 0.23483588215619328,
+          "drive_off_sd": 0.2872472120200137,
+          "drive_def": -0.021348466394704408,
+          "drive_def_sd": 0.22875094879592778
+        },
+        {
+          "season": 2024,
+          "team": "LA",
+          "conv_off": 0.008617036218234253,
+          "conv_off_sd": 0.023939890782300854,
+          "conv_def": 0.008028561851299154,
+          "conv_def_sd": 0.01777535403256502,
+          "drive_off": 0.18399625834266667,
+          "drive_off_sd": 0.299443981134182,
+          "drive_def": -0.06329025397414881,
+          "drive_def_sd": 0.2340567707206212
+        },
+        {
+          "season": 2024,
+          "team": "LAC",
+          "conv_off": -0.0008656404019377015,
+          "conv_off_sd": 0.024061239931626864,
+          "conv_def": -0.004150001752168178,
+          "conv_def_sd": 0.01768868169366223,
+          "drive_off": 0.09794188636060824,
+          "drive_off_sd": 0.3040262701807356,
+          "drive_def": -0.09605247466513187,
+          "drive_def_sd": 0.23551573984949215
+        },
+        {
+          "season": 2024,
+          "team": "LV",
+          "conv_off": -0.02237548277123048,
+          "conv_off_sd": 0.02455454880787818,
+          "conv_def": 0.011451840461455604,
+          "conv_def_sd": 0.01792710273736764,
+          "drive_off": -0.35502570209747025,
+          "drive_off_sd": 0.3143017040739488,
+          "drive_def": -0.03269028143175125,
+          "drive_def_sd": 0.2411857398154055
+        },
+        {
+          "season": 2024,
+          "team": "MIA",
+          "conv_off": -0.040197086078874934,
+          "conv_off_sd": 0.024177513688383712,
+          "conv_def": -0.009839468633805123,
+          "conv_def_sd": 0.01785157858363935,
+          "drive_off": -0.030972194888823412,
+          "drive_off_sd": 0.3153348476435952,
+          "drive_def": -0.006125086671136822,
+          "drive_def_sd": 0.24287493441794347
+        },
+        {
+          "season": 2024,
+          "team": "MIN",
+          "conv_off": -0.013049408354642463,
+          "conv_off_sd": 0.02449747509620134,
+          "conv_def": -0.014556259180952446,
+          "conv_def_sd": 0.01777898915696109,
+          "drive_off": 0.022890588099677114,
+          "drive_off_sd": 0.3037333990609975,
+          "drive_def": -0.28694998553018985,
+          "drive_def_sd": 0.23783243868068948
+        },
+        {
+          "season": 2024,
+          "team": "NE",
+          "conv_off": -0.018488782075597253,
+          "conv_off_sd": 0.024407611516634405,
+          "conv_def": 0.005451861256600994,
+          "conv_def_sd": 0.01776296405965591,
+          "drive_off": -0.47136946379559436,
+          "drive_off_sd": 0.3185629743453412,
+          "drive_def": 0.08822180711627914,
+          "drive_def_sd": 0.24689906263561304
+        },
+        {
+          "season": 2024,
+          "team": "NO",
+          "conv_off": 0.008411368086323584,
+          "conv_off_sd": 0.024393462306466787,
+          "conv_def": -0.008751039652342493,
+          "conv_def_sd": 0.018015260608450573,
+          "drive_off": -0.39030003100384897,
+          "drive_off_sd": 0.3187531054742096,
+          "drive_def": 0.1242621725161696,
+          "drive_def_sd": 0.24429633412879873
+        },
+        {
+          "season": 2024,
+          "team": "NYG",
+          "conv_off": -0.01460794150143571,
+          "conv_off_sd": 0.023906236636440904,
+          "conv_def": 0.004252523406938613,
+          "conv_def_sd": 0.017805938381760276,
+          "drive_off": -0.6178390135934222,
+          "drive_off_sd": 0.3171216527174773,
+          "drive_def": 0.1455915539506687,
+          "drive_def_sd": 0.24315534794113886
+        },
+        {
+          "season": 2024,
+          "team": "NYJ",
+          "conv_off": -0.03379453112490503,
+          "conv_off_sd": 0.024527675023329285,
+          "conv_def": -0.006601492198632637,
+          "conv_def_sd": 0.017919777175942897,
+          "drive_off": -0.2423628527686431,
+          "drive_off_sd": 0.3179211126705734,
+          "drive_def": 0.12067095055937738,
+          "drive_def_sd": 0.24597306277848907
+        },
+        {
+          "season": 2024,
+          "team": "PHI",
+          "conv_off": 0.0352115972521493,
+          "conv_off_sd": 0.023442033411718632,
+          "conv_def": -0.004179876920893001,
+          "conv_def_sd": 0.017527998155785877,
+          "drive_off": 0.4525725230723399,
+          "drive_off_sd": 0.2759546272718767,
+          "drive_def": -0.3824037886484392,
+          "drive_def_sd": 0.22376088075245423
+        },
+        {
+          "season": 2024,
+          "team": "PIT",
+          "conv_off": -0.01894575663733472,
+          "conv_off_sd": 0.024252317721786865,
+          "conv_def": 0.0017541820373320855,
+          "conv_def_sd": 0.017827257858034174,
+          "drive_off": -0.24272739721944184,
+          "drive_off_sd": 0.30599670606683993,
+          "drive_def": -0.12423304812985292,
+          "drive_def_sd": 0.23848841457096936
+        },
+        {
+          "season": 2024,
+          "team": "SEA",
+          "conv_off": -0.018831748854732495,
+          "conv_off_sd": 0.024849918526663687,
+          "conv_def": -0.005496023808582508,
+          "conv_def_sd": 0.017586491724731947,
+          "drive_off": -0.10365838167650879,
+          "drive_off_sd": 0.31621383044481977,
+          "drive_def": -0.1853770326776234,
+          "drive_def_sd": 0.24254261900956559
+        },
+        {
+          "season": 2024,
+          "team": "SF",
+          "conv_off": 0.012378830651437904,
+          "conv_off_sd": 0.02482065297804103,
+          "conv_def": 0.002637161053149455,
+          "conv_def_sd": 0.017656803300114734,
+          "drive_off": 0.2781333921008048,
+          "drive_off_sd": 0.31674729419108244,
+          "drive_def": 0.13540783829773717,
+          "drive_def_sd": 0.24281160371727614
+        },
+        {
+          "season": 2024,
+          "team": "TB",
+          "conv_off": 0.023084057150869773,
+          "conv_off_sd": 0.024303149404297644,
+          "conv_def": -0.0020358517498580237,
+          "conv_def_sd": 0.017730790461473665,
+          "drive_off": 0.6140773803709207,
+          "drive_off_sd": 0.3102004808476124,
+          "drive_def": -0.0713736791690476,
+          "drive_def_sd": 0.24167715490550967
+        },
+        {
+          "season": 2024,
+          "team": "TEN",
+          "conv_off": 0.01500575204468102,
+          "conv_off_sd": 0.02456923720905399,
+          "conv_def": -0.002411457137669847,
+          "conv_def_sd": 0.01762397324052074,
+          "drive_off": -0.5262183969385529,
+          "drive_off_sd": 0.3152914647370558,
+          "drive_def": 0.13285241049826846,
+          "drive_def_sd": 0.24369053392268117
+        },
+        {
+          "season": 2024,
+          "team": "WAS",
+          "conv_off": 0.019333832482064908,
+          "conv_off_sd": 0.023293440496459893,
+          "conv_def": -0.006587308736125259,
+          "conv_def_sd": 0.017733344424929146,
+          "drive_off": 0.5118463979798384,
+          "drive_off_sd": 0.2908382520113515,
+          "drive_def": 0.22753842970874036,
+          "drive_def_sd": 0.23106416971191784
+        }
+      ],
+      "2025": [
+        {
+          "season": 2025,
+          "team": "ARI",
+          "conv_off": 0.016482567486752548,
+          "conv_off_sd": 0.024543821154301832,
+          "conv_def": 0.01638355833171833,
+          "conv_def_sd": 0.017836591421581807,
+          "drive_off": -0.017293515793522677,
+          "drive_off_sd": 0.31797031713180857,
+          "drive_def": 0.38334524545380694,
+          "drive_def_sd": 0.24494624723427705
+        },
+        {
+          "season": 2025,
+          "team": "ATL",
+          "conv_off": -0.0029232998122109377,
+          "conv_off_sd": 0.02431918572357546,
+          "conv_def": 0.008910561286881408,
+          "conv_def_sd": 0.017674957142617978,
+          "drive_off": -0.1481149192747918,
+          "drive_off_sd": 0.31510663501857344,
+          "drive_def": 0.07528720386347705,
+          "drive_def_sd": 0.24429084536333648
+        },
+        {
+          "season": 2025,
+          "team": "BAL",
+          "conv_off": 0.0222384226614326,
+          "conv_off_sd": 0.02426199552387542,
+          "conv_def": -0.018546321204721078,
+          "conv_def_sd": 0.017612194655092398,
+          "drive_off": 0.3141885543867224,
+          "drive_off_sd": 0.3180765230145534,
+          "drive_def": 0.04987244742044804,
+          "drive_def_sd": 0.24452513845987522
+        },
+        {
+          "season": 2025,
+          "team": "BUF",
+          "conv_off": 0.031158976635740365,
+          "conv_off_sd": 0.02311570318222067,
+          "conv_def": 0.012662639884997107,
+          "conv_def_sd": 0.0178527438138515,
+          "drive_off": 0.809064115980093,
+          "drive_off_sd": 0.29994413938631453,
+          "drive_def": 0.1044496528327889,
+          "drive_def_sd": 0.23401074998413735
+        },
+        {
+          "season": 2025,
+          "team": "CAR",
+          "conv_off": -0.007650388911805902,
+          "conv_off_sd": 0.024062068198547695,
+          "conv_def": 0.01752341874072475,
+          "conv_def_sd": 0.017960518056847414,
+          "drive_off": -0.17938563096173757,
+          "drive_off_sd": 0.31396336541331427,
+          "drive_def": 0.17890957634543883,
+          "drive_def_sd": 0.24296920813455994
+        },
+        {
+          "season": 2025,
+          "team": "CHI",
+          "conv_off": -0.004730998435084408,
+          "conv_off_sd": 0.02368182938133183,
+          "conv_def": 0.0011096932151001312,
+          "conv_def_sd": 0.01768629471455752,
+          "drive_off": 0.15298533810654136,
+          "drive_off_sd": 0.29928905400151307,
+          "drive_def": 0.0027368620091870093,
+          "drive_def_sd": 0.23595524663142342
+        },
+        {
+          "season": 2025,
+          "team": "CIN",
+          "conv_off": 0.004171202831415586,
+          "conv_off_sd": 0.02427252323673277,
+          "conv_def": 0.0023230912246875518,
+          "conv_def_sd": 0.017783816271924338,
+          "drive_off": 0.021769650589975036,
+          "drive_off_sd": 0.31689226035992824,
+          "drive_def": 0.25741427300707737,
+          "drive_def_sd": 0.24688454974276944
+        },
+        {
+          "season": 2025,
+          "team": "CLE",
+          "conv_off": -0.005633688511425448,
+          "conv_off_sd": 0.02450890070522946,
+          "conv_def": -0.005754982600527585,
+          "conv_def_sd": 0.017928657247454682,
+          "drive_off": -0.8449431033126711,
+          "drive_off_sd": 0.3099863376503627,
+          "drive_def": -0.40965836587554927,
+          "drive_def_sd": 0.23954118389006832
+        },
+        {
+          "season": 2025,
+          "team": "DAL",
+          "conv_off": 0.024699326515903047,
+          "conv_off_sd": 0.024208459835593072,
+          "conv_def": 0.01177785480963749,
+          "conv_def_sd": 0.017875713106828613,
+          "drive_off": 0.30016516259661946,
+          "drive_off_sd": 0.31677406338704484,
+          "drive_def": 0.45608063410003646,
+          "drive_def_sd": 0.24398318605988534
+        },
+        {
+          "season": 2025,
+          "team": "DEN",
+          "conv_off": -0.0022356047508647362,
+          "conv_off_sd": 0.02374105798347721,
+          "conv_def": -0.005770875961818079,
+          "conv_def_sd": 0.01773235868049604,
+          "drive_off": -0.08891578642421505,
+          "drive_off_sd": 0.29317063653889053,
+          "drive_def": -0.3639095439481977,
+          "drive_def_sd": 0.23214325958326376
+        },
+        {
+          "season": 2025,
+          "team": "DET",
+          "conv_off": 0.0012062992252627176,
+          "conv_off_sd": 0.023910363781192902,
+          "conv_def": -0.006800001405657378,
+          "conv_def_sd": 0.017949936484561627,
+          "drive_off": 0.4015629120374392,
+          "drive_off_sd": 0.3125843197212318,
+          "drive_def": 0.09158757973133916,
+          "drive_def_sd": 0.24113121456936618
+        },
+        {
+          "season": 2025,
+          "team": "GB",
+          "conv_off": 0.0025628378227996675,
+          "conv_off_sd": 0.023479660728066547,
+          "conv_def": 0.009067693472246405,
+          "conv_def_sd": 0.017565012147208733,
+          "drive_off": 0.4768212127772802,
+          "drive_off_sd": 0.31375035719447614,
+          "drive_def": 0.11320551169998869,
+          "drive_def_sd": 0.24346381496145417
+        },
+        {
+          "season": 2025,
+          "team": "HOU",
+          "conv_off": 0.0008397485978849128,
+          "conv_off_sd": 0.023958458677283575,
+          "conv_def": -0.003946709148805498,
+          "conv_def_sd": 0.01789954534873078,
+          "drive_off": -0.19949472419506176,
+          "drive_off_sd": 0.2909681942593462,
+          "drive_def": -0.40674150686920335,
+          "drive_def_sd": 0.229191449088412
+        },
+        {
+          "season": 2025,
+          "team": "IND",
+          "conv_off": 0.004987459078743984,
+          "conv_off_sd": 0.024039101690224222,
+          "conv_def": 0.005094341041104734,
+          "conv_def_sd": 0.01766732688172436,
+          "drive_off": 0.4037357008696938,
+          "drive_off_sd": 0.31725652665480375,
+          "drive_def": 0.13662003967207323,
+          "drive_def_sd": 0.24474373612412104
+        },
+        {
+          "season": 2025,
+          "team": "JAX",
+          "conv_off": -0.020490143573097003,
+          "conv_off_sd": 0.024106437446862687,
+          "conv_def": 0.007027278284653512,
+          "conv_def_sd": 0.017711893444086458,
+          "drive_off": 0.22360540020054825,
+          "drive_off_sd": 0.30687583044258615,
+          "drive_def": -0.16752380305645992,
+          "drive_def_sd": 0.23844167748306144
+        },
+        {
+          "season": 2025,
+          "team": "KC",
+          "conv_off": 0.024352419541116194,
+          "conv_off_sd": 0.023410389340052358,
+          "conv_def": 0.003140093476149498,
+          "conv_def_sd": 0.017418013528865094,
+          "drive_off": -0.09055709278536272,
+          "drive_off_sd": 0.31543897228075235,
+          "drive_def": -0.05670247433217554,
+          "drive_def_sd": 0.2437245724908287
+        },
+        {
+          "season": 2025,
+          "team": "LA",
+          "conv_off": -0.004379293566965008,
+          "conv_off_sd": 0.02317442319683983,
+          "conv_def": 0.005858069770626206,
+          "conv_def_sd": 0.01745642455784063,
+          "drive_off": 0.5966185921235974,
+          "drive_off_sd": 0.28930068643318463,
+          "drive_def": -0.20752393354879362,
+          "drive_def_sd": 0.23002675736426584
+        },
+        {
+          "season": 2025,
+          "team": "LAC",
+          "conv_off": 0.006304514941762052,
+          "conv_off_sd": 0.023812869696930448,
+          "conv_def": -0.007427894048417421,
+          "conv_def_sd": 0.017916271575550077,
+          "drive_off": -0.23367578836734862,
+          "drive_off_sd": 0.3040995110922082,
+          "drive_def": -0.15202945941944154,
+          "drive_def_sd": 0.23940281298720667
+        },
+        {
+          "season": 2025,
+          "team": "LV",
+          "conv_off": -0.03825345324078031,
+          "conv_off_sd": 0.024085744321968736,
+          "conv_def": 0.01417661298957704,
+          "conv_def_sd": 0.017674699968542824,
+          "drive_off": -0.6784379866327501,
+          "drive_off_sd": 0.31575367331193865,
+          "drive_def": 0.09306032583267645,
+          "drive_def_sd": 0.24297567236259246
+        },
+        {
+          "season": 2025,
+          "team": "MIA",
+          "conv_off": -0.03923595432647381,
+          "conv_off_sd": 0.024952152352163276,
+          "conv_def": -0.011654546224632419,
+          "conv_def_sd": 0.017647515945753218,
+          "drive_off": -0.17119342267801618,
+          "drive_off_sd": 0.3150157423677678,
+          "drive_def": 0.16608917679527122,
+          "drive_def_sd": 0.24335427117305905
+        },
+        {
+          "season": 2025,
+          "team": "MIN",
+          "conv_off": -0.03207409917377982,
+          "conv_off_sd": 0.02468554749766627,
+          "conv_def": -0.010931657385617886,
+          "conv_def_sd": 0.017680852699774027,
+          "drive_off": -0.2777456100837882,
+          "drive_off_sd": 0.31657860566587687,
+          "drive_def": -0.44401404889582574,
+          "drive_def_sd": 0.24403215230643632
+        },
+        {
+          "season": 2025,
+          "team": "NE",
+          "conv_off": -0.0014930224187388501,
+          "conv_off_sd": 0.02384530080945436,
+          "conv_def": 0.00765860813675373,
+          "conv_def_sd": 0.01772032520254362,
+          "drive_off": 0.05353101404191665,
+          "drive_off_sd": 0.27406388710023444,
+          "drive_def": -0.4248483868558641,
+          "drive_def_sd": 0.2212665860752225
+        },
+        {
+          "season": 2025,
+          "team": "NO",
+          "conv_off": 0.0020482871412814906,
+          "conv_off_sd": 0.02394445631184935,
+          "conv_def": -0.004937286798467113,
+          "conv_def_sd": 0.017929932955862926,
+          "drive_off": -0.45516333791226204,
+          "drive_off_sd": 0.3150696664534124,
+          "drive_def": -0.11889417355817662,
+          "drive_def_sd": 0.24408265614962385
+        },
+        {
+          "season": 2025,
+          "team": "NYG",
+          "conv_off": -0.0013487972611018213,
+          "conv_off_sd": 0.024073903636980885,
+          "conv_def": 0.005960313159565987,
+          "conv_def_sd": 0.01794342377025896,
+          "drive_off": 0.017479212931199528,
+          "drive_off_sd": 0.32197147299080514,
+          "drive_def": 0.21987048163110365,
+          "drive_def_sd": 0.24746109779897796
+        },
+        {
+          "season": 2025,
+          "team": "NYJ",
+          "conv_off": -0.02506615891551107,
+          "conv_off_sd": 0.024360799200477352,
+          "conv_def": -0.004204617674178499,
+          "conv_def_sd": 0.017984936929581502,
+          "drive_off": -0.56349106408226,
+          "drive_off_sd": 0.3158075808278556,
+          "drive_def": 0.40000111972474606,
+          "drive_def_sd": 0.24325885493091903
+        },
+        {
+          "season": 2025,
+          "team": "PHI",
+          "conv_off": 0.023855370981628123,
+          "conv_off_sd": 0.024318295866188843,
+          "conv_def": -0.014972054844230639,
+          "conv_def_sd": 0.017462426662359004,
+          "drive_off": 0.03626710693325954,
+          "drive_off_sd": 0.305814983752482,
+          "drive_def": -0.3536325025160279,
+          "drive_def_sd": 0.23789830002616308
+        },
+        {
+          "season": 2025,
+          "team": "PIT",
+          "conv_off": -0.003207149032608635,
+          "conv_off_sd": 0.0241628632888342,
+          "conv_def": 0.004038010615863478,
+          "conv_def_sd": 0.017539526323180593,
+          "drive_off": -0.28962136329287497,
+          "drive_off_sd": 0.3040584751803739,
+          "drive_def": -0.014583347967796914,
+          "drive_def_sd": 0.2382656141316712
+        },
+        {
+          "season": 2025,
+          "team": "SEA",
+          "conv_off": -0.001115788820602449,
+          "conv_off_sd": 0.024396953000114813,
+          "conv_def": -0.026185443832425062,
+          "conv_def_sd": 0.01740536149884516,
+          "drive_off": 0.1508604432776603,
+          "drive_off_sd": 0.2824986261771004,
+          "drive_def": -0.6910869275905122,
+          "drive_def_sd": 0.2257981417681137
+        },
+        {
+          "season": 2025,
+          "team": "SF",
+          "conv_off": 0.017450562814200914,
+          "conv_off_sd": 0.023967871601615866,
+          "conv_def": -0.0032321908738045806,
+          "conv_def_sd": 0.017633175183222858,
+          "drive_off": 0.4296499331501191,
+          "drive_off_sd": 0.30307393628233875,
+          "drive_def": 0.16928157731439078,
+          "drive_def_sd": 0.23825387406298437
+        },
+        {
+          "season": 2025,
+          "team": "TB",
+          "conv_off": 0.01408603057365561,
+          "conv_off_sd": 0.02409536187922932,
+          "conv_def": -0.006120226113400245,
+          "conv_def_sd": 0.017903997838189332,
+          "drive_off": -0.08083303629272826,
+          "drive_off_sd": 0.3185803314924211,
+          "drive_def": 0.056960347352556714,
+          "drive_def_sd": 0.2454405902916886
+        },
+        {
+          "season": 2025,
+          "team": "TEN",
+          "conv_off": -0.010555035947526766,
+          "conv_off_sd": 0.024328070203380535,
+          "conv_def": 0.005326766672496144,
+          "conv_def_sd": 0.01775245239810913,
+          "drive_off": -0.5038016995218497,
+          "drive_off_sd": 0.3140986146249026,
+          "drive_def": 0.2432485824533002,
+          "drive_def_sd": 0.24295135558829686
+        },
+        {
+          "season": 2025,
+          "team": "WAS",
+          "conv_off": 0.0030075964162447674,
+          "conv_off_sd": 0.02397063497765493,
+          "conv_def": -0.007972131855080966,
+          "conv_def_sd": 0.017631063000403405,
+          "drive_off": 0.07026122452539339,
+          "drive_off_sd": 0.3221818315484906,
+          "drive_def": 0.4513045007129048,
+          "drive_def_sd": 0.24640340132801206
+        }
+      ]
+    },
+    "lions_weekly": [
+      {
+        "season": 2021,
+        "week": 1,
+        "drive_off": -0.08373171904880237,
+        "drive_off_sd": 0.30337438969975933,
+        "drive_def": 0.22080248711468053,
+        "drive_def_sd": 0.21096164596459288,
+        "conv_off": 0.0022247999335358367,
+        "conv_off_sd": 0.027372224359500676,
+        "conv_def": 0.01457387764351659,
+        "conv_def_sd": 0.018968540876659428
+      },
+      {
+        "season": 2021,
+        "week": 2,
+        "drive_off": -0.11152147827799794,
+        "drive_off_sd": 0.2993850653320909,
+        "drive_def": 0.26229835662409023,
+        "drive_def_sd": 0.21264116756146176,
+        "conv_off": -0.0023460526941057264,
+        "conv_off_sd": 0.027157524655797582,
+        "conv_def": 0.013216931148094895,
+        "conv_def_sd": 0.018952172140554967
+      },
+      {
+        "season": 2021,
+        "week": 3,
+        "drive_off": -0.11880395505569791,
+        "drive_off_sd": 0.2983450244276383,
+        "drive_def": 0.3127200743524511,
+        "drive_def_sd": 0.21463361373196574,
+        "conv_off": -0.004383007521205281,
+        "conv_off_sd": 0.02683978435569472,
+        "conv_def": 0.013145201125017597,
+        "conv_def_sd": 0.018923340414902217
+      },
+      {
+        "season": 2021,
+        "week": 4,
+        "drive_off": -0.10978775187604171,
+        "drive_off_sd": 0.2962461516569223,
+        "drive_def": 0.29257787394770207,
+        "drive_def_sd": 0.21635989346845574,
+        "conv_off": -0.005175818843924727,
+        "conv_off_sd": 0.026755921870700285,
+        "conv_def": 0.011539400681556207,
+        "conv_def_sd": 0.018896705412827314
+      },
+      {
+        "season": 2021,
+        "week": 5,
+        "drive_off": -0.14415054722628184,
+        "drive_off_sd": 0.2956257654699877,
+        "drive_def": 0.3289423065502962,
+        "drive_def_sd": 0.21761306320193843,
+        "conv_off": -0.00896424557160723,
+        "conv_off_sd": 0.026488952182122404,
+        "conv_def": 0.011124739383557134,
+        "conv_def_sd": 0.01886769943068316
+      },
+      {
+        "season": 2021,
+        "week": 6,
+        "drive_off": -0.24142147363719807,
+        "drive_off_sd": 0.29317531271109065,
+        "drive_def": 0.2762224347466222,
+        "drive_def_sd": 0.21843505930153367,
+        "conv_off": -0.008041086050227082,
+        "conv_off_sd": 0.026444331960761725,
+        "conv_def": 0.010612111377726089,
+        "conv_def_sd": 0.018840199527180843
+      },
+      {
+        "season": 2021,
+        "week": 7,
+        "drive_off": -0.29787585281394113,
+        "drive_off_sd": 0.2918983698077125,
+        "drive_def": 0.3143534229916335,
+        "drive_def_sd": 0.2189791157707553,
+        "conv_off": -0.005646488208981304,
+        "conv_off_sd": 0.026250801500971973,
+        "conv_def": 0.012041763309669943,
+        "conv_def_sd": 0.01870734348058064
+      },
+      {
+        "season": 2021,
+        "week": 8,
+        "drive_off": -0.2621609863884064,
+        "drive_off_sd": 0.2928734305915081,
+        "drive_def": 0.36954128967623734,
+        "drive_def_sd": 0.2207798663116945,
+        "conv_off": -0.005124752317992218,
+        "conv_off_sd": 0.02603034252196863,
+        "conv_def": 0.010582561688356102,
+        "conv_def_sd": 0.018624203904026606
+      },
+      {
+        "season": 2021,
+        "week": 10,
+        "drive_off": -0.4287841405188518,
+        "drive_off_sd": 0.30061283334739053,
+        "drive_def": 0.4442578786442558,
+        "drive_def_sd": 0.22718984544013993,
+        "conv_off": -0.007538099205480913,
+        "conv_off_sd": 0.02587088249796913,
+        "conv_def": 0.011435426110894598,
+        "conv_def_sd": 0.018571408831441132
+      },
+      {
+        "season": 2021,
+        "week": 11,
+        "drive_off": -0.4118145465546206,
+        "drive_off_sd": 0.2963144589961481,
+        "drive_def": 0.39833349914177124,
+        "drive_def_sd": 0.2269977059476306,
+        "conv_off": -0.004085869745695133,
+        "conv_off_sd": 0.025721954694734015,
+        "conv_def": 0.011562610785982001,
+        "conv_def_sd": 0.018532019240397633
+      },
+      {
+        "season": 2021,
+        "week": 12,
+        "drive_off": -0.5164469293942248,
+        "drive_off_sd": 0.2937067768476276,
+        "drive_def": 0.32632796896534255,
+        "drive_def_sd": 0.22629995450953228,
+        "conv_off": -0.007400911111117125,
+        "conv_off_sd": 0.025612043130225696,
+        "conv_def": 0.012192120510793925,
+        "conv_def_sd": 0.0184814524607873
+      },
+      {
+        "season": 2021,
+        "week": 13,
+        "drive_off": -0.49101280998628066,
+        "drive_off_sd": 0.293892316711435,
+        "drive_def": 0.30161214768115646,
+        "drive_def_sd": 0.22696485379766979,
+        "conv_off": -0.004677244927211394,
+        "conv_off_sd": 0.025546430746625264,
+        "conv_def": 0.012149460197924981,
+        "conv_def_sd": 0.018456286976401396
+      },
+      {
+        "season": 2021,
+        "week": 14,
+        "drive_off": -0.4593962386115285,
+        "drive_off_sd": 0.2922721832451026,
+        "drive_def": 0.288396318710702,
+        "drive_def_sd": 0.22721510429750993,
+        "conv_off": -0.011122283531488239,
+        "conv_off_sd": 0.025377223243244505,
+        "conv_def": 0.013805552456668403,
+        "conv_def_sd": 0.018419899284470187
+      },
+      {
+        "season": 2021,
+        "week": 15,
+        "drive_off": -0.4678256109802787,
+        "drive_off_sd": 0.2923026988128994,
+        "drive_def": 0.3723440344224822,
+        "drive_def_sd": 0.22788273192151728,
+        "conv_off": -0.010306364578223377,
+        "conv_off_sd": 0.025141434775008385,
+        "conv_def": 0.01673486196063356,
+        "conv_def_sd": 0.018345479106938394
+      },
+      {
+        "season": 2021,
+        "week": 16,
+        "drive_off": -0.39675659025655124,
+        "drive_off_sd": 0.2913459001164986,
+        "drive_def": 0.3094900657425721,
+        "drive_def_sd": 0.2275534060546465,
+        "conv_off": -0.009915295772463303,
+        "conv_off_sd": 0.025039107266541988,
+        "conv_def": 0.014682894857881428,
+        "conv_def_sd": 0.01824928099208074
+      },
+      {
+        "season": 2021,
+        "week": 17,
+        "drive_off": -0.3897152072346251,
+        "drive_off_sd": 0.29253915466301894,
+        "drive_def": 0.3441430501835784,
+        "drive_def_sd": 0.2287199123979822,
+        "conv_off": -0.010211340442090792,
+        "conv_off_sd": 0.024794404385160982,
+        "conv_def": 0.0141492744907847,
+        "conv_def_sd": 0.018224046908415666
+      },
+      {
+        "season": 2021,
+        "week": 18,
+        "drive_off": -0.3317709472184176,
+        "drive_off_sd": 0.28969101917041107,
+        "drive_def": 0.4432188317640006,
+        "drive_def_sd": 0.22788329917651076,
+        "conv_off": -0.012409840368353152,
+        "conv_off_sd": 0.02464514306578027,
+        "conv_def": 0.014790938395859167,
+        "conv_def_sd": 0.018174065422029203
+      },
+      {
+        "season": 2022,
+        "week": 1,
+        "drive_off": -0.09223492043871896,
+        "drive_off_sd": 0.30409377570815516,
+        "drive_def": 0.2369018462746448,
+        "drive_def_sd": 0.21182044774592487,
+        "conv_off": -0.008798292970151,
+        "conv_off_sd": 0.027028828914970077,
+        "conv_def": 0.011893366361956106,
+        "conv_def_sd": 0.018944697678013024
+      },
+      {
+        "season": 2022,
+        "week": 2,
+        "drive_off": -0.018063838594423374,
+        "drive_off_sd": 0.3000897838966219,
+        "drive_def": 0.2667045839252862,
+        "drive_def_sd": 0.2134789684635599,
+        "conv_off": -0.00807006294379014,
+        "conv_off_sd": 0.026836629679871233,
+        "conv_def": 0.013587924927996792,
+        "conv_def_sd": 0.01883719469012204
+      },
+      {
+        "season": 2022,
+        "week": 3,
+        "drive_off": 0.07962958397817896,
+        "drive_off_sd": 0.2956484180978687,
+        "drive_def": 0.28038850561606854,
+        "drive_def_sd": 0.21380663730078361,
+        "conv_off": -0.008959723163465268,
+        "conv_off_sd": 0.026650919535195133,
+        "conv_def": 0.01567005692790027,
+        "conv_def_sd": 0.018755906505115976
+      },
+      {
+        "season": 2022,
+        "week": 4,
+        "drive_off": 0.09989461731058419,
+        "drive_off_sd": 0.29308397656574825,
+        "drive_def": 0.2753889127926982,
+        "drive_def_sd": 0.21491271141598056,
+        "conv_off": -0.010608382482384137,
+        "conv_off_sd": 0.02630321537753825,
+        "conv_def": 0.016466847142592556,
+        "conv_def_sd": 0.018741831760425924
+      },
+      {
+        "season": 2022,
+        "week": 5,
+        "drive_off": 0.18738052254941892,
+        "drive_off_sd": 0.28999538728929536,
+        "drive_def": 0.3716096095823685,
+        "drive_def_sd": 0.2167076080339515,
+        "conv_off": -0.009991549388510988,
+        "conv_off_sd": 0.026130292927773042,
+        "conv_def": 0.017721200920043773,
+        "conv_def_sd": 0.01867447961117795
+      },
+      {
+        "season": 2022,
+        "week": 7,
+        "drive_off": -0.03465473925051398,
+        "drive_off_sd": 0.2980344656070322,
+        "drive_def": 0.3839560874150153,
+        "drive_def_sd": 0.223479681796442,
+        "conv_off": -0.016829360925493957,
+        "conv_off_sd": 0.025843247131128247,
+        "conv_def": 0.017015995879434816,
+        "conv_def_sd": 0.01863390428782963
+      },
+      {
+        "season": 2022,
+        "week": 8,
+        "drive_off": -0.12276737480408847,
+        "drive_off_sd": 0.29614455144964874,
+        "drive_def": 0.3732505836221366,
+        "drive_def_sd": 0.22360374543237968,
+        "conv_off": -0.015639292608567088,
+        "conv_off_sd": 0.025806129926592987,
+        "conv_def": 0.014314353281991852,
+        "conv_def_sd": 0.018553269193143426
+      },
+      {
+        "season": 2022,
+        "week": 9,
+        "drive_off": -0.011530730603792247,
+        "drive_off_sd": 0.295542802027204,
+        "drive_def": 0.4184144392118951,
+        "drive_def_sd": 0.22457294906639833,
+        "conv_off": -0.015470475452791243,
+        "conv_off_sd": 0.025699124461870126,
+        "conv_def": 0.014838648463324704,
+        "conv_def_sd": 0.018539871903619082
+      },
+      {
+        "season": 2022,
+        "week": 10,
+        "drive_off": -0.01441231509432125,
+        "drive_off_sd": 0.2951913893706785,
+        "drive_def": 0.37133990351234575,
+        "drive_def_sd": 0.22607575082673204,
+        "conv_off": -0.01827461584461705,
+        "conv_off_sd": 0.025464217413103184,
+        "conv_def": 0.013062975320744408,
+        "conv_def_sd": 0.01845374134262104
+      },
+      {
+        "season": 2022,
+        "week": 11,
+        "drive_off": 0.034802114368704555,
+        "drive_off_sd": 0.2948640958019936,
+        "drive_def": 0.36328266982095225,
+        "drive_def_sd": 0.22599299497993866,
+        "conv_off": -0.02049102709790524,
+        "conv_off_sd": 0.025363864216339262,
+        "conv_def": 0.01508209557621218,
+        "conv_def_sd": 0.01840326037074574
+      },
+      {
+        "season": 2022,
+        "week": 12,
+        "drive_off": 0.055817962685500024,
+        "drive_off_sd": 0.29157071143365704,
+        "drive_def": 0.36504014600780765,
+        "drive_def_sd": 0.2259058094763946,
+        "conv_off": -0.021289091041394852,
+        "conv_off_sd": 0.025231235112675013,
+        "conv_def": 0.015558195859857555,
+        "conv_def_sd": 0.018348102970463576
+      },
+      {
+        "season": 2022,
+        "week": 13,
+        "drive_off": 0.0822232000572015,
+        "drive_off_sd": 0.29069879606953664,
+        "drive_def": 0.3565162491246716,
+        "drive_def_sd": 0.22674399918145657,
+        "conv_off": -0.016186994026681882,
+        "conv_off_sd": 0.02496725743577026,
+        "conv_def": 0.017325135577839348,
+        "conv_def_sd": 0.018294108402857494
+      },
+      {
+        "season": 2022,
+        "week": 14,
+        "drive_off": 0.23429298475998275,
+        "drive_off_sd": 0.2909501265774762,
+        "drive_def": 0.3208006986331248,
+        "drive_def_sd": 0.22751631829214736,
+        "conv_off": -0.013598871511515396,
+        "conv_off_sd": 0.024809779886915472,
+        "conv_def": 0.01580558247783461,
+        "conv_def_sd": 0.01821465131295745
+      },
+      {
+        "season": 2022,
+        "week": 15,
+        "drive_off": 0.31515469104844007,
+        "drive_off_sd": 0.29054754066841093,
+        "drive_def": 0.3349452377095568,
+        "drive_def_sd": 0.22802194698223088,
+        "conv_off": -0.012889858661912102,
+        "conv_off_sd": 0.024717382116273726,
+        "conv_def": 0.013928973754693397,
+        "conv_def_sd": 0.01818887469398651
+      },
+      {
+        "season": 2022,
+        "week": 16,
+        "drive_off": 0.2705270202285098,
+        "drive_off_sd": 0.29081737744070646,
+        "drive_def": 0.2794896663841946,
+        "drive_def_sd": 0.2281460544520069,
+        "conv_off": -0.009847299139984717,
+        "conv_off_sd": 0.024478654705609143,
+        "conv_def": 0.014944581739980006,
+        "conv_def_sd": 0.018126145730737477
+      },
+      {
+        "season": 2022,
+        "week": 17,
+        "drive_off": 0.29263100140002263,
+        "drive_off_sd": 0.29009927323669776,
+        "drive_def": 0.3684845660404854,
+        "drive_def_sd": 0.22829978219623576,
+        "conv_off": -0.007649580597748867,
+        "conv_off_sd": 0.024359210253962347,
+        "conv_def": 0.015061279492059973,
+        "conv_def_sd": 0.01807855674494464
+      },
+      {
+        "season": 2022,
+        "week": 18,
+        "drive_off": 0.3916871743700375,
+        "drive_off_sd": 0.2881376765982014,
+        "drive_def": 0.31491218378307045,
+        "drive_def_sd": 0.2279867757823047,
+        "conv_off": -0.008785578519586735,
+        "conv_off_sd": 0.024242754405842972,
+        "conv_def": 0.014860156120005023,
+        "conv_def_sd": 0.01803240270935216
+      },
+      {
+        "season": 2023,
+        "week": 1,
+        "drive_off": 0.16496551467035522,
+        "drive_off_sd": 0.3038140135839039,
+        "drive_def": 0.14611464848309966,
+        "drive_def_sd": 0.21175107683565939,
+        "conv_off": -0.006903879479099907,
+        "conv_off_sd": 0.026845017912643362,
+        "conv_def": 0.01080061262594081,
+        "conv_def_sd": 0.018879469778114274
+      },
+      {
+        "season": 2023,
+        "week": 2,
+        "drive_off": 0.15660384227630614,
+        "drive_off_sd": 0.30086585018071416,
+        "drive_def": 0.10608631188580556,
+        "drive_def_sd": 0.21260102415339294,
+        "conv_off": -0.008906025558168183,
+        "conv_off_sd": 0.026540914046025224,
+        "conv_def": 0.009307636228150798,
+        "conv_def_sd": 0.01881204746040554
+      },
+      {
+        "season": 2023,
+        "week": 3,
+        "drive_off": 0.18290077808648372,
+        "drive_off_sd": 0.2995652485300157,
+        "drive_def": 0.1164467704187709,
+        "drive_def_sd": 0.2145340656418736,
+        "conv_off": -0.012559150607704062,
+        "conv_off_sd": 0.02635849401206881,
+        "conv_def": 0.009481263857268435,
+        "conv_def_sd": 0.018756660052537448
+      },
+      {
+        "season": 2023,
+        "week": 4,
+        "drive_off": 0.1604155713718415,
+        "drive_off_sd": 0.2962503667900668,
+        "drive_def": 0.04672533931693682,
+        "drive_def_sd": 0.21547675299250352,
+        "conv_off": -0.010454335733588636,
+        "conv_off_sd": 0.02621186687117816,
+        "conv_def": 0.00925235138667485,
+        "conv_def_sd": 0.018730139404319935
+      },
+      {
+        "season": 2023,
+        "week": 5,
+        "drive_off": 0.2102181586010353,
+        "drive_off_sd": 0.2917167967340703,
+        "drive_def": 0.037873704730791886,
+        "drive_def_sd": 0.21610784273656042,
+        "conv_off": -0.0018545040146359746,
+        "conv_off_sd": 0.025969463310645643,
+        "conv_def": 0.009569359407802385,
+        "conv_def_sd": 0.01868905217902391
+      },
+      {
+        "season": 2023,
+        "week": 6,
+        "drive_off": 0.3427494568386088,
+        "drive_off_sd": 0.2907430095324798,
+        "drive_def": 0.07112591696040896,
+        "drive_def_sd": 0.21696571996861552,
+        "conv_off": -0.003530612275856837,
+        "conv_off_sd": 0.02586378494352668,
+        "conv_def": 0.011363175206882913,
+        "conv_def_sd": 0.018649571818983857
+      },
+      {
+        "season": 2023,
+        "week": 7,
+        "drive_off": 0.34966395230189384,
+        "drive_off_sd": 0.2898835769538396,
+        "drive_def": 0.033065960200486084,
+        "drive_def_sd": 0.21772818547639428,
+        "conv_off": -0.003823975090664568,
+        "conv_off_sd": 0.02579009910125258,
+        "conv_def": 0.009191226423510593,
+        "conv_def_sd": 0.01861130642957967
+      },
+      {
+        "season": 2023,
+        "week": 8,
+        "drive_off": 0.23604133429011806,
+        "drive_off_sd": 0.2881552572832058,
+        "drive_def": 0.1312970543159893,
+        "drive_def_sd": 0.21875045808831378,
+        "conv_off": -0.004420906147717225,
+        "conv_off_sd": 0.025553109573559267,
+        "conv_def": 0.010046699287426639,
+        "conv_def_sd": 0.01856072936769469
+      },
+      {
+        "season": 2023,
+        "week": 10,
+        "drive_off": 0.14677821370751945,
+        "drive_off_sd": 0.29392749908355364,
+        "drive_def": 0.08123929418762868,
+        "drive_def_sd": 0.2244477835293585,
+        "conv_off": -0.004687464192839588,
+        "conv_off_sd": 0.025421098614211865,
+        "conv_def": 0.008868616473589205,
+        "conv_def_sd": 0.018518910859153023
+      },
+      {
+        "season": 2023,
+        "week": 11,
+        "drive_off": 0.30521109880680497,
+        "drive_off_sd": 0.29267845606478093,
+        "drive_def": 0.18207135047853917,
+        "drive_def_sd": 0.2249281229976917,
+        "conv_off": -0.0017797865925938722,
+        "conv_off_sd": 0.025110130840798165,
+        "conv_def": 0.007013318110226322,
+        "conv_def_sd": 0.018369455073542446
+      },
+      {
+        "season": 2023,
+        "week": 12,
+        "drive_off": 0.3164668458320584,
+        "drive_off_sd": 0.2926926205928778,
+        "drive_def": 0.2213771904967585,
+        "drive_def_sd": 0.22541749445208553,
+        "conv_off": 0.0006537865022658907,
+        "conv_off_sd": 0.024957957922408854,
+        "conv_def": 0.00650143773365845,
+        "conv_def_sd": 0.01830581557783571
+      },
+      {
+        "season": 2023,
+        "week": 13,
+        "drive_off": 0.28660010612975506,
+        "drive_off_sd": 0.291292094645391,
+        "drive_def": 0.24162324139624547,
+        "drive_def_sd": 0.2266718314021507,
+        "conv_off": 0.003782699336396234,
+        "conv_off_sd": 0.024741112341591646,
+        "conv_def": 0.0074876126016195895,
+        "conv_def_sd": 0.01824596719963848
+      },
+      {
+        "season": 2023,
+        "week": 14,
+        "drive_off": 0.3063638576104094,
+        "drive_off_sd": 0.2876607146445314,
+        "drive_def": 0.2766005442149581,
+        "drive_def_sd": 0.22605681766931573,
+        "conv_off": 0.00198836168796546,
+        "conv_off_sd": 0.02470814611497259,
+        "conv_def": 0.007176052006487722,
+        "conv_def_sd": 0.01822115777784761
+      },
+      {
+        "season": 2023,
+        "week": 15,
+        "drive_off": 0.23498590773675507,
+        "drive_off_sd": 0.28626943155375206,
+        "drive_def": 0.3022485146497852,
+        "drive_def_sd": 0.2261711463699282,
+        "conv_off": 0.005930340751145995,
+        "conv_off_sd": 0.024536621280879103,
+        "conv_def": 0.006347668602731577,
+        "conv_def_sd": 0.018164360531651536
+      },
+      {
+        "season": 2023,
+        "week": 16,
+        "drive_off": 0.37905915179093347,
+        "drive_off_sd": 0.2851765267477292,
+        "drive_def": 0.2955108950701401,
+        "drive_def_sd": 0.22593507637395274,
+        "conv_off": 0.008876601655963228,
+        "conv_off_sd": 0.024446575409186915,
+        "conv_def": 0.005863229386123264,
+        "conv_def_sd": 0.01807749140009212
+      },
+      {
+        "season": 2023,
+        "week": 17,
+        "drive_off": 0.45143700168361717,
+        "drive_off_sd": 0.285236673897448,
+        "drive_def": 0.27207606965330206,
+        "drive_def_sd": 0.2262741744122516,
+        "conv_off": 0.010833438889670087,
+        "conv_off_sd": 0.024302910618047277,
+        "conv_def": 0.005540105735690034,
+        "conv_def_sd": 0.018053507778081592
+      },
+      {
+        "season": 2023,
+        "week": 18,
+        "drive_off": 0.40028555807762767,
+        "drive_off_sd": 0.28530391351378853,
+        "drive_def": 0.22359361915767886,
+        "drive_def_sd": 0.22612298968995612,
+        "conv_off": 0.00847383110795573,
+        "conv_off_sd": 0.02405820269970976,
+        "conv_def": 0.006339095692616136,
+        "conv_def_sd": 0.018038717696317656
+      },
+      {
+        "season": 2023,
+        "week": 19,
+        "drive_off": 0.42079336630313086,
+        "drive_off_sd": 0.2844908259486139,
+        "drive_def": 0.22185939942268984,
+        "drive_def_sd": 0.22670725377502174,
+        "conv_off": 0.005132981227628249,
+        "conv_off_sd": 0.023911957193663593,
+        "conv_def": 0.0051550971359962715,
+        "conv_def_sd": 0.017979966862471136
+      },
+      {
+        "season": 2023,
+        "week": 20,
+        "drive_off": 0.4686390336981025,
+        "drive_off_sd": 0.28570100945703186,
+        "drive_def": 0.25825827428352627,
+        "drive_def_sd": 0.22807879140801607,
+        "conv_off": 0.005405930057738322,
+        "conv_off_sd": 0.023859488890146066,
+        "conv_def": 0.005696688236845311,
+        "conv_def_sd": 0.017966385381281338
+      },
+      {
+        "season": 2023,
+        "week": 21,
+        "drive_off": 0.5258022398367235,
+        "drive_off_sd": 0.2851537831130603,
+        "drive_def": 0.25050710164561457,
+        "drive_def_sd": 0.22853812561166129,
+        "conv_off": 0.0033874904730249707,
+        "conv_off_sd": 0.023650477761276732,
+        "conv_def": 0.006587695233457981,
+        "conv_def_sd": 0.017941922464983346
+      },
+      {
+        "season": 2024,
+        "week": 1,
+        "drive_off": 0.28999079725998195,
+        "drive_off_sd": 0.2962088240298908,
+        "drive_def": 0.14477945134550194,
+        "drive_def_sd": 0.20758127763543774,
+        "conv_off": 0.0007644392536993604,
+        "conv_off_sd": 0.026566810051222384,
+        "conv_def": 0.005780537146510415,
+        "conv_def_sd": 0.018857993042971664
+      },
+      {
+        "season": 2024,
+        "week": 2,
+        "drive_off": 0.2840174539380601,
+        "drive_off_sd": 0.29450115494492995,
+        "drive_def": 0.1633556720485867,
+        "drive_def_sd": 0.20999242426131115,
+        "conv_off": 0.0055548705986491025,
+        "conv_off_sd": 0.026312159727760517,
+        "conv_def": 0.007268424418554514,
+        "conv_def_sd": 0.018814538104669123
+      },
+      {
+        "season": 2024,
+        "week": 3,
+        "drive_off": 0.24333484825459092,
+        "drive_off_sd": 0.29312965588496237,
+        "drive_def": 0.16727799218616887,
+        "drive_def_sd": 0.2118734375888997,
+        "conv_off": 0.007046363201458526,
+        "conv_off_sd": 0.02609594833429561,
+        "conv_def": 0.00666653615123922,
+        "conv_def_sd": 0.01880062693278902
+      },
+      {
+        "season": 2024,
+        "week": 4,
+        "drive_off": 0.19344302224020063,
+        "drive_off_sd": 0.289788293118752,
+        "drive_def": 0.11116789051623356,
+        "drive_def_sd": 0.21305564854695686,
+        "conv_off": 0.002883660065863388,
+        "conv_off_sd": 0.025883904205133108,
+        "conv_def": 0.004640290271878317,
+        "conv_def_sd": 0.01874685273570292
+      },
+      {
+        "season": 2024,
+        "week": 6,
+        "drive_off": 0.3420740153104943,
+        "drive_off_sd": 0.2978772303634665,
+        "drive_def": 0.14760178054098327,
+        "drive_def_sd": 0.21986945472011174,
+        "conv_off": 0.0034775783980541307,
+        "conv_off_sd": 0.02577424855867098,
+        "conv_def": 0.0031373588442717977,
+        "conv_def_sd": 0.018693262283664087
+      },
+      {
+        "season": 2024,
+        "week": 7,
+        "drive_off": 0.4627899270110362,
+        "drive_off_sd": 0.2939442783041062,
+        "drive_def": 0.051055810600163266,
+        "drive_def_sd": 0.22039092212335343,
+        "conv_off": 0.0035834358600880297,
+        "conv_off_sd": 0.025671507464899816,
+        "conv_def": 0.0024307559631265565,
+        "conv_def_sd": 0.018665210056994345
+      },
+      {
+        "season": 2024,
+        "week": 8,
+        "drive_off": 0.4708803113728719,
+        "drive_off_sd": 0.2908171855573016,
+        "drive_def": 0.07650568685759987,
+        "drive_def_sd": 0.2213972712390604,
+        "conv_off": 0.0013563667561314859,
+        "conv_off_sd": 0.025569579906945524,
+        "conv_def": 0.003588186216906551,
+        "conv_def_sd": 0.01863764301593128
+      },
+      {
+        "season": 2024,
+        "week": 9,
+        "drive_off": 0.48392619863230457,
+        "drive_off_sd": 0.28703847870251475,
+        "drive_def": 0.0007955487575791731,
+        "drive_def_sd": 0.22001684652819473,
+        "conv_off": 0.001681280678077416,
+        "conv_off_sd": 0.02550336870646181,
+        "conv_def": 0.0025446650374916927,
+        "conv_def_sd": 0.018558483726995555
+      },
+      {
+        "season": 2024,
+        "week": 10,
+        "drive_off": 0.48596382528232995,
+        "drive_off_sd": 0.2876051837108269,
+        "drive_def": -0.000489587133939544,
+        "drive_def_sd": 0.2217104724092705,
+        "conv_off": 0.005653674701040656,
+        "conv_off_sd": 0.02530529723364444,
+        "conv_def": 0.0011902351367676389,
+        "conv_def_sd": 0.01845751236349279
+      },
+      {
+        "season": 2024,
+        "week": 11,
+        "drive_off": 0.44301230733483005,
+        "drive_off_sd": 0.2853412728561003,
+        "drive_def": -0.03646554014218323,
+        "drive_def_sd": 0.22109179501364679,
+        "conv_off": 0.0068024841929672855,
+        "conv_off_sd": 0.025232687408775545,
+        "conv_def": 0.001362477716161849,
+        "conv_def_sd": 0.018442414176437757
+      },
+      {
+        "season": 2024,
+        "week": 12,
+        "drive_off": 0.6705618994410888,
+        "drive_off_sd": 0.28526519798932404,
+        "drive_def": -0.10307742061073084,
+        "drive_def_sd": 0.22184290665105882,
+        "conv_off": 0.007656099133655393,
+        "conv_off_sd": 0.0249856277117653,
+        "conv_def": 0.0014836032345841908,
+        "conv_def_sd": 0.018400973556606155
+      },
+      {
+        "season": 2024,
+        "week": 13,
+        "drive_off": 0.6630427752867019,
+        "drive_off_sd": 0.2852194378316646,
+        "drive_def": -0.1432023908087058,
+        "drive_def_sd": 0.2225174085346233,
+        "conv_off": 0.006299823973573058,
+        "conv_off_sd": 0.0248031781084236,
+        "conv_def": 0.002765842125025159,
+        "conv_def_sd": 0.01837466007994487
+      },
+      {
+        "season": 2024,
+        "week": 14,
+        "drive_off": 0.6805603886840685,
+        "drive_off_sd": 0.2861736998728503,
+        "drive_def": -0.10925872574669918,
+        "drive_def_sd": 0.2231969314988907,
+        "conv_off": 0.006548351505244074,
+        "conv_off_sd": 0.024620987959283573,
+        "conv_def": 0.0016752925356384352,
+        "conv_def_sd": 0.01830032847470749
+      },
+      {
+        "season": 2024,
+        "week": 15,
+        "drive_off": 0.7331876686740464,
+        "drive_off_sd": 0.2856916279174706,
+        "drive_def": -0.09366151051153773,
+        "drive_def_sd": 0.22417966734102884,
+        "conv_off": 0.009477848276192923,
+        "conv_off_sd": 0.024317102355931902,
+        "conv_def": 0.0014240652216538352,
+        "conv_def_sd": 0.01829938876805068
+      },
+      {
+        "season": 2024,
+        "week": 16,
+        "drive_off": 0.8547774951057563,
+        "drive_off_sd": 0.2847405361667461,
+        "drive_def": -0.008775627015554635,
+        "drive_def_sd": 0.2241947383746979,
+        "conv_off": 0.010669220995682906,
+        "conv_off_sd": 0.024285861554777143,
+        "conv_def": 0.0016579370399344429,
+        "conv_def_sd": 0.018262432557715928
+      },
+      {
+        "season": 2024,
+        "week": 17,
+        "drive_off": 0.9149466578473205,
+        "drive_off_sd": 0.28540709268318903,
+        "drive_def": -0.03852927753517398,
+        "drive_def_sd": 0.22563779854902555,
+        "conv_off": 0.0083914290628144,
+        "conv_off_sd": 0.02410361846308911,
+        "conv_def": 0.003196684221789892,
+        "conv_def_sd": 0.01822668831444582
+      },
+      {
+        "season": 2024,
+        "week": 18,
+        "drive_off": 1.025287690510813,
+        "drive_off_sd": 0.28639400668785636,
+        "drive_def": 0.054086793470253886,
+        "drive_def_sd": 0.2265045890635409,
+        "conv_off": 0.010512811755917758,
+        "conv_off_sd": 0.023872709031221215,
+        "conv_def": 0.003810527377114364,
+        "conv_def_sd": 0.01817888079040221
+      },
+      {
+        "season": 2024,
+        "week": 20,
+        "drive_off": 1.03538972097454,
+        "drive_off_sd": 0.2949769520148421,
+        "drive_def": -0.024919042746677156,
+        "drive_def_sd": 0.2317365981342405,
+        "conv_off": 0.011199091668417881,
+        "conv_off_sd": 0.023711107213167104,
+        "conv_def": 0.0020950143523424617,
+        "conv_def_sd": 0.01812125748471911
+      },
+      {
+        "season": 2025,
+        "week": 1,
+        "drive_off": 0.47893400633264754,
+        "drive_off_sd": 0.30047432581725775,
+        "drive_def": 0.027491060171877666,
+        "drive_def_sd": 0.2097991183102217,
+        "conv_off": 0.008664232137253293,
+        "conv_off_sd": 0.026566468711883565,
+        "conv_def": 0.0009694057484307145,
+        "conv_def_sd": 0.018916699804630482
+      },
+      {
+        "season": 2025,
+        "week": 2,
+        "drive_off": 0.427864407146996,
+        "drive_off_sd": 0.29932262093177064,
+        "drive_def": 0.057607295728253474,
+        "drive_def_sd": 0.21244451257550553,
+        "conv_off": 0.009984501083746445,
+        "conv_off_sd": 0.026312599130773124,
+        "conv_def": -0.003321786503181826,
+        "conv_def_sd": 0.018835547990382187
+      },
+      {
+        "season": 2025,
+        "week": 3,
+        "drive_off": 0.5335386799860525,
+        "drive_off_sd": 0.29520077857467936,
+        "drive_def": 0.044882084197360936,
+        "drive_def_sd": 0.2130636507875698,
+        "conv_off": 0.009689548409457755,
+        "conv_off_sd": 0.02623575547520843,
+        "conv_def": -0.003944331536794972,
+        "conv_def_sd": 0.01878119741637904
+      },
+      {
+        "season": 2025,
+        "week": 4,
+        "drive_off": 0.6933143991909054,
+        "drive_off_sd": 0.29456391203265736,
+        "drive_def": 0.023649540659464625,
+        "drive_def_sd": 0.21487834796195499,
+        "conv_off": 0.014370750278908436,
+        "conv_off_sd": 0.025925939680275737,
+        "conv_def": -0.006318377495140879,
+        "conv_def_sd": 0.018728170073721337
+      },
+      {
+        "season": 2025,
+        "week": 5,
+        "drive_off": 0.5626201054883847,
+        "drive_off_sd": 0.29004134170556856,
+        "drive_def": -0.044483788127224574,
+        "drive_def_sd": 0.21460940865411327,
+        "conv_off": 0.014231558068541414,
+        "conv_off_sd": 0.025787380950852246,
+        "conv_def": -0.005518015448123599,
+        "conv_def_sd": 0.018689076911134448
+      },
+      {
+        "season": 2025,
+        "week": 6,
+        "drive_off": 0.524408959722422,
+        "drive_off_sd": 0.28732850673284566,
+        "drive_def": -0.026612233000298437,
+        "drive_def_sd": 0.2151743256637335,
+        "conv_off": 0.013296846026454813,
+        "conv_off_sd": 0.02571882239327628,
+        "conv_def": -0.006378664431370042,
+        "conv_def_sd": 0.018675864371872377
+      },
+      {
+        "season": 2025,
+        "week": 7,
+        "drive_off": 0.5082437179170697,
+        "drive_off_sd": 0.28880102354654336,
+        "drive_def": 0.036276669736522174,
+        "drive_def_sd": 0.21724532715287218,
+        "conv_off": 0.007996476715384098,
+        "conv_off_sd": 0.02545503490379355,
+        "conv_def": -0.00424379556685162,
+        "conv_def_sd": 0.01859597991027116
+      },
+      {
+        "season": 2025,
+        "week": 9,
+        "drive_off": 0.4517617433325244,
+        "drive_off_sd": 0.29445055021394145,
+        "drive_def": -0.06150217182899909,
+        "drive_def_sd": 0.22276302612770751,
+        "conv_off": 0.00757450017389726,
+        "conv_off_sd": 0.0252858263331999,
+        "conv_def": -0.003918600274521637,
+        "conv_def_sd": 0.018533107535166956
+      },
+      {
+        "season": 2025,
+        "week": 10,
+        "drive_off": 0.43468120081881884,
+        "drive_off_sd": 0.29225513690795296,
+        "drive_def": -0.045718868078391206,
+        "drive_def_sd": 0.22308367859815573,
+        "conv_off": 0.01061862456265968,
+        "conv_off_sd": 0.02509823670220194,
+        "conv_def": -0.006112003136886014,
+        "conv_def_sd": 0.018496541410551674
+      },
+      {
+        "season": 2025,
+        "week": 11,
+        "drive_off": 0.5977471845661949,
+        "drive_off_sd": 0.29129318999763276,
+        "drive_def": -0.004455622818441151,
+        "drive_def_sd": 0.22417115434979912,
+        "conv_off": 0.013619561665924543,
+        "conv_off_sd": 0.02493792108220571,
+        "conv_def": -0.006630443215478704,
+        "conv_def_sd": 0.018435364629552774
+      },
+      {
+        "season": 2025,
+        "week": 12,
+        "drive_off": 0.4471499188120505,
+        "drive_off_sd": 0.287591103136151,
+        "drive_def": -0.07404051668395106,
+        "drive_def_sd": 0.22334787134272024,
+        "conv_off": 0.00393741110124424,
+        "conv_off_sd": 0.02472345292333172,
+        "conv_def": -0.010939598940832775,
+        "conv_def_sd": 0.018377492945522416
+      },
+      {
+        "season": 2025,
+        "week": 13,
+        "drive_off": 0.42507867974443764,
+        "drive_off_sd": 0.2863204589307311,
+        "drive_def": -0.0007057013073591435,
+        "drive_def_sd": 0.22346088844158887,
+        "conv_off": 0.006043042198582233,
+        "conv_off_sd": 0.02465248055741392,
+        "conv_def": -0.010893519483793503,
+        "conv_def_sd": 0.018303747806766513
+      },
+      {
+        "season": 2025,
+        "week": 14,
+        "drive_off": 0.45452812989315766,
+        "drive_off_sd": 0.2873340497036942,
+        "drive_def": 0.07057080675108886,
+        "drive_def_sd": 0.224642070405665,
+        "conv_off": 0.004967189468587801,
+        "conv_off_sd": 0.024436062187982034,
+        "conv_def": -0.009108490596045583,
+        "conv_def_sd": 0.01819184350430355
+      },
+      {
+        "season": 2025,
+        "week": 15,
+        "drive_off": 0.49534924693453597,
+        "drive_off_sd": 0.286178274175613,
+        "drive_def": 0.0792937522777178,
+        "drive_def_sd": 0.22423365656382357,
+        "conv_off": 0.004542058839567242,
+        "conv_off_sd": 0.024377413244019003,
+        "conv_def": -0.008462077014242559,
+        "conv_def_sd": 0.018142210987423184
+      },
+      {
+        "season": 2025,
+        "week": 16,
+        "drive_off": 0.535810337822449,
+        "drive_off_sd": 0.28517180097082456,
+        "drive_def": 0.12273334493993487,
+        "drive_def_sd": 0.224264543626428,
+        "conv_off": 0.006385557167528572,
+        "conv_off_sd": 0.024280178006647387,
+        "conv_def": -0.008574094287777709,
+        "conv_def_sd": 0.018081944020939787
+      },
+      {
+        "season": 2025,
+        "week": 17,
+        "drive_off": 0.5087457287205833,
+        "drive_off_sd": 0.2843447118735107,
+        "drive_def": 0.1200405124667453,
+        "drive_def_sd": 0.22477630800675405,
+        "conv_off": 0.006032696365309809,
+        "conv_off_sd": 0.02416671143974067,
+        "conv_def": -0.00762969026870407,
+        "conv_def_sd": 0.01803379662233111
+      },
+      {
+        "season": 2025,
+        "week": 18,
+        "drive_off": 0.39398032565074254,
+        "drive_off_sd": 0.2832801347532582,
+        "drive_def": 0.09767644920489427,
+        "drive_def_sd": 0.22476154768627934,
+        "conv_off": 0.0029865034788933826,
+        "conv_off_sd": 0.024029198482247282,
+        "conv_def": -0.006772105602096599,
+        "conv_def_sd": 0.018009050178569304
+      }
+    ]
+  }
+}

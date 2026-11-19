@@ -1,0 +1,78 @@
+# M1 extension: neural win-probability model and deep ensemble.
+# Read by scripts/fit_wp_nn.py.
+seed: 20261117
+n_threads: 1
+
+# Same split as configs/wp.yaml. The network's weights are fitted on `train`, the
+# number of training epochs is chosen on `calib` (early stopping), and `test` is
+# touched once, for the reported numbers.
+split:
+  train: [2010, 2021]
+  calib: [2022, 2023]
+  test: [2024, 2025]
+
+# Network and training settings. Chosen with `python scripts/fit_wp_nn.py --tune`,
+# which fits on 2010-2018 (a tenth of those games held out for early stopping) and
+# scores 2019-2021 (results/m1_wp_nn_tuning.json). The calibration and test seasons
+# play no part in the choice.
+mlp:
+  hidden: [32]
+  dropout: 0.0
+  weight_decay: 0.0001
+  lr: 0.002
+  batch_size: 4096
+  max_epochs: 40
+  patience: 6
+  early_stopping: true
+  holdout_game_fraction: 0.1
+  label_noise: 0.0
+  one_hot_down: true
+  squash_margin: true
+  calibration: none     # the Platt variant is reported next to it, never in place of it
+
+# Tuning: one setting is changed at a time from a starting point, and every variant
+# is trained with each of the seeds below so that seed noise can be seen. A variant
+# is adopted only if its worst seed beats the starting point's best seed. Round 1
+# starts from a two-layer network; it adopted one hidden layer of 32 units. Round 2
+# starts from there and adopted nothing, which is why `mlp` above is what it is.
+tuning:
+  fit_seasons: [2010, 2018]
+  validation_seasons: [2019, 2021]
+  early_stop_game_fraction: 0.1
+  seeds: [20261117, 20261118, 20261119]
+  rounds:
+    round_1:
+      start: {hidden: [64, 64]}
+      sweeps:
+        hidden: [[32], [128, 128], [128, 128, 128], [256, 256]]
+        weight_decay: [0.0, 0.01, 0.1]
+        dropout: [0.1, 0.3]
+        batch_size: [512, 16384]
+        lr: [0.0005]
+        label_noise: [0.02, 0.05, 0.1]
+    round_2:
+      start: {hidden: [32]}
+      sweeps:
+        hidden: [[8], [16], [64], [32, 32]]
+        weight_decay: [0.0, 0.01]
+        dropout: [0.1]
+        batch_size: [512, 16384]
+        lr: [0.0005]
+        label_noise: [0.02]
+  # Shown once to make the failure visible: a larger network, small batches, no
+  # weight decay and no early stopping.
+  memorization_demo:
+    hidden: [128, 128, 128]
+    batch_size: 512
+    weight_decay: 0.0
+    early_stopping: false
+
+ensemble:
+  k: 10                  # members of the deep ensemble used for prediction
+  n_spread_members: 30   # members per kind in the spread comparison (first k = ensemble)
+  n_states: 2000         # test-season plays on which the spreads are compared
+
+metrics:
+  ece_bins: 10
+  reliability_bins: 20
+  bootstrap_reps: 2000

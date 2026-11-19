@@ -1,0 +1,934 @@
+{
+  "written_at": "2026-11-17T07:25:46+00:00",
+  "statement": [
+    "Written before any 2024 to 2025 number for version 2 was computed. Every choice below was made on development seasons (2010 to 2023) only, with season-blocked cross-validation.",
+    "The 2024 to 2025 seasons are not an untouched test set: they were scored several times for version 1 and are where the end-game weakness was first seen. The diagnosis was reproduced on development seasons before anything was changed (results/m1_wp_v2_dev_study.json, candidate v1).",
+    "The test evaluation is run once (scripts/fit_wp.py --evaluate). Whatever it shows is reported. Nothing about the model changes afterwards.",
+    "The 2026 holdout has not been loaded and is not part of this evaluation."
+  ],
+  "definition_sha256": "aa66deed4d22b14afe96e33cf02a272c49efe047161817662b36d7e9127044ff",
+  "model_definition": {
+    "spec": "v2",
+    "features": [
+      "down",
+      "ydstogo",
+      "yardline_100",
+      "goal_to_go",
+      "game_seconds_remaining",
+      "half_seconds_remaining",
+      "qtr",
+      "is_overtime",
+      "score_differential",
+      "posteam_timeouts_remaining",
+      "defteam_timeouts_remaining",
+      "posteam_spread",
+      "receive_2h_ko",
+      "spread_time",
+      "expected_margin",
+      "margin_per_sqrt_time",
+      "kneel_slack",
+      "possessions",
+      "possessions_per_minute"
+    ],
+    "monotone_constraints": {
+      "down": 0,
+      "ydstogo": 0,
+      "yardline_100": 0,
+      "goal_to_go": 0,
+      "game_seconds_remaining": 0,
+      "half_seconds_remaining": 0,
+      "qtr": 0,
+      "is_overtime": 0,
+      "score_differential": 1,
+      "posteam_timeouts_remaining": 1,
+      "defteam_timeouts_remaining": -1,
+      "posteam_spread": 1,
+      "receive_2h_ko": 0,
+      "spread_time": 1,
+      "expected_margin": 1,
+      "margin_per_sqrt_time": 1,
+      "kneel_slack": 1,
+      "possessions": 1,
+      "possessions_per_minute": 1
+    },
+    "baseline": {
+      "used": true,
+      "tau": null,
+      "logit_cap": 9.0
+    },
+    "constants": {
+      "SPREAD_DECAY": 4.0,
+      "TIME_FLOOR_SECONDS": 30.0,
+      "KNEEL_SECONDS": 2.0,
+      "PLAY_CLOCK_SECONDS": 40.0,
+      "KNEEL_CAP_SECONDS": 120.0,
+      "KNEEL_SLACK_FLOOR": -600.0
+    },
+    "lgbm": {
+      "n_estimators": 300,
+      "learning_rate": 0.06,
+      "num_leaves": 15,
+      "min_child_samples": 2000,
+      "colsample_bytree": 0.8,
+      "subsample": 0.8,
+      "subsample_freq": 1,
+      "reg_lambda": 10.0,
+      "max_bin": 127,
+      "monotone_constraints_method": "intermediate"
+    },
+    "calibration": "none",
+    "split": {
+      "train": [
+        2010,
+        2023
+      ],
+      "calib": null,
+      "test": [
+        2024,
+        2025
+      ]
+    },
+    "seed": 20261117
+  },
+  "headline_model_stamp": {
+    "what": "M1 headline model (version 2)",
+    "seasons": [
+      2010,
+      2011,
+      2012,
+      2013,
+      2014,
+      2015,
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023
+    ],
+    "n_games": 3793,
+    "n_rows": 637141,
+    "fitted_at": "2026-11-17T07:22:33+00:00",
+    "spec": "v2",
+    "train_seasons": [
+      2010,
+      2011,
+      2012,
+      2013,
+      2014,
+      2015,
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023
+    ],
+    "calib_seasons": [],
+    "allow_test_seasons": false,
+    "reason": null
+  },
+  "how_each_value_was_chosen": {
+    "structure": "Trees start from the normal-approximation baseline (init_score). Study: candidate `base` against `v1_no_platt` (log loss 0.44913 against 0.44973) and `scores_no_base_leaf2000` against `scores_leaf2000` (0.44944 against 0.44863).",
+    "baseline_sigma_and_tau": "Fitted by maximum likelihood on the training rows of every fit (two numbers). Fixing tau instead was worse: 30 seconds without the rules (`base_sharp`, 0.44968), and 60, 120 or 240 seconds with them (`rules_tau*`: 0.44869 to 0.44929, larger end-game gaps, and the 13-second check further from passing).",
+    "baseline_kneel_rule": "On. Where the leader with the ball can kneel out (kneel_slack >= 0), the baseline is certain. On development seasons those rows were won 3,313 times in 3,314 (study, final_checks and docs/notes/m1_wp.md). Candidate `rules_kneel_leaf2000` against `scores_leaf2000`: log loss equal (0.44863), end-game gap 0.0048 against 0.0051, kneel-out check passed (minimum 1.000 against 0.924).",
+    "baseline_possession_value": "Off. A fitted value for having the ball (about 1.6 points) did not help once the trees were in place (`rules_both_leaf2000` 0.44880, `rules_poss_leaf2000` 0.44874).",
+    "features": "is_home dropped, kneel_slack, possessions and possessions_per_minute added. See decisions below.",
+    "min_child_samples": "2000. Not the overall log-loss winner of the tuning grid: 5000 scored 0.44852 against 0.44863 (a difference of 0.0001), but its last-2:00 log loss is clearly worse (0.2362 against 0.2338), and the end game is what version 2 is for. 1000 is slightly better in the last 2:00 (0.2331) with a larger memorization gap (study: 0.0061 against 0.0057). Leaf sweep in the study: 5000, 2000, 1000, 500, 200.",
+    "num_leaves": "15. Tuning grid: 15 beats 31 at every leaf size (0.44863 against 0.44883 at 2000).",
+    "n_estimators_and_learning_rate": "300 trees at 0.06, kept from version 1. Tuning grid at 2000 leaves: 150 trees at 0.12 scored 0.44872, 600 at 0.03 scored 0.44857, against 0.44863. The 600-tree gain (0.00006) is noise-sized and doubles the fit time that the M3 bootstrap pays 101 times, so 300 is kept by a stated reason, not as the winner.",
+    "colsample_bytree_subsample_reg_lambda": "0.8, 0.8 (every round) and 10. Not tuned: common settings kept from version 1 so the number of looks at the data stays small. Stated, not chosen by a score.",
+    "max_bin": "127. Not tuned; halves the fit time against LightGBM's 255.",
+    "monotone_constraints_method": "intermediate. Not tuned; LightGBM's middle setting between the fast basic method and the slow advanced one.",
+    "monotone_constraints": "Set by reasoning, not by a score: more points, a better spread and more timeouts for the team with the ball can never hurt it; more defensive timeouts never help.",
+    "SPREAD_DECAY": "4.0, kept from version 1, where it was set by hand with no recorded comparison. It only shapes one of several spread features, and the trees can undo it. Not tuned.",
+    "TIME_FLOOR_SECONDS": "30, kept. Study: a 5-second floor made no difference with the baseline in place (`base_floor5` 0.44933 against `base_no_home` 0.44930; `kneel_floor5_leaf2000` 0.44881 against `kneel_leaf2000` 0.44877).",
+    "kneel_constants": "40-second play clock, 2 seconds per kneel, 120-second cap: rules and measurements in docs/research/endgame_clock.md, not fitted to outcomes.",
+    "KNEEL_SLACK_FLOOR": "-600 seconds. Stated: more than ten minutes from a kneel-out is all the same for this feature, and capping it keeps the trees' bins on the end game.",
+    "possessions_per_minute_offset": "30 seconds added to the clock, the same as TIME_FLOOR_SECONDS, so the feature stays finite at 0:00. Not tuned.",
+    "BASELINE_LOGIT_CAP": "9 (about 1 in 8,000). Stated, keeps log-odds finite; not tuned.",
+    "calibration": "none. See decisions.calibration.",
+    "seed": "Fixed project seed."
+  },
+  "decisions": [
+    {
+      "decision": "Diagnosis reproduced on development seasons before any change.",
+      "choice": "Version 1, cross-fitted on 2010 to 2023, shows the same end-game errors as on the test seasons (lead 1 to 3 with 0:40 or less on first down: 100% won, 89.3% predicted; down 9 or more: 0% won, 2.5% predicted).",
+      "compared": [
+        "v1",
+        "v1_no_platt"
+      ],
+      "development_evidence": {
+        "v1": {
+          "log_loss": 0.4510398359656181,
+          "ece": 0.008324136245853715,
+          "last_5_minutes_log_loss": 0.2550212673014144,
+          "last_2_minutes_log_loss": 0.24804135802834235,
+          "endgame_mean_abs_gap": 0.016217077998907148,
+          "memorization_gap": 0.012584718910137849,
+          "pooled_platt_slope": 0.9462585612952292
+        },
+        "v1_no_platt": {
+          "log_loss": 0.44973310602437455,
+          "ece": 0.006966397067346777,
+          "last_5_minutes_log_loss": 0.25113090528964627,
+          "last_2_minutes_log_loss": 0.24186462049007956,
+          "endgame_mean_abs_gap": 0.013777431057477595,
+          "memorization_gap": 0.007528417528757048,
+          "pooled_platt_slope": 0.9640559323551051
+        }
+      }
+    },
+    {
+      "decision": "Structural baseline as the trees' starting point.",
+      "choice": "Normal approximation with sigma and tau fitted, passed as init_score.",
+      "compared": [
+        "v1_no_platt",
+        "base",
+        "base_sharp",
+        "scores_leaf2000",
+        "scores_no_base_leaf2000"
+      ],
+      "development_evidence": {
+        "v1_no_platt": {
+          "log_loss": 0.44973310602437455,
+          "ece": 0.006966397067346777,
+          "last_5_minutes_log_loss": 0.25113090528964627,
+          "last_2_minutes_log_loss": 0.24186462049007956,
+          "endgame_mean_abs_gap": 0.013777431057477595,
+          "memorization_gap": 0.007528417528757048,
+          "pooled_platt_slope": 0.9640559323551051
+        },
+        "base": {
+          "log_loss": 0.4491276861600364,
+          "ece": 0.006541424058917427,
+          "last_5_minutes_log_loss": 0.25269697856047324,
+          "last_2_minutes_log_loss": 0.24820274576259946,
+          "endgame_mean_abs_gap": 0.01582390599245707,
+          "memorization_gap": 0.005149545892665253,
+          "pooled_platt_slope": 0.9492224297525834
+        },
+        "base_sharp": {
+          "log_loss": 0.44967830481427407,
+          "ece": 0.007551640546156724,
+          "last_5_minutes_log_loss": 0.25744369059421646,
+          "last_2_minutes_log_loss": 0.250652610176905,
+          "endgame_mean_abs_gap": 0.024882942443339637,
+          "memorization_gap": 0.00495969788121059,
+          "pooled_platt_slope": 0.9337527399406507
+        },
+        "scores_leaf2000": {
+          "log_loss": 0.44863332330575284,
+          "ece": 0.007991643256516495,
+          "last_5_minutes_log_loss": 0.245638376952268,
+          "last_2_minutes_log_loss": 0.23410367488650752,
+          "endgame_mean_abs_gap": 0.005134738648192139,
+          "memorization_gap": 0.00571027649966821,
+          "pooled_platt_slope": 0.9344856520534819
+        },
+        "scores_no_base_leaf2000": {
+          "log_loss": 0.44944348722448535,
+          "ece": 0.006546885127055643,
+          "last_5_minutes_log_loss": 0.2471614937201728,
+          "last_2_minutes_log_loss": 0.23539695390628443,
+          "endgame_mean_abs_gap": 0.006807100529558755,
+          "memorization_gap": 0.008152408920565846,
+          "pooled_platt_slope": 0.9569866466322959
+        }
+      }
+    },
+    {
+      "decision": "Drop is_home.",
+      "choice": "Dropped. Home advantage is in the spread. Keeping it is worth 0.00014 of log loss (game-bootstrap interval in the study's paired_differences), and dropping it makes the two sides of a game symmetric by construction.",
+      "compared": [
+        "base",
+        "base_no_home",
+        "kneel",
+        "kneel_with_home",
+        "scores_leaf2000",
+        "scores_home_leaf2000"
+      ],
+      "development_evidence": {
+        "base": {
+          "log_loss": 0.4491276861600364,
+          "ece": 0.006541424058917427,
+          "last_5_minutes_log_loss": 0.25269697856047324,
+          "last_2_minutes_log_loss": 0.24820274576259946,
+          "endgame_mean_abs_gap": 0.01582390599245707,
+          "memorization_gap": 0.005149545892665253,
+          "pooled_platt_slope": 0.9492224297525834
+        },
+        "base_no_home": {
+          "log_loss": 0.44929777048429936,
+          "ece": 0.006384425025135732,
+          "last_5_minutes_log_loss": 0.252491181004773,
+          "last_2_minutes_log_loss": 0.24801645151251162,
+          "endgame_mean_abs_gap": 0.015863825036136363,
+          "memorization_gap": 0.004435815125866882,
+          "pooled_platt_slope": 0.9501671535239394
+        },
+        "kneel": {
+          "log_loss": 0.4493240143714091,
+          "ece": 0.006421663787654499,
+          "last_5_minutes_log_loss": 0.2521965531213352,
+          "last_2_minutes_log_loss": 0.24679988886091025,
+          "endgame_mean_abs_gap": 0.0188819115884335,
+          "memorization_gap": 0.004340929127429782,
+          "pooled_platt_slope": 0.9490253171467568
+        },
+        "kneel_with_home": {
+          "log_loss": 0.4491082627843968,
+          "ece": 0.006330259865676005,
+          "last_5_minutes_log_loss": 0.25230127291341525,
+          "last_2_minutes_log_loss": 0.24677189837168814,
+          "endgame_mean_abs_gap": 0.018472881879916254,
+          "memorization_gap": 0.005066655850616331,
+          "pooled_platt_slope": 0.9488320497468253
+        },
+        "scores_leaf2000": {
+          "log_loss": 0.44863332330575284,
+          "ece": 0.007991643256516495,
+          "last_5_minutes_log_loss": 0.245638376952268,
+          "last_2_minutes_log_loss": 0.23410367488650752,
+          "endgame_mean_abs_gap": 0.005134738648192139,
+          "memorization_gap": 0.00571027649966821,
+          "pooled_platt_slope": 0.9344856520534819
+        },
+        "scores_home_leaf2000": {
+          "log_loss": 0.44849142345433657,
+          "ece": 0.008248819780148983,
+          "last_5_minutes_log_loss": 0.2456874053944361,
+          "last_2_minutes_log_loss": 0.23432600955895863,
+          "endgame_mean_abs_gap": 0.005293157694297439,
+          "memorization_gap": 0.00655926842592941,
+          "pooled_platt_slope": 0.932723001168676
+        }
+      }
+    },
+    {
+      "decision": "End-game features.",
+      "choice": "kneel_slack, possessions and possessions_per_minute. Timeout shares were tried and not kept (no gain, fit three times slower).",
+      "compared": [
+        "base_no_home",
+        "kneel",
+        "kneel_leaf2000",
+        "scores_leaf2000",
+        "timeouts_leaf2000"
+      ],
+      "development_evidence": {
+        "base_no_home": {
+          "log_loss": 0.44929777048429936,
+          "ece": 0.006384425025135732,
+          "last_5_minutes_log_loss": 0.252491181004773,
+          "last_2_minutes_log_loss": 0.24801645151251162,
+          "endgame_mean_abs_gap": 0.015863825036136363,
+          "memorization_gap": 0.004435815125866882,
+          "pooled_platt_slope": 0.9501671535239394
+        },
+        "kneel": {
+          "log_loss": 0.4493240143714091,
+          "ece": 0.006421663787654499,
+          "last_5_minutes_log_loss": 0.2521965531213352,
+          "last_2_minutes_log_loss": 0.24679988886091025,
+          "endgame_mean_abs_gap": 0.0188819115884335,
+          "memorization_gap": 0.004340929127429782,
+          "pooled_platt_slope": 0.9490253171467568
+        },
+        "kneel_leaf2000": {
+          "log_loss": 0.44876740862033443,
+          "ece": 0.007628915466041504,
+          "last_5_minutes_log_loss": 0.24617526745832616,
+          "last_2_minutes_log_loss": 0.23479323015442152,
+          "endgame_mean_abs_gap": 0.00788277750401303,
+          "memorization_gap": 0.005663808556101491,
+          "pooled_platt_slope": 0.9383722893262063
+        },
+        "scores_leaf2000": {
+          "log_loss": 0.44863332330575284,
+          "ece": 0.007991643256516495,
+          "last_5_minutes_log_loss": 0.245638376952268,
+          "last_2_minutes_log_loss": 0.23410367488650752,
+          "endgame_mean_abs_gap": 0.005134738648192139,
+          "memorization_gap": 0.00571027649966821,
+          "pooled_platt_slope": 0.9344856520534819
+        },
+        "timeouts_leaf2000": {
+          "log_loss": 0.44888374711350765,
+          "ece": 0.007721037328273132,
+          "last_5_minutes_log_loss": 0.24636282633522089,
+          "last_2_minutes_log_loss": 0.2350029972615896,
+          "endgame_mean_abs_gap": 0.00770290849941463,
+          "memorization_gap": 0.005756283294969244,
+          "pooled_platt_slope": 0.9374370839473942
+        }
+      }
+    },
+    {
+      "decision": "Leaf size.",
+      "choice": "2000 plays per leaf, one stage of trees.",
+      "compared": [
+        "kneel",
+        "kneel_leaf5000",
+        "kneel_leaf2000",
+        "kneel_leaf1000",
+        "kneel_leaf500",
+        "kneel_leaf200",
+        "scores_leaf5000",
+        "scores_leaf2000",
+        "scores_leaf1000"
+      ],
+      "development_evidence": {
+        "kneel": {
+          "log_loss": 0.4493240143714091,
+          "ece": 0.006421663787654499,
+          "last_5_minutes_log_loss": 0.2521965531213352,
+          "last_2_minutes_log_loss": 0.24679988886091025,
+          "endgame_mean_abs_gap": 0.0188819115884335,
+          "memorization_gap": 0.004340929127429782,
+          "pooled_platt_slope": 0.9490253171467568
+        },
+        "kneel_leaf5000": {
+          "log_loss": 0.4489578527838193,
+          "ece": 0.006893342596998709,
+          "last_5_minutes_log_loss": 0.24929896653890027,
+          "last_2_minutes_log_loss": 0.24123595174052295,
+          "endgame_mean_abs_gap": 0.013094958929155773,
+          "memorization_gap": 0.004843092978225605,
+          "pooled_platt_slope": 0.9450184235778333
+        },
+        "kneel_leaf2000": {
+          "log_loss": 0.44876740862033443,
+          "ece": 0.007628915466041504,
+          "last_5_minutes_log_loss": 0.24617526745832616,
+          "last_2_minutes_log_loss": 0.23479323015442152,
+          "endgame_mean_abs_gap": 0.00788277750401303,
+          "memorization_gap": 0.005663808556101491,
+          "pooled_platt_slope": 0.9383722893262063
+        },
+        "kneel_leaf1000": {
+          "log_loss": 0.44879150621516095,
+          "ece": 0.007597552265230279,
+          "last_5_minutes_log_loss": 0.2457985710496193,
+          "last_2_minutes_log_loss": 0.23364983713246765,
+          "endgame_mean_abs_gap": 0.006590832474357573,
+          "memorization_gap": 0.006088957971617126,
+          "pooled_platt_slope": 0.9361917478892957
+        },
+        "kneel_leaf500": {
+          "log_loss": 0.44900665984128074,
+          "ece": 0.007757293194609173,
+          "last_5_minutes_log_loss": 0.24573437803418488,
+          "last_2_minutes_log_loss": 0.2333534964599719,
+          "endgame_mean_abs_gap": 0.006178180133531505,
+          "memorization_gap": 0.0065411404235540815,
+          "pooled_platt_slope": 0.9331031272114416
+        },
+        "kneel_leaf200": {
+          "log_loss": 0.44917385277047134,
+          "ece": 0.007867513259515341,
+          "last_5_minutes_log_loss": 0.24577633993085823,
+          "last_2_minutes_log_loss": 0.2332694674053277,
+          "endgame_mean_abs_gap": 0.0062930289292116885,
+          "memorization_gap": 0.006820567351462858,
+          "pooled_platt_slope": 0.9312762884072189
+        },
+        "scores_leaf5000": {
+          "log_loss": 0.44853950151571553,
+          "ece": 0.007493666876602223,
+          "last_5_minutes_log_loss": 0.24667820127720105,
+          "last_2_minutes_log_loss": 0.2368299042988456,
+          "endgame_mean_abs_gap": 0.0072213529710198855,
+          "memorization_gap": 0.004826761286928161,
+          "pooled_platt_slope": 0.9402707351208942
+        },
+        "scores_leaf2000": {
+          "log_loss": 0.44863332330575284,
+          "ece": 0.007991643256516495,
+          "last_5_minutes_log_loss": 0.245638376952268,
+          "last_2_minutes_log_loss": 0.23410367488650752,
+          "endgame_mean_abs_gap": 0.005134738648192139,
+          "memorization_gap": 0.00571027649966821,
+          "pooled_platt_slope": 0.9344856520534819
+        },
+        "scores_leaf1000": {
+          "log_loss": 0.448676343224719,
+          "ece": 0.008213075178453046,
+          "last_5_minutes_log_loss": 0.24528577246774214,
+          "last_2_minutes_log_loss": 0.2332231753333131,
+          "endgame_mean_abs_gap": 0.004463585739822214,
+          "memorization_gap": 0.006125562339362123,
+          "pooled_platt_slope": 0.9323025035264806
+        }
+      }
+    },
+    {
+      "decision": "No separate end-game model.",
+      "choice": "Rejected. A second stage of small-leaf trees on the last 5 to 15 minutes improved last-two-minute log loss by about 0.001 but did not improve the end-game cells, and it is a second model to explain.",
+      "compared": [
+        "two_stage_300s_leaf500",
+        "two_stage_600s_leaf500",
+        "scores_leaf2000",
+        "scores_two_stage_600s"
+      ],
+      "development_evidence": {
+        "two_stage_300s_leaf500": {
+          "log_loss": 0.448560526603838,
+          "ece": 0.008081048937216232,
+          "last_5_minutes_log_loss": 0.24629642855389217,
+          "last_2_minutes_log_loss": 0.2330928320391806,
+          "endgame_mean_abs_gap": 0.008519449515912637,
+          "memorization_gap": 0.005137557545288773,
+          "pooled_platt_slope": 0.9338280576215696
+        },
+        "two_stage_600s_leaf500": {
+          "log_loss": 0.44864590298983903,
+          "ece": 0.007965925963749627,
+          "last_5_minutes_log_loss": 0.2460501037986277,
+          "last_2_minutes_log_loss": 0.23314142493280762,
+          "endgame_mean_abs_gap": 0.00827628277884759,
+          "memorization_gap": 0.005252655005778817,
+          "pooled_platt_slope": 0.9334649701993832
+        },
+        "scores_leaf2000": {
+          "log_loss": 0.44863332330575284,
+          "ece": 0.007991643256516495,
+          "last_5_minutes_log_loss": 0.245638376952268,
+          "last_2_minutes_log_loss": 0.23410367488650752,
+          "endgame_mean_abs_gap": 0.005134738648192139,
+          "memorization_gap": 0.00571027649966821,
+          "pooled_platt_slope": 0.9344856520534819
+        },
+        "scores_two_stage_600s": {
+          "log_loss": 0.44869294103147656,
+          "ece": 0.008631827006332998,
+          "last_5_minutes_log_loss": 0.24549211511767524,
+          "last_2_minutes_log_loss": 0.23327125181575267,
+          "endgame_mean_abs_gap": 0.005140695316938687,
+          "memorization_gap": 0.0065308488728823555,
+          "pooled_platt_slope": 0.9270707649718122
+        }
+      }
+    },
+    {
+      "decision": "Time floor.",
+      "choice": "30 seconds kept.",
+      "compared": [
+        "base_no_home",
+        "base_floor5",
+        "kneel_leaf2000",
+        "kneel_floor5_leaf2000"
+      ],
+      "development_evidence": {
+        "base_no_home": {
+          "log_loss": 0.44929777048429936,
+          "ece": 0.006384425025135732,
+          "last_5_minutes_log_loss": 0.252491181004773,
+          "last_2_minutes_log_loss": 0.24801645151251162,
+          "endgame_mean_abs_gap": 0.015863825036136363,
+          "memorization_gap": 0.004435815125866882,
+          "pooled_platt_slope": 0.9501671535239394
+        },
+        "base_floor5": {
+          "log_loss": 0.44933152363158624,
+          "ece": 0.006516236183655349,
+          "last_5_minutes_log_loss": 0.25240417391011477,
+          "last_2_minutes_log_loss": 0.24769696979626388,
+          "endgame_mean_abs_gap": 0.015867986304562574,
+          "memorization_gap": 0.004502950288728991,
+          "pooled_platt_slope": 0.9493992194008931
+        },
+        "kneel_leaf2000": {
+          "log_loss": 0.44876740862033443,
+          "ece": 0.007628915466041504,
+          "last_5_minutes_log_loss": 0.24617526745832616,
+          "last_2_minutes_log_loss": 0.23479323015442152,
+          "endgame_mean_abs_gap": 0.00788277750401303,
+          "memorization_gap": 0.005663808556101491,
+          "pooled_platt_slope": 0.9383722893262063
+        },
+        "kneel_floor5_leaf2000": {
+          "log_loss": 0.4488134254167867,
+          "ece": 0.0075813093906843074,
+          "last_5_minutes_log_loss": 0.24598444410817502,
+          "last_2_minutes_log_loss": 0.2341367884596632,
+          "endgame_mean_abs_gap": 0.0075042935140285805,
+          "memorization_gap": 0.005765298716289502,
+          "pooled_platt_slope": 0.9361948496044943
+        }
+      }
+    },
+    {
+      "decision": "Rules of the game in the baseline.",
+      "choice": "Kneel rule on, possession value off, tau fitted. Made after the all-season sanity checks of `scores_leaf2000` showed the baseline too soft at 0:00 (a kneel-out state at 0.924). Two end-game checks still fail with this choice (13-second state 0.876 against a bar of 0.90; down 9 or more with under 30 seconds, worst state 0.063 against 0.02). The thresholds are not changed; the failures are reported.",
+      "compared": [
+        "scores_leaf2000",
+        "rules_kneel_leaf2000",
+        "rules_both_leaf2000",
+        "rules_both_leaf1000",
+        "rules_poss_leaf2000",
+        "rules_tau60_leaf2000",
+        "rules_tau120_leaf2000",
+        "rules_tau120_leaf1000",
+        "rules_tau240_leaf2000"
+      ],
+      "development_evidence": {
+        "scores_leaf2000": {
+          "log_loss": 0.44863332330575284,
+          "ece": 0.007991643256516495,
+          "last_5_minutes_log_loss": 0.245638376952268,
+          "last_2_minutes_log_loss": 0.23410367488650752,
+          "endgame_mean_abs_gap": 0.005134738648192139,
+          "memorization_gap": 0.00571027649966821,
+          "pooled_platt_slope": 0.9344856520534819
+        },
+        "rules_kneel_leaf2000": {
+          "log_loss": 0.44862519027541103,
+          "ece": 0.007965733410117401,
+          "last_5_minutes_log_loss": 0.24542451729218157,
+          "last_2_minutes_log_loss": 0.23379340719481598,
+          "endgame_mean_abs_gap": 0.0047705384371995235,
+          "memorization_gap": 0.005723850724009716,
+          "pooled_platt_slope": 0.9340324160345673
+        },
+        "rules_both_leaf2000": {
+          "log_loss": 0.44880252965204137,
+          "ece": 0.008865819328396774,
+          "last_5_minutes_log_loss": 0.24548925713042988,
+          "last_2_minutes_log_loss": 0.2336702696775767,
+          "endgame_mean_abs_gap": 0.0056938729608383715,
+          "memorization_gap": 0.005688949037321256,
+          "pooled_platt_slope": 0.921344216569119
+        },
+        "rules_both_leaf1000": {
+          "log_loss": 0.4488522106564021,
+          "ece": 0.008957918325700582,
+          "last_5_minutes_log_loss": 0.24516338912248364,
+          "last_2_minutes_log_loss": 0.2328086513752337,
+          "endgame_mean_abs_gap": 0.005650299666263103,
+          "memorization_gap": 0.006111313553931075,
+          "pooled_platt_slope": 0.9192644135846556
+        },
+        "rules_poss_leaf2000": {
+          "log_loss": 0.44873545936256176,
+          "ece": 0.00893661561213287,
+          "last_5_minutes_log_loss": 0.24569114210442058,
+          "last_2_minutes_log_loss": 0.23387856271566723,
+          "endgame_mean_abs_gap": 0.006904280625577075,
+          "memorization_gap": 0.005580846884860546,
+          "pooled_platt_slope": 0.9209796694348459
+        },
+        "rules_tau60_leaf2000": {
+          "log_loss": 0.449285311726031,
+          "ece": 0.008175477793125543,
+          "last_5_minutes_log_loss": 0.2510171740002086,
+          "last_2_minutes_log_loss": 0.23653813832861975,
+          "endgame_mean_abs_gap": 0.019574780621608726,
+          "memorization_gap": 0.0059706540991518176,
+          "pooled_platt_slope": 0.9183001996987499
+        },
+        "rules_tau120_leaf2000": {
+          "log_loss": 0.44893825230098433,
+          "ece": 0.00843281929142908,
+          "last_5_minutes_log_loss": 0.24772105231848607,
+          "last_2_minutes_log_loss": 0.23362058656308846,
+          "endgame_mean_abs_gap": 0.013780712014403628,
+          "memorization_gap": 0.005864853378504509,
+          "pooled_platt_slope": 0.9212658913659594
+        },
+        "rules_tau120_leaf1000": {
+          "log_loss": 0.4490249037179379,
+          "ece": 0.008543590863749633,
+          "last_5_minutes_log_loss": 0.2474853227882159,
+          "last_2_minutes_log_loss": 0.23318596073893716,
+          "endgame_mean_abs_gap": 0.013724310628254962,
+          "memorization_gap": 0.006293998351873664,
+          "pooled_platt_slope": 0.919719489309074
+        },
+        "rules_tau240_leaf2000": {
+          "log_loss": 0.4486868306647981,
+          "ece": 0.00839877379249556,
+          "last_5_minutes_log_loss": 0.2458281417268863,
+          "last_2_minutes_log_loss": 0.23336408457215246,
+          "endgame_mean_abs_gap": 0.008232216356790736,
+          "memorization_gap": 0.005669378633892941,
+          "pooled_platt_slope": 0.9231878045128628
+        }
+      }
+    },
+    {
+      "decision": "Calibration.",
+      "choice": "No map. A pooled Platt map over the cross-fitted development seasons (each season mapped by a map fitted on the other seasons) has slope about 0.93 and improves overall log loss by 0.0003 (0.44863 to 0.44833) and ECE from 0.008 to 0.003, but makes the end game worse (last 2:00 log loss 0.2338 to 0.2344, end-game gap 0.0048 to 0.0057). The end game is what version 2 is for, the gain elsewhere is small, and no map keeps the model to one fit. The two-season map of version 1 is worse than no map in the same comparison (`v1` 0.45104 against `v1_no_platt` 0.44973). Recorded weakness: mild overconfidence in the middle of the range.",
+      "compared": [
+        "v1",
+        "v1_no_platt",
+        "scores_leaf2000",
+        "rules_kneel_leaf2000"
+      ],
+      "development_evidence": {
+        "v1": {
+          "log_loss": 0.4510398359656181,
+          "ece": 0.008324136245853715,
+          "last_5_minutes_log_loss": 0.2550212673014144,
+          "last_2_minutes_log_loss": 0.24804135802834235,
+          "endgame_mean_abs_gap": 0.016217077998907148,
+          "memorization_gap": 0.012584718910137849,
+          "pooled_platt_slope": 0.9462585612952292
+        },
+        "v1_no_platt": {
+          "log_loss": 0.44973310602437455,
+          "ece": 0.006966397067346777,
+          "last_5_minutes_log_loss": 0.25113090528964627,
+          "last_2_minutes_log_loss": 0.24186462049007956,
+          "endgame_mean_abs_gap": 0.013777431057477595,
+          "memorization_gap": 0.007528417528757048,
+          "pooled_platt_slope": 0.9640559323551051
+        },
+        "scores_leaf2000": {
+          "log_loss": 0.44863332330575284,
+          "ece": 0.007991643256516495,
+          "last_5_minutes_log_loss": 0.245638376952268,
+          "last_2_minutes_log_loss": 0.23410367488650752,
+          "endgame_mean_abs_gap": 0.005134738648192139,
+          "memorization_gap": 0.00571027649966821,
+          "pooled_platt_slope": 0.9344856520534819
+        },
+        "rules_kneel_leaf2000": {
+          "log_loss": 0.44862519027541103,
+          "ece": 0.007965733410117401,
+          "last_5_minutes_log_loss": 0.24542451729218157,
+          "last_2_minutes_log_loss": 0.23379340719481598,
+          "endgame_mean_abs_gap": 0.0047705384371995235,
+          "memorization_gap": 0.005723850724009716,
+          "pooled_platt_slope": 0.9340324160345673
+        }
+      }
+    }
+  ],
+  "development_results_of_the_chosen_model": {
+    "source": "results/m1_wp_dev.json",
+    "metrics": {
+      "all_plays": {
+        "rows": 622907,
+        "games": 3781,
+        "ours": {
+          "log_loss": 0.44862519027541103,
+          "brier": 0.1490284351066399,
+          "ece": 0.007965733410117401,
+          "mean_pred": 0.5053218371636101,
+          "win_rate": 0.5052600147373525
+        },
+        "ours_v1": {
+          "log_loss": 0.4510398359656181,
+          "brier": 0.1495226605700966,
+          "ece": 0.008324136245853715,
+          "mean_pred": 0.5057458353200325,
+          "win_rate": 0.5052600147373525
+        }
+      },
+      "last_5_minutes": {
+        "rows": 63102,
+        "games": 3781,
+        "ours": {
+          "log_loss": 0.24542451729218157,
+          "brier": 0.0788076422447461,
+          "ece": 0.0055082911084946675,
+          "mean_pred": 0.47547343222350796,
+          "win_rate": 0.4755792209438687
+        },
+        "ours_v1": {
+          "log_loss": 0.2550212673014144,
+          "brier": 0.07991848744677736,
+          "ece": 0.011558994530168386,
+          "mean_pred": 0.47577037793532606,
+          "win_rate": 0.4755792209438687
+        }
+      },
+      "last_2_minutes": {
+        "rows": 28918,
+        "games": 3781,
+        "ours": {
+          "log_loss": 0.23379340719481598,
+          "brier": 0.07593082576097734,
+          "ece": 0.007597391433550687,
+          "mean_pred": 0.46079696943517684,
+          "win_rate": 0.46206514973372986
+        },
+        "ours_v1": {
+          "log_loss": 0.24804135802834235,
+          "brier": 0.0776930187125711,
+          "ece": 0.019790013333898644,
+          "mean_pred": 0.4616257328303018,
+          "win_rate": 0.46206514973372986
+        }
+      }
+    },
+    "version_2_minus_version_1": {
+      "all_plays": {
+        "log_loss": {
+          "diff": -0.002414645690207062,
+          "ci_low": -0.004363494467726532,
+          "ci_high": -0.00047236607791145143
+        },
+        "brier": {
+          "diff": -0.0004942254634566909,
+          "ci_low": -0.0010922740059216259,
+          "ci_high": 8.794266811842058e-05
+        }
+      },
+      "last_5_minutes": {
+        "log_loss": {
+          "diff": -0.00959675000923284,
+          "ci_low": -0.01133770990583728,
+          "ci_high": -0.007729668125130219
+        },
+        "brier": {
+          "diff": -0.001110845202031249,
+          "ci_low": -0.0016526255302085362,
+          "ci_high": -0.0005973546518816362
+        }
+      },
+      "last_2_minutes": {
+        "log_loss": {
+          "diff": -0.014247950833526365,
+          "ci_low": -0.016981962665635918,
+          "ci_high": -0.011402981836428232
+        },
+        "brier": {
+          "diff": -0.0017621929515937611,
+          "ci_low": -0.0026741396533483688,
+          "ci_high": -0.0008847001262500484
+        }
+      }
+    },
+    "memorization": {
+      "version_2": {
+        "in_sample_log_loss": 0.44270106800153913,
+        "held_out_log_loss": 0.44842491872554885,
+        "gap": 0.005723850724009716
+      },
+      "version_1": {
+        "in_sample_log_loss": 0.4382783245854351,
+        "held_out_log_loss": 0.45086304349557293,
+        "gap": 0.012584718910137849
+      }
+    },
+    "endgame_summary": {
+      "ours": {
+        "rows": 63102,
+        "mean_abs_gap": 0.0047705384371995235,
+        "max_abs_gap": 0.02026796548170129,
+        "cells_whose_interval_excludes_zero": 5,
+        "cells": 21
+      },
+      "ours_v1": {
+        "rows": 63102,
+        "mean_abs_gap": 0.016217077998907148,
+        "max_abs_gap": 0.10853235469494515,
+        "cells_whose_interval_excludes_zero": 11,
+        "cells": 21
+      }
+    },
+    "diagnosis_cells_first_downs": {
+      "lead_1_3_0:41_2:00": {
+        "ours": {
+          "rows": 367,
+          "games": 307,
+          "observed": 0.9536784741144414,
+          "predicted": 0.9613125764887321,
+          "gap": 0.007634102374290741,
+          "gap_ci_low": -0.016223315972221413,
+          "gap_ci_high": 0.034337850942737294
+        },
+        "ours_v1": {
+          "rows": 367,
+          "games": 307,
+          "observed": 0.9536784741144414,
+          "predicted": 0.874033651800298,
+          "gap": -0.07964482231414338,
+          "gap_ci_low": -0.10451975662937857,
+          "gap_ci_high": -0.051091595594228774
+        }
+      },
+      "lead_1_3_0:00_0:40": {
+        "ours": {
+          "rows": 189,
+          "games": 185,
+          "observed": 1.0,
+          "predicted": 0.998404607096782,
+          "gap": -0.0015953929032179737,
+          "gap_ci_low": -0.003440898477861872,
+          "gap_ci_high": -0.00021362713595697263
+        },
+        "ours_v1": {
+          "rows": 189,
+          "games": 185,
+          "observed": 1.0,
+          "predicted": 0.8934218577204585,
+          "gap": -0.10657814227954154,
+          "gap_ci_low": -0.11577499112855014,
+          "gap_ci_high": -0.0970299002421495
+        }
+      },
+      "trail_4_8_0:00_0:40": {
+        "ours": {
+          "rows": 736,
+          "games": 451,
+          "observed": 0.16847826086956522,
+          "predicted": 0.15442930558171872,
+          "gap": -0.014048955287846498,
+          "gap_ci_low": -0.047558971722878304,
+          "gap_ci_high": 0.016902471627089365
+        },
+        "ours_v1": {
+          "rows": 736,
+          "games": 451,
+          "observed": 0.16847826086956522,
+          "predicted": 0.1538213692761621,
+          "gap": -0.01465689159340311,
+          "gap_ci_low": -0.050554881280532794,
+          "gap_ci_high": 0.01789078145781107
+        }
+      }
+    },
+    "calibration_evidence": {
+      "platt_pooled": {
+        "slope": 0.9340324160345673,
+        "intercept": 0.0016788636242105906
+      },
+      "season_slope_min": 0.7549230030308728,
+      "season_slope_max": 1.2043820349341123,
+      "metrics_no_map": {
+        "log_loss": 0.44862519027541103,
+        "brier": 0.1490284351066399,
+        "ece": 0.007965733410117401,
+        "mean_pred": 0.5053218371636101,
+        "win_rate": 0.5052600147373525
+      },
+      "metrics_pooled_map_leave_one_season_out": {
+        "log_loss": 0.4483257569539617,
+        "brier": 0.14898741888491032,
+        "ece": 0.0031831462538329668,
+        "mean_pred": 0.5052663487349788,
+        "win_rate": 0.5052600147373525
+      }
+    },
+    "sanity_checks_core_passed": true,
+    "sanity_checks_failing": [
+      "two_scores_no_time",
+      "one_point_lead_13_seconds"
+    ],
+    "sanity_checks_note": "Checks that fail are reported, not hidden; their thresholds were set before version 2 was chosen and are not changed."
+  },
+  "evaluation_plan": {
+    "data": "2024 and 2025, loaded once through splits.load_test_plays with a logged purpose. Rows: label present and every model's prediction present (ours v2, ours v1, nflfastR wp and vegas_wp), the same row rule as version 1.",
+    "models": "Version 2 = data/models/wp.joblib as preregistered (stamp checked). Version 1 = refitted exactly as shipped and required to reproduce results/m1_wp_metrics_v1.json.",
+    "primary": "Log loss, Brier and ECE (10 equal-width bins) on all rows; version 2 minus version 1 with a 95% game-bootstrap interval (2000 draws).",
+    "endgame": "The 21-cell table (time left 0:00-0:40, 0:41-2:00, 2:01-5:00 by margin for the team with the ball), all scrimmage downs and first downs only: predicted, observed, gap with a game-bootstrap interval, and the row-weighted mean absolute gap. Also log loss on the last 5:00 and the last 2:00.",
+    "secondary": "By quarter, scrimmage downs, plays with no down, fourth downs.",
+    "rule": "Reported as they come out, both versions, whichever is better. No change to the model after this step. A worse result for version 2 is reported as worse."
+  }
+}

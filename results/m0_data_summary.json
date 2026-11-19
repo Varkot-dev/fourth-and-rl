@@ -1,0 +1,246 @@
+{
+  "seasons": [
+    2010,
+    2025
+  ],
+  "total_plays": 729962,
+  "total_games": 4363,
+  "per_season": [
+    {
+      "season": 2010,
+      "games": 267,
+      "plays": 44501,
+      "ties": 0
+    },
+    {
+      "season": 2011,
+      "games": 267,
+      "plays": 45051,
+      "ties": 0
+    },
+    {
+      "season": 2012,
+      "games": 267,
+      "plays": 45413,
+      "ties": 1
+    },
+    {
+      "season": 2013,
+      "games": 267,
+      "plays": 45714,
+      "ties": 1
+    },
+    {
+      "season": 2014,
+      "games": 267,
+      "plays": 45267,
+      "ties": 1
+    },
+    {
+      "season": 2015,
+      "games": 267,
+      "plays": 45666,
+      "ties": 0
+    },
+    {
+      "season": 2016,
+      "games": 267,
+      "plays": 45245,
+      "ties": 2
+    },
+    {
+      "season": 2017,
+      "games": 267,
+      "plays": 44797,
+      "ties": 0
+    },
+    {
+      "season": 2018,
+      "games": 267,
+      "plays": 44568,
+      "ties": 2
+    },
+    {
+      "season": 2019,
+      "games": 267,
+      "plays": 44821,
+      "ties": 1
+    },
+    {
+      "season": 2020,
+      "games": 269,
+      "plays": 45173,
+      "ties": 1
+    },
+    {
+      "season": 2021,
+      "games": 285,
+      "plays": 47187,
+      "ties": 1
+    },
+    {
+      "season": 2022,
+      "games": 284,
+      "plays": 46711,
+      "ties": 2
+    },
+    {
+      "season": 2023,
+      "games": 285,
+      "plays": 47027,
+      "ties": 0
+    },
+    {
+      "season": 2024,
+      "games": 285,
+      "plays": 46779,
+      "ties": 0
+    },
+    {
+      "season": 2025,
+      "games": 285,
+      "plays": 46042,
+      "ties": 1
+    }
+  ],
+  "fourth_downs_by_season": [
+    {
+      "season": 2010,
+      "fourth_downs": 3984,
+      "go_rate": 0.12575301204819278,
+      "field_goal_rate": 0.2311746987951807,
+      "punt_rate": 0.6430722891566265,
+      "conversion_rate": 0.49101796407185627
+    },
+    {
+      "season": 2011,
+      "fourth_downs": 4009,
+      "go_rate": 0.11174856572711399,
+      "field_goal_rate": 0.2412072836118733,
+      "punt_rate": 0.6470441506610127,
+      "conversion_rate": 0.4330357142857143
+    },
+    {
+      "season": 2012,
+      "fourth_downs": 3990,
+      "go_rate": 0.11854636591478697,
+      "field_goal_rate": 0.23909774436090225,
+      "punt_rate": 0.6423558897243108,
+      "conversion_rate": 0.49471458773784355
+    },
+    {
+      "season": 2013,
+      "fourth_downs": 4067,
+      "go_rate": 0.12244897959183673,
+      "field_goal_rate": 0.23924268502581755,
+      "punt_rate": 0.6383083353823457,
+      "conversion_rate": 0.4799196787148594
+    },
+    {
+      "season": 2014,
+      "fourth_downs": 3900,
+      "go_rate": 0.12,
+      "field_goal_rate": 0.24307692307692308,
+      "punt_rate": 0.6369230769230769,
+      "conversion_rate": 0.4700854700854701
+    },
+    {
+      "season": 2015,
+      "fourth_downs": 4006,
+      "go_rate": 0.1255616575137294,
+      "field_goal_rate": 0.23764353469795307,
+      "punt_rate": 0.6367948077883175,
+      "conversion_rate": 0.48906560636182905
+    },
+    {
+      "season": 2016,
+      "fourth_downs": 3891,
+      "go_rate": 0.12747365715754305,
+      "field_goal_rate": 0.24826522744795682,
+      "punt_rate": 0.6242611153945001,
+      "conversion_rate": 0.5201612903225806
+    },
+    {
+      "season": 2017,
+      "fourth_downs": 4027,
+      "go_rate": 0.1273901167121927,
+      "field_goal_rate": 0.24211571889744227,
+      "punt_rate": 0.630494164390365,
+      "conversion_rate": 0.47173489278752434
+    },
+    {
+      "season": 2018,
+      "fourth_downs": 3782,
+      "go_rate": 0.1493918561607615,
+      "field_goal_rate": 0.23717609730301428,
+      "punt_rate": 0.6134320465362242,
+      "conversion_rate": 0.5716814159292035
+    },
+    {
+      "season": 2019,
+      "fourth_downs": 3801,
+      "go_rate": 0.1633780584056827,
+      "field_goal_rate": 0.2462509865824783,
+      "punt_rate": 0.590370955011839,
+      "conversion_rate": 0.47342995169082125
+    },
+    {
+      "season": 2020,
+      "fourth_downs": 3596,
+      "go_rate": 0.1910456062291435,
+      "field_goal_rate": 0.25472747497219134,
+      "punt_rate": 0.5542269187986651,
+      "conversion_rate": 0.5531295487627366
+    },
+    {
+      "season": 2021,
+      "fourth_downs": 3982,
+      "go_rate": 0.2074334505273732,
+      "field_goal_rate": 0.24334505273731794,
+      "punt_rate": 0.5492214967353088,
+      "conversion_rate": 0.5338983050847458
+    },
+    {
+      "season": 2022,
+      "fourth_downs": 4071,
+      "go_rate": 0.18914271677720462,
+      "field_goal_rate": 0.2473593711618767,
+      "punt_rate": 0.5634979120609187,
+      "conversion_rate": 0.5142857142857142
+    },
+    {
+      "season": 2023,
+      "fourth_downs": 4222,
+      "go_rate": 0.19729985788725724,
+      "field_goal_rate": 0.24561819043107533,
+      "punt_rate": 0.5570819516816674,
+      "conversion_rate": 0.5198079231692677
+    },
+    {
+      "season": 2024,
+      "fourth_downs": 3997,
+      "go_rate": 0.20390292719539654,
+      "field_goal_rate": 0.26594946209657244,
+      "punt_rate": 0.5301476107080311,
+      "conversion_rate": 0.5705521472392638
+    },
+    {
+      "season": 2025,
+      "fourth_downs": 3997,
+      "go_rate": 0.2329246935201401,
+      "field_goal_rate": 0.25619214410808105,
+      "punt_rate": 0.5108831623717789,
+      "conversion_rate": 0.5520945220193341
+    }
+  ],
+  "league_rates": {
+    "field_goal_make_rate": 0.8448632362497784,
+    "field_goal_attempts": 16927,
+    "fourth_down_conversion_rate": 0.515178930438279,
+    "punt_gross_yards_mean": 45.735144177154694,
+    "punt_touchback_rate": 0.07097339493388562,
+    "yards_per_scrimmage_play": 5.498830801133968,
+    "pass_share_of_scrimmage_plays": 0.5850156349543912,
+    "share_of_plays_missing_nflfastr_wp": 0.006078398601571041
+  }
+}

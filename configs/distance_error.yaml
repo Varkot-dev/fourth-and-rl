@@ -1,0 +1,109 @@
+# M9 "Was it really fourth and 1?" Read by fourth_and_rl.distance_error.load_config.
+# Everything fitted here uses development seasons only (splits.load_dev_plays).
+seed: 20261124
+n_threads: 2
+
+# Evidence for the hidden offset of the line to gain inside its recorded yard: the dip in
+# plays that gain exactly the recorded distance (distance_error.fit_line_offset).
+line_offset:
+  downs: [2, 4]            # second to fourth downs (first and 10 is checked separately)
+  distances: [2, 10]       # recorded yards to go pooled for the estimate. 1 is left out:
+                           # its "one yard short" bin is a gain of 0, where stuffed runs pile up
+  window: 4                # counts of plays ending k = -4..4 yards from the recorded line
+
+# Plausible measurement-error models. The offset v is where the line to gain sits inside
+# its recorded yard (0 = at the start of the yard, 1 = at the end). The recorded distance
+# is the true distance rounded up after subtracting v.
+error_models:
+  - name: uniform
+    label: "Uniform offset (headline)"
+    offset_kind: uniform
+    goal_to_go_offset: 0.5   # goal line in the middle of its recorded yard (rounding to nearest)
+  - name: fitted_mean
+    label: "Beta offset with the fitted mean"
+    offset_kind: beta
+    offset_mean: fitted      # the pooled estimate from line_offset, corrected for the
+                             # estimator's bias measured on simulated plays
+    offset_concentration: 2.0
+    goal_to_go_offset: 0.5
+  - name: narrow
+    label: "Offset fixed at half a yard"
+    offset_kind: point
+    offset_mean: 0.5
+    goal_to_go_offset: 0.5
+  - name: wide
+    label: "Uniform offset plus 0.25-yard spot error"
+    offset_kind: uniform
+    spot_sd: 0.25            # an assumption, not measured from play-by-play
+    goal_to_go_offset: 0.5
+  - name: goal_line_edge
+    label: "Uniform offset, goal line at a yard edge"
+    offset_kind: uniform
+    goal_to_go_offset: 0.0
+headline_model: uniform
+
+kernel:
+  step: 0.02               # yards between quadrature nodes of the true distance
+  max_ydstogo: 30          # as the whole-yard go model (components.yaml)
+plausible_coverage: 0.9    # "plausible range" = central 90% of the true distance given d
+
+# The continuous conversion curve: logit q(D) = offset(yard line, down) + h(D),
+# h non-increasing and piecewise linear between the knots, with a smoothness penalty.
+curve:
+  fit_downs: [3, 4]        # as the whole-yard go model: third and fourth downs pooled
+  knots: [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 2.5, 3, 3.5, 4, 5, 6, 7, 8, 10, 12, 15,
+          20, 25, 32]
+  # Smoothness. Whole-yard data pin down only the average of the curve over each recorded
+  # yard, so the shape inside a yard is set by smoothness. The headline penalty is the one
+  # with the best season-blocked cross-validated log loss (folds of two development
+  # seasons); the sensitivity runs use a tenth and ten times that value.
+  penalty: cv
+  penalty_grid: [10, 100, 1000, 3000, 10000, 100000]
+  cv_folds: [[2010, 2011], [2012, 2013], [2014, 2015], [2016, 2017], [2018, 2019],
+             [2020, 2021], [2022, 2023]]
+  penalty_sensitivity_factors: [0.1, 10]
+  offset_distance: 1       # offset = logit of the whole-yard go model at this distance
+
+# Game-level bootstrap of the development fit (offset estimate, curve, and which fourth
+# downs are counted). Measures sampling noise only; the model range is reported separately.
+bootstrap:
+  n_boot: 50
+  seed: 20261125
+
+# Real fourth downs: down 4 with a recorded decision (go, field goal, punt).
+fragile:
+  distance_groups: [[1, 1, "1"], [2, 2, "2"], [3, 3, "3"], [4, 5, "4-5"], [6, 10, "6-10"],
+                    [11, 99, "11+"]]
+  # yardline_100 ranges (inclusive); goal-to-go plays form their own group
+  field_groups: [[80, 99, "own 1-20"], [60, 79, "own 21-40"], [41, 59, "midfield"],
+                 [21, 40, "opp 21-40"], [1, 20, "opp 1-20"]]
+  gain_bins: [0, 1, 2, 4, 8, 100]   # |whole-yard go-minus-kick| in win-probability points
+
+# Simulation checks with a known truth (unit tests use smaller versions).
+simulation:
+  n_line: 400000           # plays for the offset estimator check
+  n_curve: 300000          # attempts for the deconvolution check
+  gain_jitter_sd: 0.7      # yards of Gaussian jitter that turn recorded gains into true ones
+
+# The Lions' fourth and 1 from their own 24 (GB at DET, 2026-10-25). The game is in the
+# sealed 2026 holdout and is NOT loaded: this is a hypothetical state built from the
+# situation as posted (research-kit/x/2_twitter_findings.md, section 1, decision 1).
+lions:
+  game_seconds_remaining: 293   # 4:53 left in the fourth quarter
+  score_differential: 0
+  yardline_100: 76              # own 24
+  ydstogo: 1
+  posteam_spread: 0.0           # even spread, as instructed
+  posteam_timeouts_remaining: 3 # not stated in the posts; 3 each assumed
+  defteam_timeouts_remaining: 3
+  timeout_sensitivity: [[3, 3], [2, 2], [3, 1]]
+  is_home: 1                    # Detroit at home (the version 2 model does not use it)
+  true_distances: [0.05, 2.0, 0.05]   # from, to, step (yards)
+  public_numbers:               # quoted as theirs, never blended with ours
+    nfl4th_bot: "Go for it (+8.1 WP), recommendation VERY STRONG (@ben_bot_baldwin, 2026-10-25)"
+    next_gen_stats: "\"We had this as a toss-up. The actual yards to go using tracking data made it closer to a 4th and 2 situation. If it was one yard or less, it would have been a go by our model.\" (@NextGenStats, 2026-10-25)"
+    espn: "Reported by @BenjaminSolak (2026-10-25) as strongly recommending go; no number was posted"
+  heatmap_yardlines: [10, 90]   # yardline_100 range of the signed-margin map
+  heatmap_distances: [0.05, 6.0]
+
+test_purpose: "M9 distance error: score the frozen true-distance propagation once on 2024-2025 fourth downs (results/m9_distance_error.json evaluation_plan)"

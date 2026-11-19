@@ -1,0 +1,420 @@
+{
+  "threads": 1,
+  "seasons": [
+    2010,
+    2025
+  ],
+  "splits": {
+    "games": {
+      "train": 3224,
+      "calib": 569,
+      "test": 570
+    },
+    "games_in_train_and_calib": 0,
+    "games_in_train_and_test": 0,
+    "games_in_calib_and_test": 0,
+    "games_with_more_than_one_season": 0,
+    "games_with_more_than_one_final_result": 0,
+    "games_with_more_than_one_spread_line": 0,
+    "duplicate_game_id_play_id_rows": 0,
+    "team_games_with_a_label_that_changes": 0,
+    "two_sided_games_whose_labels_do_not_sum_to_1": 0
+  },
+  "pre_play_columns": {
+    "scoring_plays_checked": 57411,
+    "share_scoring_rows_whose_score_equals_the_previous_row": 1.0,
+    "share_scoring_rows_whose_score_changes_on_the_next_row": 1.0,
+    "share_first_scoring_plays_at_0_0": 1.0,
+    "share_rows_score_differential_equals_posteam_minus_defteam": 1.0,
+    "share_games_where_a_row_already_shows_the_final_home_and_away_score": 0.99977079990832,
+    "note_final_score": "A pre-play score reaches the final score only when a row follows the last score (a kickoff, kneel or try); the share above is context, not a failure.",
+    "touchdown_rows_checked": 22244,
+    "share_touchdown_rows_with_clock_above_the_next_row": 0.9961337888868909,
+    "timeouts": {
+      "timeout_rows_checked": 31452,
+      "timeout_rows_without_a_posteam_in_raw": 31452,
+      "timeout_rows_with_a_posteam_in_raw": 1559,
+      "share_where_the_play_after_has_exactly_one_fewer_than_the_play_before": 0.9509729111026326,
+      "share_where_the_count_does_not_change_across_the_timeout_row": 0.0015579295434312603
+    },
+    "share_games_whose_opening_kickoff_is_at_3600_seconds": 0.9983955993582397
+  },
+  "features": {
+    "features": [
+      "down",
+      "ydstogo",
+      "yardline_100",
+      "goal_to_go",
+      "game_seconds_remaining",
+      "half_seconds_remaining",
+      "qtr",
+      "is_overtime",
+      "score_differential",
+      "posteam_timeouts_remaining",
+      "defteam_timeouts_remaining",
+      "posteam_spread",
+      "receive_2h_ko",
+      "is_home",
+      "spread_time",
+      "expected_margin",
+      "margin_per_sqrt_time"
+    ],
+    "state_columns": [
+      "down",
+      "ydstogo",
+      "yardline_100",
+      "game_seconds_remaining",
+      "half_seconds_remaining",
+      "qtr",
+      "score_differential",
+      "posteam_timeouts_remaining",
+      "defteam_timeouts_remaining",
+      "posteam_spread",
+      "receive_2h_ko",
+      "is_home"
+    ],
+    "forbidden_columns_among_features_or_state": []
+  },
+  "components": {
+    "holdout_seasons_in_config": [
+      2024,
+      2025
+    ],
+    "refit_2010_2023": {
+      "seasons": [
+        2010,
+        2023
+      ],
+      "n_plays": 637141,
+      "go_reference_season": 2023.0,
+      "field_goal_reference_season": 2023.0,
+      "field_goal_attempts": 14621,
+      "field_goal_longest_made": 66,
+      "punts": 13390,
+      "play_model_plays": 202735,
+      "kickoff": {
+        "seasons": [
+          2023
+        ],
+        "n": 2838,
+        "n_used": 2820,
+        "kicking_team_recovers_or_scores": 0.003171247357293869,
+        "return_touchdown": 0.0014094432699083862
+      }
+    },
+    "components.joblib": {
+      "seasons": [
+        2010,
+        2025
+      ],
+      "n_plays": 729962,
+      "go_reference_season": 2025.0,
+      "field_goal_reference_season": 2025.0,
+      "field_goal_attempts": 16927,
+      "field_goal_longest_made": 68,
+      "punts": 17551,
+      "play_model_plays": 270393,
+      "kickoff": {
+        "seasons": [
+          2025
+        ],
+        "n": 2927,
+        "n_used": 2893,
+        "kicking_team_recovers_or_scores": 0.00717458148274684,
+        "return_touchdown": 0.0023915271609156134
+      },
+      "max_abs_difference_from_refit_2010_2023": {
+        "p_convert_fourth_down_table": 0.011733897835048968,
+        "p_field_goal_table": 0.06453524027900523,
+        "punt_table": 0.025801330885654894,
+        "play_gain_pmf": 0.39156626506024106,
+        "kickoff": 0.7365079073233753,
+        "p_extra_point": 0.003832803216934466,
+        "mean_scrimmage_seconds": 0.163314645689848
+      },
+      "max_abs_difference_from_refit_2010_2023_with_2025_kickoffs": {
+        "p_convert_fourth_down_table": 0.011733897835048968,
+        "p_field_goal_table": 0.06453524027900523,
+        "punt_table": 0.025801330885654894,
+        "play_gain_pmf": 0.39156626506024106,
+        "kickoff": 0.0,
+        "p_extra_point": 0.003832803216934466,
+        "mean_scrimmage_seconds": 0.163314645689848
+      }
+    },
+    "components_2010_2023.joblib": {
+      "seasons": [
+        2010,
+        2023
+      ],
+      "n_plays": 637141,
+      "go_reference_season": 2023.0,
+      "field_goal_reference_season": 2023.0,
+      "field_goal_attempts": 14621,
+      "field_goal_longest_made": 66,
+      "punts": 13390,
+      "play_model_plays": 202735,
+      "kickoff": {
+        "seasons": [
+          2025
+        ],
+        "n": 2927,
+        "n_used": 2893,
+        "kicking_team_recovers_or_scores": 0.00717458148274684,
+        "return_touchdown": 0.0023915271609156134
+      },
+      "max_abs_difference_from_refit_2010_2023": {
+        "p_convert_fourth_down_table": 3.752553823233029e-14,
+        "p_field_goal_table": 0.0,
+        "punt_table": 0.0,
+        "play_gain_pmf": 0.0,
+        "kickoff": 0.7365079073233753,
+        "p_extra_point": 0.0,
+        "mean_scrimmage_seconds": 0.0
+      },
+      "max_abs_difference_from_refit_2010_2023_with_2025_kickoffs": {
+        "p_convert_fourth_down_table": 3.752553823233029e-14,
+        "p_field_goal_table": 0.0,
+        "punt_table": 0.0,
+        "play_gain_pmf": 0.0,
+        "kickoff": 0.0,
+        "p_extra_point": 0.0,
+        "mean_scrimmage_seconds": 0.0
+      }
+    },
+    "longest_made_field_goal_by_season_group": {
+      "dev_2010_2023": 66,
+      "test_2024_2025": 68,
+      "max_kick_distance_in_config": 68
+    }
+  },
+  "win_probability": {
+    "saved_model": {
+      "seed": 20261117,
+      "n_train_rows": 531244,
+      "n_calib_rows": 91663,
+      "platt": {
+        "method": "platt",
+        "slope": 0.867281238852074,
+        "intercept": 0.004227182334544204
+      }
+    },
+    "refit_on_declared_seasons": {
+      "n_train_rows": 531244,
+      "n_calib_rows": 91663,
+      "platt": {
+        "method": "platt",
+        "slope": 0.867281238852074,
+        "intercept": 0.004227182334544206
+      }
+    },
+    "max_abs_prediction_difference_saved_vs_refit_all_rows": 1.1102230246251565e-16,
+    "max_abs_prediction_difference_saved_vs_refit_test_rows": 1.1102230246251565e-16,
+    "contrast_model_trained_on_train_plus_test": {
+      "max_abs_difference_from_saved_on_test_rows": 0.07851606429945923,
+      "test_log_loss_saved": 0.44903960396638815,
+      "test_log_loss_if_test_seasons_were_trained_on": 0.44430999650723385
+    },
+    "headline_model_log_loss_by_season": {
+      "2010": 0.4399894048345859,
+      "2011": 0.45674245187075363,
+      "2012": 0.44726319271295095,
+      "2013": 0.45507631459066206,
+      "2014": 0.43777465594445736,
+      "2015": 0.46290942745327285,
+      "2016": 0.45668972258198853,
+      "2017": 0.4092727657500078,
+      "2018": 0.42770728799782737,
+      "2019": 0.42322985977843425,
+      "2020": 0.41852507515012183,
+      "2021": 0.4259429143466168,
+      "2022": 0.5061531059273835,
+      "2023": 0.4609575691360366,
+      "2024": 0.4227930171354648,
+      "2025": 0.47582448960730483
+    },
+    "crossfit_out_of_fold_log_loss_by_season": {
+      "2010": 0.44368827294498264,
+      "2011": 0.4684662250452937,
+      "2012": 0.45559137522684845,
+      "2013": 0.4612567616100852,
+      "2014": 0.44229300790771403,
+      "2015": 0.4716351675882233,
+      "2016": 0.4611620659527494,
+      "2017": 0.40701408591732713,
+      "2018": 0.43005025490226473,
+      "2019": 0.42905260001813544,
+      "2020": 0.4217726735979412,
+      "2021": 0.4348570739217419,
+      "2022": 0.5117346004968767,
+      "2023": 0.45943421203766616,
+      "2024": 0.41550658363509096,
+      "2025": 0.4784705639506888
+    },
+    "headline_minus_out_of_fold_by_season": {
+      "2010": -0.003698868110396769,
+      "2011": -0.011723773174540097,
+      "2012": -0.008328182513897497,
+      "2013": -0.006180447019423163,
+      "2014": -0.004518351963256673,
+      "2015": -0.008725740134950477,
+      "2016": -0.004472343370760856,
+      "2017": 0.002258679832680688,
+      "2018": -0.0023429669044373602,
+      "2019": -0.005822740239701196,
+      "2020": -0.0032475984478193554,
+      "2021": -0.008914159575125091,
+      "2022": -0.005581494569493195,
+      "2023": 0.0015233570983704259,
+      "2024": 0.0072864335003738345,
+      "2025": -0.002646074343383986
+    },
+    "mean_gap_train_seasons_in_sample_minus_out_of_fold": -0.005476374301802367,
+    "mean_gap_test_seasons_headline_minus_out_of_fold": 0.0023201795784948964,
+    "crossfit_fold_predicting_test": {
+      "predict": [
+        2022,
+        2023,
+        2024,
+        2025
+      ],
+      "train": [
+        2010,
+        2011,
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019
+      ],
+      "calib": [
+        2020,
+        2021
+      ],
+      "rows_compared": 183173,
+      "max_abs_difference_saved_predictions_vs_refit": 2.220446049250313e-16
+    },
+    "crossfit_plan": [
+      {
+        "predict": [
+          2010,
+          2011,
+          2012,
+          2013
+        ],
+        "train": [
+          2014,
+          2015,
+          2016,
+          2017,
+          2018,
+          2019,
+          2020,
+          2021,
+          2022,
+          2023
+        ],
+        "calib": [
+          2024,
+          2025
+        ]
+      },
+      {
+        "predict": [
+          2014,
+          2015,
+          2016,
+          2017
+        ],
+        "train": [
+          2010,
+          2011,
+          2012,
+          2013,
+          2018,
+          2019,
+          2020,
+          2021,
+          2022,
+          2023
+        ],
+        "calib": [
+          2024,
+          2025
+        ]
+      },
+      {
+        "predict": [
+          2018,
+          2019,
+          2020,
+          2021
+        ],
+        "train": [
+          2010,
+          2011,
+          2012,
+          2013,
+          2014,
+          2015,
+          2016,
+          2017,
+          2022,
+          2023
+        ],
+        "calib": [
+          2024,
+          2025
+        ]
+      },
+      {
+        "predict": [
+          2022,
+          2023,
+          2024,
+          2025
+        ],
+        "train": [
+          2010,
+          2011,
+          2012,
+          2013,
+          2014,
+          2015,
+          2016,
+          2017,
+          2018,
+          2019
+        ],
+        "calib": [
+          2020,
+          2021
+        ]
+      }
+    ]
+  },
+  "field_goal_cap": {
+    "heldout_attempts": 2306,
+    "longest_made_in_development_seasons": 66,
+    "heldout_attempts_beyond_development_cap": 6,
+    "heldout_makes_beyond_development_cap": 2,
+    "config_cap": {
+      "max_kick_distance": 68,
+      "heldout_log_loss": 0.36946680671078347
+    },
+    "development_cap": {
+      "max_kick_distance": 66,
+      "heldout_log_loss": 0.3797755191199827
+    }
+  },
+  "end_game_rows": {
+    "games": 4363,
+    "last_rows_described_as_end_game": 4362,
+    "share_last_rows_whose_score_differential_sign_equals_the_label": 1.0,
+    "last_rows_that_the_model_can_score_or_train_on": 0,
+    "last_rows_with_an_nflfastr_wp": 1
+  }
+}
