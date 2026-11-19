@@ -213,8 +213,10 @@ def test_stage_plan_builds_support_from_the_training_split_only(tmp_path, monkey
 
 # ---------------------------------------------------------------- 2. hard rules
 def test_mask_removes_out_of_range_field_goals_and_deep_punts(train_split, test_split):
-    sup = SP.build_support(train_split)
+    # The version-1 rule (longest made field goal plus a margin), kept behind a setting.
+    sup = SP.build_support(train_split, {"fg_max_distance_yards": None})
     rules = SP.hard_rules(sup)
+    assert rules["fg_rule"] == "longest_made_plus_margin" and not rules["fg_rule_post_hoc"]
     longest = int(np.flatnonzero(sup.fg_makes > 0).max())
     assert rules["longest_made_fg_yardline_train"] == longest
     assert rules["fg_max_yardline"] == longest + 3
@@ -234,10 +236,51 @@ def test_mask_removes_out_of_range_field_goals_and_deep_punts(train_split, test_
         (int(idx[q]), SP.CHOICES[j]) for q, j in zip(*np.nonzero(~m), strict=True)}
     assert all(e["rule"] for e in masked)
     # Changing the margin moves the limit.
-    rules5 = SP.hard_rules(SP.build_support(train_split, {"fg_margin_yards": 5}))
+    rules5 = SP.hard_rules(SP.build_support(train_split, {"fg_margin_yards": 5,
+                                                           "fg_max_distance_yards": None}))
     assert rules5["fg_max_yardline"] == longest + 5
     with pytest.raises(ValueError):
         SP.config({"support": {"no_such_setting": 1}})
+
+
+def test_field_goal_limit_is_the_kicker_support_distance(train_split, test_split):
+    """Default since version 2 of the settings: field goals up to 60 yards (yardline 42),
+    the kicker model's support distance, whatever the longest make in the data is."""
+    assert SP.DEFAULTS["fg_max_distance_yards"] == SP.FG_SUPPORT_DISTANCE_YARDS == 60
+    assert SP.config()["fg_max_distance_yards"] == 60
+    sup = SP.build_support(train_split)
+    rules = SP.hard_rules(sup)
+    assert rules["fg_rule"] == "support_distance" and rules["fg_rule_post_hoc"]
+    assert rules["fg_max_yardline"] == 42 and rules["fg_max_distance_yards"] == 60
+    assert "fg_selection_bias.md" in rules["fg_rule_source"]
+    assert "60-yard" in rules["text"] and "post hoc" in rules["text"]
+    assert rules["fg_margin_yards"] is None  # not used by this rule
+    # The longest make is still reported, and the margin no longer moves the limit.
+    assert rules["longest_made_fg_yardline_train"] == int(np.flatnonzero(sup.fg_makes > 0).max())
+    assert SP.hard_rules(SP.build_support(train_split, {"fg_margin_yards": 9})) \
+        ["fg_max_yardline"] == 42
+    sp = R.subset_split(test_split, np.arange(len(test_split.game_ids)))
+    idx = SP.fourth_down_records(sp)[:5]
+    sp.states[idx, SI["yardline"]] = [30, 41, 42, 43, 51]
+    m = SP.action_mask(sp, idx, rules)
+    assert m[:, 1].tolist() == [True, True, True, False, False]
+    masked = [e for e in SP.masked_actions(sp, idx, rules) if e["masked"] == "FG"]
+    assert [e["yardline_100"] for e in masked] == [43, 51]
+    assert all("(60 yards)" in e["rule"] for e in masked)
+    # Another distance is a setting; an impossible one is refused.
+    r55 = SP.hard_rules(SP.build_support(train_split, {"fg_max_distance_yards": 55}))
+    assert r55["fg_max_yardline"] == 37
+    with pytest.raises(ValueError):
+        SP.hard_rules(SP.build_support(train_split, {"fg_max_distance_yards": 10}))
+
+
+def test_presets_use_the_support_distance_and_say_it_is_post_hoc():
+    for name in ("smoke", "t4", "l4", "a100"):
+        sc = SP.config(R.PRESETS[name]["plan"])
+        assert sc["fg_max_distance_yards"] == 60, name
+    assert "60 yards" in R.SUPPORT_NOTE and "post hoc" in R.SUPPORT_NOTE
+    assert "fg_selection_bias.md" in R.SUPPORT_NOTE
+    assert R.PRESET_VERSION.startswith("3 ")
 
 
 def test_low_support_flag(train_split, test_split):

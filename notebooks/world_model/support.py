@@ -13,8 +13,10 @@ guards against it:
    over comparable states (yard line within +-3, yards to go in the same bucket). Plus the
    empirical field-goal make rate by yard line and the empirical punt net yards by yard line.
 2. Hard rules, applied through `simulate.plan_fourth_downs(..., action_mask=...)`: no field
-   goal beyond the longest made field goal in the training split plus 3 yards; no punt inside
-   the opponent's 30; going for it is always allowed.
+   goal longer than 60 yards (yardline_100 <= 42), the support distance of the repo's
+   hierarchical kicker model (setting fg_max_distance_yards; None restores the version-2
+   rule, the longest made field goal in the training split plus fg_margin_yards); no punt
+   inside the opponent's 30; going for it is always allowed.
 3. Soft flags reported with every recommendation: how many comparable training fourth downs
    there were, how many times coaches made the recommended call there and its share; "low
    support" when coaches made that call fewer than 10 times in comparable training states.
@@ -53,9 +55,27 @@ YTG_BUCKETS = ((1, 1), (2, 2), (3, 3), (4, 5), (6, 7), (8, 10), (11, 15), (16, 3
 SCORE_BUCKETS = ("down 9+", "down 1-8", "tied", "up 1-8", "up 9+")
 TIME_BUCKETS = ("first half", "second half, over 5 min left", "last 5 min")
 
+# The field-goal limit since version 2 of these settings (post hoc, see FG_RULE_SOURCE): the
+# support distance of the hierarchical kicker model in the main repo, the longest distance
+# up to which the top-decile kickers made at least 20 training attempts within 2 yards of
+# every distance from 40 yards on. Version 1 used the longest made field goal plus 3 yards
+# (a 69-yard limit in the second Colab run).
+FG_SUPPORT_DISTANCE_YARDS = 60
+FG_RULE_SOURCE = (
+    "support distance of the hierarchical kicker model (src/fourth_and_rl/kicker.py), "
+    "docs/notes/fg_selection_bias.md section 4.5 and results/questions/fg_selection_bias.json "
+    "('support' -> 'support_distance': 60) on branch claude/optimistic-mendel-v2267n "
+    "(commit c817432), https://github.com/Varkot-dev/fourth-and-rl/blob/"
+    "claude/optimistic-mendel-v2267n/docs/notes/fg_selection_bias.md; chosen after the "
+    "second Colab run (post hoc)")
+
 DEFAULTS: dict[str, Any] = {
-    "version": 1,
-    "fg_margin_yards": 3,  # field goals allowed up to the longest made one plus this
+    "version": 2,
+    # Field goals allowed up to this many yards (yardline_100 <= this - 18). None: the
+    # version-1 rule, up to the longest made field goal in the training split plus
+    # fg_margin_yards.
+    "fg_max_distance_yards": FG_SUPPORT_DISTANCE_YARDS,
+    "fg_margin_yards": 3,  # used only when fg_max_distance_yards is None
     "punt_min_yardline": 30,  # punts allowed only from yardline_100 >= this
     "min_support": 10,  # "low support" below this many comparable training calls
     "yardline_window": 3,  # comparable states: yard line within +-3
@@ -260,8 +280,11 @@ def build_support(train: S.Split, cfg: dict | None = None) -> Support:
 def hard_rules(sup: Support) -> dict:
     """Rules no planner should violate, with the numbers behind them.
 
-    - Field goal: allowed only from yardline_100 <= longest made field goal in the training
-      split + fg_margin_yards (3). Beyond that the simulator has never seen a make.
+    - Field goal: with fg_max_distance_yards set (the default, 60), allowed only from
+      yardline_100 <= fg_max_distance_yards - 18 (42): the kicker model's support distance,
+      beyond which even the strongest kickers have too few training attempts to say what a
+      kick makes. With it None (version 1), allowed only from yardline_100 <= longest made
+      field goal in the training split + fg_margin_yards (3).
     - Punt: allowed only from yardline_100 >= punt_min_yardline (30): no punt inside the
       opponent's 30, where a punt gains almost nothing and coaches essentially never punt.
     - Go: always allowed (every fourth down has a real snap).
@@ -270,24 +293,39 @@ def hard_rules(sup: Support) -> dict:
     made_at = np.flatnonzero(sup.fg_makes > 0)
     longest = int(made_at.max()) if len(made_at) else None
     margin = int(c["fg_margin_yards"])
-    fg_max = (longest if longest is not None else 0) + margin
+    dist = c.get("fg_max_distance_yards")
+    if dist is None:
+        fg_max = (longest if longest is not None else 0) + margin
+        fg_rule = "longest_made_plus_margin"
+        fg_text = (f"a {fg_max + KICK_DISTANCE_OFFSET}-yard attempt: the longest made in the "
+                   f"training split plus {margin} yards")
+        source = "longest made field goal in the training split plus fg_margin_yards"
+    else:
+        fg_max = int(dist) - KICK_DISTANCE_OFFSET
+        if not 1 <= fg_max <= 99:
+            raise ValueError(f"fg_max_distance_yards {dist} gives yardline {fg_max}")
+        fg_rule = "support_distance"
+        fg_text = (f"a {int(dist)}-yard attempt: the support distance of the hierarchical "
+                   "kicker model, set after the second Colab run (post hoc)")
+        source = FG_RULE_SOURCE
     punt_min = int(c["punt_min_yardline"])
     return {
         "go": "always allowed",
+        "fg_rule": fg_rule,
+        "fg_rule_source": source,
+        "fg_rule_post_hoc": fg_rule == "support_distance",
         "fg_max_yardline": fg_max,
         "fg_max_distance_yards": fg_max + KICK_DISTANCE_OFFSET,
         "longest_made_fg_yardline_train": longest,
         "longest_made_fg_distance_yards_train": None if longest is None
         else longest + KICK_DISTANCE_OFFSET,
-        "fg_margin_yards": margin,
+        "fg_margin_yards": margin if dist is None else None,
         "punt_min_yardline": punt_min,
         "train_fourth_down_fg_beyond_limit": int(sup.counts[fg_max + 1 :, :, 1].sum()),
         "train_fourth_down_punts_inside_limit": int(sup.counts[:punt_min, :, 2].sum()),
         "train_fourth_downs": int(sup.counts.sum()),
-        "text": (f"field goals only from the opponent's {fg_max} or closer (a "
-                 f"{fg_max + KICK_DISTANCE_OFFSET}-yard attempt: the longest made in the "
-                 f"training split plus {margin} yards); no punt inside the opponent's "
-                 f"{punt_min}; going for it is always allowed"),
+        "text": (f"field goals only from the opponent's {fg_max} or closer ({fg_text}); no "
+                 f"punt inside the opponent's {punt_min}; going for it is always allowed"),
     }
 
 
@@ -613,6 +651,8 @@ def fg_gap_summary(diag: dict, min_attempts: int = 10) -> dict:
 __all__ = [
     "CHOICES",
     "DEFAULTS",
+    "FG_RULE_SOURCE",
+    "FG_SUPPORT_DISTANCE_YARDS",
     "KICK_DISTANCE_OFFSET",
     "Support",
     "action_mask",
