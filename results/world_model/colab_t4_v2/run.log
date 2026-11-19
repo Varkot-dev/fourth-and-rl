@@ -1,0 +1,79 @@
+01:21:25 [preflight] Micro-benchmark: kept the preset sizes: rollouts at 93,731 steps/s are 234% of the 40,000 the preset assumes (it is scaled only below 50%)
+01:21:25 [data] starting (8.0 min available, 55.0 min left in the run)
+01:21:25 [data] downloading and building season 2010
+01:21:26 [data] downloading and building season 2011
+01:21:28 [data] downloading and building season 2012
+01:21:29 [data] downloading and building season 2013
+01:21:30 [data] downloading and building season 2014
+01:21:32 [data] downloading and building season 2015
+01:21:33 [data] downloading and building season 2016
+01:21:34 [data] downloading and building season 2017
+01:21:35 [data] downloading and building season 2018
+01:21:36 [data] downloading and building season 2019
+01:21:37 [data] downloading and building season 2020
+01:21:38 [data] downloading and building season 2021
+01:21:43 [data] train: 3224 games, 529513 records, seasons [2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021]
+01:21:43 [data] downloading and building season 2022
+01:21:44 [data] downloading and building season 2023
+01:21:46 [data] val: 569 games, 91412 records, seasons [2022, 2023]
+01:21:46 [data] downloading and building season 2024
+01:21:48 [data] downloading and building season 2025
+01:21:49 [data] test: 570 games, 90594 records, seasons [2024, 2025]
+01:21:49 [data] done in 24s
+01:21:49 [train] starting (20.0 min available, 54.6 min left in the run)
+01:21:50 [train] 6,495,984 parameters; 3224 train games, 529,513 records; device cuda; checkpoint /content/drive/MyDrive/fourth_and_rl_world_model/ckpt/model_3b1da6b22dcf52f6.pt
+01:21:50 [train] training on cuda:0 (Tesla T4); data tensors on cuda:0 (30.2 MiB, built in 0.1s); AMP torch.float16 with GradScaler; fused AdamW; 64 games per step, 1 micro-batch(es)
+01:21:55 [train] epoch 0: train 20.6130  val 15.5772 nats/record  (best)  5s | 123,917 records/s; batch 0.0s, h2d 0.0s, forward 1.6s, backward+opt 2.6s, validation 0.2s, checkpoint 0.4s
+01:22:00 [train] epoch 1: train 13.6843  val 11.8456 nats/record  (best)  5s | 125,739 records/s; batch 0.0s, h2d 0.0s, forward 1.5s, backward+opt 2.7s, validation 0.2s, checkpoint 0.5s
+01:22:05 [train] epoch 2: train 11.0221  val 9.8201 nats/record  (best)  5s | 123,939 records/s; batch 0.0s, h2d 0.0s, forward 1.5s, backward+opt 2.7s, validation 0.2s, checkpoint 0.4s
+01:22:10 [train] epoch 3: train 9.5841  val 9.0133 nats/record  (best)  5s | 123,912 records/s; batch 0.0s, h2d 0.0s, forward 1.5s, backward+opt 2.7s, validation 0.2s, checkpoint 0.4s
+01:22:15 [train] epoch 4: train 9.0250  val 8.5835 nats/record  (best)  5s | 123,121 records/s; batch 0.0s, h2d 0.0s, forward 1.6s, backward+opt 2.7s, validation 0.2s, checkpoint 0.4s
+01:22:21 [train] epoch 5: train 8.5968  val 8.1942 nats/record  (best)  5s | 121,782 records/s; batch 0.0s, h2d 0.0s, forward 1.6s, backward+opt 2.7s, validation 0.2s, checkpoint 0.6s
+01:22:26 [train] epoch 6: train 8.2180  val 7.8698 nats/record  (best)  5s | 121,861 records/s; batch 0.0s, h2d 0.0s, forward 1.6s, backward+opt 2.7s, validation 0.2s, checkpoint 0.5s
+01:22:31 [train] epoch 7: train 7.9188  val 7.6006 nats/record  (best)  5s | 120,899 records/s; batch 0.0s, h2d 0.0s, forward 1.6s, backward+opt 2.8s, validation 0.2s, checkpoint 0.4s
+01:22:36 [train] epoch 8: train 7.7007  val 7.4185 nats/record  (best)  5s | 120,924 records/s; batch 0.0s, h2d 0.0s, forward 1.6s, backward+opt 2.8s, validation 0.2s, checkpoint 0.4s
+01:22:42 [train] epoch 9: train 7.5254  val 7.2718 nats/record  (best)  5s | 120,458 records/s; batch 0.0s, h2d 0.0s, forward 1.6s, backward+opt 2.8s, validation 0.2s, checkpoint 0.5s
+01:22:47 [train] epoch 10: train 7.3800  val 7.1578 nats/record  (best)  5s | 120,372 records/s; batch 0.0s, h2d 0.0s, forward 1.6s, backward+opt 2.8s, validation 0.2s, checkpoint 0.4s
+01:22:52 [train] epoch 11: train 7.2524  val 7.0462 nats/record  (best)  5s | 119,300 records/s; batch 0.0s, h2d 0.0s, forward 1.6s, backward+opt 2.8s, validation 0.2s, checkpoint 0.4s
+01:22:58 [train] epoch 12: train 7.1407  val 6.9469 nats/record  (best)  5s | 117,574 records/s; batch 0.0s, h2d 0.0s, forward 1.6s, backward+opt 2.8s, validation 0.2s, checkpoint 0.5s
+01:23:03 [train] epoch 13: train 7.0381  val 6.8639 nats/record  (best)  5s | 118,088 records/s; batch 0.0s, h2d 0.0s, forward 1.6s, backward+opt 2.8s, validation 0.2s, checkpoint 0.4s
+01:23:08 [train] epoch 14: train 6.9441  val 6.7859 nats/record  (best)  5s | 115,564 records/s; batch 0.0s, h2d 0.0s, forward 1.6s, backward+opt 2.9s, validation 0.2s, checkpoint 0.3s
+01:23:14 [train] epoch 15: train 6.8520  val 6.6991 nats/record  (best)  5s | 114,700 records/s; batch 0.0s, h2d 0.0s, forward 1.7s, backward+opt 2.9s, validation 0.2s, checkpoint 0.4s
+01:23:19 [train] epoch 16: train 6.7617  val 6.6318 nats/record  (best)  5s | 113,878 records/s; batch 0.0s, h2d 0.0s, forward 1.6s, backward+opt 3.0s, validation 0.2s, checkpoint 0.4s
+01:23:25 [train] epoch 17: train 6.6695  val 6.5560 nats/record  (best)  5s | 114,177 records/s; batch 0.0s, h2d 0.0s, forward 1.6s, backward+opt 3.0s, validation 0.2s, checkpoint 0.5s
+01:23:30 [train] epoch 18: train 6.5865  val 6.4784 nats/record  (best)  5s | 112,369 records/s; batch 0.0s, h2d 0.0s, forward 1.7s, backward+opt 3.0s, validation 0.2s, checkpoint 0.4s
+01:23:36 [train] epoch 19: train 6.4995  val 6.4158 nats/record  (best)  6s | 111,465 records/s; batch 0.0s, h2d 0.0s, forward 1.7s, backward+opt 3.0s, validation 0.2s, checkpoint 0.6s
+01:23:42 [train] epoch 20: train 6.4255  val 6.3577 nats/record  (best)  6s | 110,066 records/s; batch 0.0s, h2d 0.0s, forward 1.7s, backward+opt 3.1s, validation 0.3s, checkpoint 0.5s
+01:23:48 [train] epoch 21: train 6.3562  val 6.3230 nats/record  (best)  6s | 107,976 records/s; batch 0.0s, h2d 0.0s, forward 1.7s, backward+opt 3.2s, validation 0.3s, checkpoint 0.4s
+01:23:53 [train] epoch 22: train 6.3019  val 6.2979 nats/record  (best)  6s | 107,122 records/s; batch 0.0s, h2d 0.0s, forward 1.7s, backward+opt 3.2s, validation 0.3s, checkpoint 0.5s
+01:23:59 [train] epoch 23: train 6.2603  val 6.2872 nats/record  (best)  6s | 105,112 records/s; batch 0.0s, h2d 0.0s, forward 1.8s, backward+opt 3.2s, validation 0.3s, checkpoint 0.4s
+01:24:05 [train] epoch 24: train 6.2190  val 6.2854 nats/record  (best)  6s | 104,894 records/s; batch 0.0s, h2d 0.0s, forward 1.8s, backward+opt 3.3s, validation 0.3s, checkpoint 0.4s
+01:24:11 [train] epoch 25: train 6.1883  val 6.2805 nats/record  (best)  6s | 104,600 records/s; batch 0.0s, h2d 0.0s, forward 1.8s, backward+opt 3.2s, validation 0.2s, checkpoint 0.4s
+01:24:17 [train] epoch 26: train 6.1552  val 6.2787 nats/record  (best)  6s | 107,451 records/s; batch 0.0s, h2d 0.0s, forward 1.7s, backward+opt 3.2s, validation 0.3s, checkpoint 0.4s
+01:24:23 [train] epoch 27: train 6.1292  val 6.2760 nats/record  (best)  6s | 108,563 records/s; batch 0.0s, h2d 0.0s, forward 1.7s, backward+opt 3.2s, validation 0.2s, checkpoint 0.5s
+01:24:28 [train] epoch 28: train 6.1019  val 6.2921 nats/record  6s | 110,531 records/s; batch 0.0s, h2d 0.0s, forward 1.7s, backward+opt 3.1s, validation 0.2s, checkpoint 0.6s
+01:24:34 [train] epoch 29: train 6.0775  val 6.2918 nats/record  5s | 111,170 records/s; batch 0.0s, h2d 0.0s, forward 1.7s, backward+opt 3.0s, validation 0.2s, checkpoint 0.4s
+01:24:40 [train] epoch 30: train 6.0571  val 6.2947 nats/record  6s | 111,512 records/s; batch 0.0s, h2d 0.0s, forward 1.7s, backward+opt 3.0s, validation 0.2s, checkpoint 0.5s
+01:24:45 [train] epoch 31: train 6.0332  val 6.3119 nats/record  5s | 112,322 records/s; batch 0.0s, h2d 0.0s, forward 1.6s, backward+opt 3.0s, validation 0.2s, checkpoint 0.4s
+01:24:45 [train] done in 176s
+01:24:45 [eval] starting (9.0 min available, 51.7 min left in the run)
+01:24:46 [eval] NLL per transition: model 6.276, baseline 12.775
+01:24:50 [eval] league stats over 128 simulated games: sim {'records_per_game': 164.7421875, 'points_per_game': 45.0859375, 'final_margin_sd': 14.180509618040663, 'tie_share': 0.046875, 'kickoffs_per_game': 10.4765625, 'home_win_share': 0.6171875} real {'records_per_game': 161.25, 'points_per_game': 43.359375, 'final_margin_sd': 13.364445309757528, 'tie_share': 0.046875, 'kickoffs_per_game': 9.9765625, 'home_win_share': 0.5859375, 'final_play_points_share': 0.0546875}
+01:28:40 [eval] ours_simulation: log loss 0.4811 [0.4352, 0.5344], Brier 0.1480 on 600 states
+01:28:40 [eval] nflverse_home_wp (theirs): log loss 0.4832 [0.4372, 0.5306], Brier 0.1483 on 600 states
+01:28:40 [eval] nflverse_vegas_home_wp (theirs): log loss 0.4823 [0.4306, 0.5372], Brier 0.1489 on 600 states
+01:28:40 [eval] done in 234s
+01:28:40 [test] starting (7.0 min available, 47.8 min left in the run)
+01:28:40 [test] preregistered this configuration's test plan: /content/drive/MyDrive/fourth_and_rl_world_model/prereg/477f07d599027e39.json
+01:32:29 [test] ours_simulation: log loss 0.4617 [0.4179, 0.5039], Brier 0.1439 on 600 states
+01:32:29 [test] nflverse_home_wp (theirs): log loss 0.4705 [0.4329, 0.5114], Brier 0.1464 on 600 states
+01:32:29 [test] nflverse_vegas_home_wp (theirs): log loss 0.4487 [0.4062, 0.4971], Brier 0.1388 on 600 states
+01:32:29 [test] done in 229s
+01:32:29 [plan] starting (20.0 min available, 43.9 min left in the run)
+01:32:29 [plan] action rules: field goals only from the opponent's 51 or closer (a 69-yard attempt: the longest made in the training split plus 3 yards); no punt inside the opponent's 30; going for it is always allowed
+01:32:33 [plan] hypothetical: [{'idx': 136, 'game_id': '2024_01_ARI_BUF_HYPOTHETICAL', 'season': 2024, 'poss': 'AWAY', 'ydstogo': 2, 'yardline_100': 60, 'clock_seconds': 240, 'score_diff_poss': 4, 'wp_go': 0.8577880859375, 'se_go': 0.005187754445969868, 'done_go': True, 'wp_fg': nan, 'se_fg': nan, 'done_fg': False, 'wp_punt': 0.7979736328125, 'se_punt': 0.006133846945911354, 'done_punt': True, 'allowed_go': True, 'allowed_fg': False, 'allowed_punt': True, 'best': 'GO', 'margin': 0.059814453125, 'margin_se': 0.008033484583139882, 'too_close': False, 'real_action': 'PUNT', 'real_choice': 'PUNT', 'agrees': False, 'done': True, 'sup_n': 344, 'ctx_n': 11, 'ctx_bucket': 'up 1-8, last 5 min', 'sup_go': 31, 'ctx_go': 0, 'sup_fg': 0, 'ctx_fg': 0, 'sup_punt': 313, 'ctx_punt': 11, 'sup_count_best': 31.0, 'sup_share_best': 0.09011627906976744, 'ctx_count_best': 0.0, 'ctx_share_best': 0.0, 'low_support': False, 'sup_share_real': 0.9098837209302325}]
+01:32:33 [plan] support diagnostic: {'min_attempts': 10, 'bands_with_data': 10, 'weighted_mean_gap_with_data': 0.020009762473781875, 'largest_gap_band': [64, 68], 'largest_gap': 0.3170572916666667, 'largest_gap_train_attempts': 16, 'thin_bands': [[69, 73]], 'sim_make_rate_thin_bands': 0.4547526041666667, 'sim_make_rate_beyond_limit': 0.4661458333333333}
+01:41:22 [plan] {'n': 300, 'n_unfinished_dropped': 0, 'real_column': 'real_choice', 'n_clear': 87, 'agreement_all': 0.4866666666666667, 'agreement_clear': 0.5287356321839081, 'recommended_counts': {'GO': 170, 'FG': 79, 'PUNT': 51}, 'real_counts': {'PUNT': 158, 'GO': 72, 'FG': 70}, 'confusion_recommended_by_real': {'GO': {'PUNT': 99, 'GO': 50, 'FG': 21}, 'PUNT': {'PUNT': 48, 'GO': 2, 'FG': 1}, 'FG': {'FG': 48, 'PUNT': 11, 'GO': 20}}}
+01:41:22 [plan] by support: well supported {'n': 282, 'n_unfinished_dropped': 0, 'real_column': 'real_choice', 'n_clear': 84, 'agreement_all': 0.5177304964539007, 'agreement_clear': 0.5476190476190477, 'recommended_counts': {'GO': 163, 'FG': 68, 'PUNT': 51}, 'real_counts': {'PUNT': 143, 'FG': 70, 'GO': 69}, 'confusion_recommended_by_real': {'GO': {'GO': 50, 'FG': 21, 'PUNT': 92}, 'PUNT': {'PUNT': 48, 'GO': 2, 'FG': 1}, 'FG': {'FG': 48, 'PUNT': 3, 'GO': 17}}}; low support {'n': 18, 'n_unfinished_dropped': 0, 'real_column': 'real_choice', 'n_clear': 3, 'agreement_all': 0.0, 'agreement_clear': 0.0, 'recommended_counts': {'FG': 11, 'GO': 7}, 'real_counts': {'PUNT': 15, 'GO': 3}, 'confusion_recommended_by_real': {'GO': {'PUNT': 7}, 'FG': {'PUNT': 8, 'GO': 3}}}
+01:41:23 [plan] done in 533s
+01:41:23 [package] starting (2.0 min available, 35.0 min left in the run)

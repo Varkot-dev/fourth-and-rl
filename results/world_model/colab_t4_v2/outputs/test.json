@@ -1,0 +1,899 @@
+{
+  "split": "test",
+  "seasons": [
+    2024,
+    2025
+  ],
+  "prereg": "/content/drive/MyDrive/fourth_and_rl_world_model/prereg/477f07d599027e39.json",
+  "config_hash": "477f07d599027e39",
+  "test_hash": "1662184f829b22ec",
+  "rescore": false,
+  "nll": {
+    "games": 570,
+    "model": {
+      "total": 6.535773567088374,
+      "sum_of_field_means": 6.5584670422883535,
+      "fields": {
+        "phase": 0.12183450177181297,
+        "poss": 0.09079763788250217,
+        "score_delta": 0.009959817151111475,
+        "elapsed": 2.819843438686613,
+        "to_used_home": 0.06532933855442369,
+        "to_used_away": 0.06642855511425252,
+        "down": 0.39018290326572636,
+        "ydstogo": 1.1709401039063194,
+        "yardline": 1.241323255638774,
+        "action": 0.5818274903168182
+      },
+      "n_records": 90594
+    },
+    "baseline_freq_phase_down": {
+      "per_field": {
+        "phase": 0.26398232993794235,
+        "poss": 0.6930410124104589,
+        "score_delta": 0.27637613042986947,
+        "elapsed": 3.3054867979955223,
+        "to_used_home": 0.10978616765476293,
+        "to_used_away": 0.11089832530633809,
+        "down": 0.7641258136723877,
+        "ydstogo": 2.125436380627943,
+        "yardline": 4.280674683680003,
+        "action": 1.1265946699889609
+      },
+      "total_per_transition": 12.99845126063674,
+      "n_transitions": 90594
+    },
+    "per_field": {
+      "phase": {
+        "model": 0.12183450177181297,
+        "baseline": 0.26398232993794235
+      },
+      "poss": {
+        "model": 0.09079763788250217,
+        "baseline": 0.6930410124104589
+      },
+      "score_delta": {
+        "model": 0.009959817151111475,
+        "baseline": 0.27637613042986947
+      },
+      "elapsed": {
+        "model": 2.819843438686613,
+        "baseline": 3.3054867979955223
+      },
+      "to_used_home": {
+        "model": 0.06532933855442369,
+        "baseline": 0.10978616765476293
+      },
+      "to_used_away": {
+        "model": 0.06642855511425252,
+        "baseline": 0.11089832530633809
+      },
+      "down": {
+        "model": 0.39018290326572636,
+        "baseline": 0.7641258136723877
+      },
+      "ydstogo": {
+        "model": 1.1709401039063194,
+        "baseline": 2.125436380627943
+      },
+      "yardline": {
+        "model": 1.241323255638774,
+        "baseline": 4.280674683680003
+      },
+      "action": {
+        "model": 0.5818274903168182,
+        "baseline": 1.1265946699889609
+      }
+    },
+    "note": "Model per-field NLL is conditional on the fields sampled before it in the same transition; the baseline is the marginal given phase and down. The totals per transition are the comparable numbers."
+  },
+  "league_real": {
+    "games": 570,
+    "plays_per_game": 143.50701754385966,
+    "points_per_game_both_teams": 45.69298245614035,
+    "touchdowns_per_game": 5.091228070175439,
+    "field_goals_per_game": 3.4035087719298245,
+    "punts_per_game": 7.382456140350877,
+    "fourth_down_go_rate": 0.2241464013755834,
+    "fourth_down_punt_rate": 0.5168263325964136,
+    "fourth_down_fg_rate": 0.25902726602800297,
+    "pass_rate": 0.6100288200410131,
+    "home_win_rate_regulation": 0.5350877192982456,
+    "regulation_tie_rate": 0.056140350877192984,
+    "mean_abs_final_margin": 10.97719298245614
+  },
+  "wp": {
+    "n_states": 600,
+    "n_unfinished_dropped": 0,
+    "n_rollouts_per_state": 256,
+    "progress": {
+      "planned_states": 600,
+      "chunk_states": 32,
+      "chunks": 19,
+      "reused_states": 0,
+      "computed_states": 600,
+      "stopped": null,
+      "complete": true,
+      "seconds_per_state": 0.3114,
+      "rollout_counters": [
+        {
+          "rollouts": 8192,
+          "transitions": 600982,
+          "ended_by_end": 7386,
+          "ended_by_clock": 806,
+          "truncated_max_steps": 0,
+          "inconsistent": 16,
+          "bad_phase_pad": 0,
+          "bad_poss_pad": 0,
+          "bad_down": 1,
+          "bad_ydstogo": 1,
+          "bad_yardline_zero": 0,
+          "bad_action_for_phase": 16,
+          "timing_s": {
+            "decode_s": 1.9637649455978452,
+            "bookkeeping_s": 0.4947298071924851,
+            "encode_s": 7.939060611209697,
+            "loop_s": 10.397555364000027,
+            "iterations": 418,
+            "method": "total measured; split by phase from 23 of 181 steps synchronised at every phase boundary",
+            "path": "kv_cache",
+            "rows": 8192,
+            "shared_prefixes": 32,
+            "fallback_row_steps": 0,
+            "compactions": 64,
+            "cache_mib": 11638.86328125,
+            "cache_mib_per_rollout": 1.505859375,
+            "oom_retries": 0
+          }
+        },
+        {
+          "rollouts": 8192,
+          "transitions": 748151,
+          "ended_by_end": 7288,
+          "ended_by_clock": 904,
+          "truncated_max_steps": 0,
+          "inconsistent": 12,
+          "bad_phase_pad": 0,
+          "bad_poss_pad": 0,
+          "bad_down": 0,
+          "bad_ydstogo": 0,
+          "bad_yardline_zero": 0,
+          "bad_action_for_phase": 12,
+          "timing_s": {
+            "decode_s": 2.4859137056775165,
+            "bookkeeping_s": 0.6231586800092869,
+            "encode_s": 9.73558735131311,
+            "loop_s": 12.844659736999915,
+            "iterations": 478,
+            "method": "total measured; split by phase from 23 of 183 steps synchronised at every phase boundary",
+            "path": "kv_cache",
+            "rows": 8192,
+            "shared_prefixes": 32,
+            "fallback_row_steps": 0,
+            "compactions": 67,
+            "cache_mib": 11639.759765625,
+            "cache_mib_per_rollout": 1.505859375,
+            "oom_retries": 0
+          }
+        },
+        {
+          "rollouts": 8192,
+          "transitions": 564405,
+          "ended_by_end": 7468,
+          "ended_by_clock": 724,
+          "truncated_max_steps": 0,
+          "inconsistent": 1,
+          "bad_phase_pad": 0,
+          "bad_poss_pad": 0,
+          "bad_down": 0,
+          "bad_ydstogo": 0,
+          "bad_yardline_zero": 0,
+          "bad_action_for_phase": 1,
+          "timing_s": {
+            "decode_s": 2.483397809283674,
+            "bookkeeping_s": 0.5678578512881272,
+            "encode_s": 8.17168272442822,
+            "loop_s": 11.22293838500002,
+            "iterations": 491,
+            "method": "total measured; split by phase from 23 of 180 steps synchronised at every phase boundary",
+            "path": "kv_cache",
+            "rows": 8192,
+            "shared_prefixes": 32,
+            "fallback_row_steps": 0,
+            "compactions": 63,
+            "cache_mib": 11832.873046875,
+            "cache_mib_per_rollout": 1.505859375,
+            "oom_retries": 0
+          }
+        },
+        {
+          "rollouts": 8192,
+          "transitions": 765429,
+          "ended_by_end": 7468,
+          "ended_by_clock": 724,
+          "truncated_max_steps": 0,
+          "inconsistent": 13,
+          "bad_phase_pad": 0,
+          "bad_poss_pad": 0,
+          "bad_down": 0,
+          "bad_ydstogo": 0,
+          "bad_yardline_zero": 0,
+          "bad_action_for_phase": 13,
+          "timing_s": {
+            "decode_s": 2.579065066033197,
+            "bookkeeping_s": 0.6101549404244517,
+            "encode_s": 10.174964027542353,
+            "loop_s": 13.364184034000004,
+            "iterations": 502,
+            "method": "total measured; split by phase from 24 of 187 steps synchronised at every phase boundary",
+            "path": "kv_cache",
+            "rows": 8192,
+            "shared_prefixes": 32,
+            "fallback_row_steps": 0,
+            "compactions": 63,
+            "cache_mib": 11919.146484375,
+            "cache_mib_per_rollout": 1.505859375,
+            "oom_retries": 0
+          }
+        },
+        {
+          "rollouts": 8192,
+          "transitions": 493238,
+          "ended_by_end": 7283,
+          "ended_by_clock": 909,
+          "truncated_max_steps": 0,
+          "inconsistent": 12,
+          "bad_phase_pad": 0,
+          "bad_poss_pad": 0,
+          "bad_down": 0,
+          "bad_ydstogo": 1,
+          "bad_yardline_zero": 0,
+          "bad_action_for_phase": 12,
+          "timing_s": {
+            "decode_s": 2.2571374705093006,
+            "bookkeeping_s": 0.4704879618146447,
+            "encode_s": 7.869597836675924,
+            "loop_s": 10.597223268999869,
+            "iterations": 517,
+            "method": "total measured; split by phase from 20 of 157 steps synchronised at every phase boundary",
+            "path": "kv_cache",
+            "rows": 8192,
+            "shared_prefixes": 32,
+            "fallback_row_steps": 0,
+            "compactions": 66,
+            "cache_mib": 11224.3359375,
+            "cache_mib_per_rollout": 1.505859375,
+            "oom_retries": 0
+          }
+        },
+        {
+          "rollouts": 8192,
+          "transitions": 726696,
+          "ended_by_end": 7391,
+          "ended_by_clock": 801,
+          "truncated_max_steps": 0,
+          "inconsistent": 14,
+          "bad_phase_pad": 0,
+          "bad_poss_pad": 0,
+          "bad_down": 0,
+          "bad_ydstogo": 1,
+          "bad_yardline_zero": 0,
+          "bad_action_for_phase": 13,
+          "timing_s": {
+            "decode_s": 2.6352511585543965,
+            "bookkeeping_s": 0.6309495640509665,
+            "encode_s": 9.840546773394548,
+            "loop_s": 13.106747495999912,
+            "iterations": 545,
+            "method": "total measured; split by phase from 23 of 183 steps synchronised at every phase boundary",
+            "path": "kv_cache",
+            "rows": 8192,
+            "shared_prefixes": 32,
+            "fallback_row_steps": 0,
+            "compactions": 62,
+            "cache_mib": 11814.90234375,
+            "cache_mib_per_rollout": 1.505859375,
+            "oom_retries": 0
+          }
+        },
+        {
+          "rollouts": 8192,
+          "transitions": 751812,
+          "ended_by_end": 7419,
+          "ended_by_clock": 773,
+          "truncated_max_steps": 0,
+          "inconsistent": 17,
+          "bad_phase_pad": 0,
+          "bad_poss_pad": 0,
+          "bad_down": 1,
+          "bad_ydstogo": 1,
+          "bad_yardline_zero": 0,
+          "bad_action_for_phase": 17,
+          "timing_s": {
+            "decode_s": 2.8165313920142667,
+            "bookkeeping_s": 0.7098346211835245,
+            "encode_s": 10.162452115802177,
+            "loop_s": 13.68881812899997,
+            "iterations": 574,
+            "method": "total measured; split by phase from 24 of 192 steps synchronised at every phase boundary",
+            "path": "kv_cache",
+            "rows": 8192,
+            "shared_prefixes": 32,
+            "fallback_row_steps": 0,
+            "compactions": 66,
+            "cache_mib": 12025.74609375,
+            "cache_mib_per_rollout": 1.505859375,
+            "oom_retries": 0
+          }
+        },
+        {
+          "rollouts": 8192,
+          "transitions": 670323,
+          "ended_by_end": 7423,
+          "ended_by_clock": 769,
+          "truncated_max_steps": 0,
+          "inconsistent": 13,
+          "bad_phase_pad": 0,
+          "bad_poss_pad": 0,
+          "bad_down": 0,
+          "bad_ydstogo": 0,
+          "bad_yardline_zero": 0,
+          "bad_action_for_phase": 13,
+          "timing_s": {
+            "decode_s": 2.866251664307927,
+            "bookkeeping_s": 0.660871318139254,
+            "encode_s": 9.302844928552632,
+            "loop_s": 12.829967910999812,
+            "iterations": 565,
+            "method": "total measured; split by phase from 25 of 194 steps synchronised at every phase boundary",
+            "path": "kv_cache",
+            "rows": 8192,
+            "shared_prefixes": 32,
+            "fallback_row_steps": 0,
+            "compactions": 65,
+            "cache_mib": 11993.478515625,
+            "cache_mib_per_rollout": 1.505859375,
+            "oom_retries": 0
+          }
+        },
+        {
+          "rollouts": 8192,
+          "transitions": 698838,
+          "ended_by_end": 7444,
+          "ended_by_clock": 748,
+          "truncated_max_steps": 0,
+          "inconsistent": 22,
+          "bad_phase_pad": 0,
+          "bad_poss_pad": 0,
+          "bad_down": 1,
+          "bad_ydstogo": 1,
+          "bad_yardline_zero": 0,
+          "bad_action_for_phase": 21,
+          "timing_s": {
+            "decode_s": 2.79321110130531,
+            "bookkeeping_s": 0.6392889708993905,
+            "encode_s": 9.638683155795295,
+            "loop_s": 13.071183227999995,
+            "iterations": 561,
+            "method": "total measured; split by phase from 23 of 180 steps synchronised at every phase boundary",
+            "path": "kv_cache",
+            "rows": 8192,
+            "shared_prefixes": 32,
+            "fallback_row_steps": 0,
+            "compactions": 66,
+            "cache_mib": 11819.44921875,
+            "cache_mib_per_rollout": 1.505859375,
+            "oom_retries": 0
+          }
+        },
+        {
+          "rollouts": 8192,
+          "transitions": 554782,
+          "ended_by_end": 7339,
+          "ended_by_clock": 853,
+          "truncated_max_steps": 0,
+          "inconsistent": 12,
+          "bad_phase_pad": 0,
+          "bad_poss_pad": 0,
+          "bad_down": 0,
+          "bad_ydstogo": 1,
+          "bad_yardline_zero": 0,
+          "bad_action_for_phase": 11,
+          "timing_s": {
+            "decode_s": 2.4356970382672625,
+            "bookkeeping_s": 0.5436138438647111,
+            "encode_s": 7.86644977386818,
+            "loop_s": 10.845760656000152,
+            "iterations": 485,
+            "method": "total measured; split by phase from 24 of 191 steps synchronised at every phase boundary",
+            "path": "kv_cache",
+            "rows": 8192,
+            "shared_prefixes": 32,
+            "fallback_row_steps": 0,
+            "compactions": 64,
+            "cache_mib": 11396.619140625,
+            "cache_mib_per_rollout": 1.505859375,
+            "oom_retries": 0
+          }
+        },
+        {
+          "rollouts": 8192,
+          "transitions": 661111,
+          "ended_by_end": 7241,
+          "ended_by_clock": 951,
+          "truncated_max_steps": 0,
+          "inconsistent": 12,
+          "bad_phase_pad": 0,
+          "bad_poss_pad": 0,
+          "bad_down": 1,
+          "bad_ydstogo": 1,
+          "bad_yardline_zero": 0,
+          "bad_action_for_phase": 12,
+          "timing_s": {
+            "decode_s": 2.4936832242585876,
+            "bookkeeping_s": 0.5704900888720783,
+            "encode_s": 8.700182991869426,
+            "loop_s": 11.764356305000092,
+            "iterations": 479,
+            "method": "total measured; split by phase from 25 of 199 steps synchronised at every phase boundary",
+            "path": "kv_cache",
+            "rows": 8192,
+            "shared_prefixes": 32,
+            "fallback_row_steps": 0,
+            "compactions": 61,
+            "cache_mib": 11834.7421875,
+            "cache_mib_per_rollout": 1.505859375,
+            "oom_retries": 0
+          }
+        },
+        {
+          "rollouts": 8192,
+          "transitions": 756423,
+          "ended_by_end": 7403,
+          "ended_by_clock": 789,
+          "truncated_max_steps": 0,
+          "inconsistent": 8,
+          "bad_phase_pad": 0,
+          "bad_poss_pad": 0,
+          "bad_down": 0,
+          "bad_ydstogo": 0,
+          "bad_yardline_zero": 0,
+          "bad_action_for_phase": 8,
+          "timing_s": {
+            "decode_s": 2.7026992304475113,
+            "bookkeeping_s": 0.6230883471119669,
+            "encode_s": 10.22309546444058,
+            "loop_s": 13.548883042000057,
+            "iterations": 515,
+            "method": "total measured; split by phase from 20 of 161 steps synchronised at every phase boundary",
+            "path": "kv_cache",
+            "rows": 8192,
+            "shared_prefixes": 32,
+            "fallback_row_steps": 0,
+            "compactions": 63,
+            "cache_mib": 11474.783203125,
+            "cache_mib_per_rollout": 1.505859375,
+            "oom_retries": 0
+          }
+        },
+        {
+          "rollouts": 8192,
+          "transitions": 704858,
+          "ended_by_end": 7302,
+          "ended_by_clock": 890,
+          "truncated_max_steps": 0,
+          "inconsistent": 10,
+          "bad_phase_pad": 0,
+          "bad_poss_pad": 0,
+          "bad_down": 1,
+          "bad_ydstogo": 1,
+          "bad_yardline_zero": 0,
+          "bad_action_for_phase": 10,
+          "timing_s": {
+            "decode_s": 2.4961925624446275,
+            "bookkeeping_s": 0.5697237090871473,
+            "encode_s": 9.942542092468374,
+            "loop_s": 13.008458364000148,
+            "iterations": 508,
+            "method": "total measured; split by phase from 24 of 187 steps synchronised at every phase boundary",
+            "path": "kv_cache",
+            "rows": 8192,
+            "shared_prefixes": 32,
+            "fallback_row_steps": 0,
+            "compactions": 66,
+            "cache_mib": 11910.134765625,
+            "cache_mib_per_rollout": 1.505859375,
+            "oom_retries": 0
+          }
+        },
+        {
+          "rollouts": 8192,
+          "transitions": 617070,
+          "ended_by_end": 7385,
+          "ended_by_clock": 807,
+          "truncated_max_steps": 0,
+          "inconsistent": 17,
+          "bad_phase_pad": 0,
+          "bad_poss_pad": 0,
+          "bad_down": 0,
+          "bad_ydstogo": 0,
+          "bad_yardline_zero": 0,
+          "bad_action_for_phase": 17,
+          "timing_s": {
+            "decode_s": 2.2206792755180635,
+            "bookkeeping_s": 0.5459876196304789,
+            "encode_s": 7.849473502851428,
+            "loop_s": 10.61614039799997,
+            "iterations": 449,
+            "method": "total measured; split by phase from 19 of 147 steps synchronised at every phase boundary",
+            "path": "kv_cache",
+            "rows": 8192,
+            "shared_prefixes": 32,
+            "fallback_row_steps": 0,
+            "compactions": 67,
+            "cache_mib": 11013.298828125,
+            "cache_mib_per_rollout": 1.505859375,
+            "oom_retries": 0
+          }
+        },
+        {
+          "rollouts": 8192,
+          "transitions": 620687,
+          "ended_by_end": 7338,
+          "ended_by_clock": 854,
+          "truncated_max_steps": 0,
+          "inconsistent": 14,
+          "bad_phase_pad": 0,
+          "bad_poss_pad": 0,
+          "bad_down": 0,
+          "bad_ydstogo": 0,
+          "bad_yardline_zero": 0,
+          "bad_action_for_phase": 14,
+          "timing_s": {
+            "decode_s": 2.6765037911767116,
+            "bookkeeping_s": 0.6039045899212304,
+            "encode_s": 8.666441062901953,
+            "loop_s": 11.946849443999895,
+            "iterations": 532,
+            "method": "total measured; split by phase from 22 of 174 steps synchronised at every phase boundary",
+            "path": "kv_cache",
+            "rows": 8192,
+            "shared_prefixes": 32,
+            "fallback_row_steps": 0,
+            "compactions": 66,
+            "cache_mib": 11665.734375,
+            "cache_mib_per_rollout": 1.505859375,
+            "oom_retries": 0
+          }
+        },
+        {
+          "rollouts": 8192,
+          "transitions": 585941,
+          "ended_by_end": 7293,
+          "ended_by_clock": 899,
+          "truncated_max_steps": 0,
+          "inconsistent": 9,
+          "bad_phase_pad": 0,
+          "bad_poss_pad": 0,
+          "bad_down": 0,
+          "bad_ydstogo": 0,
+          "bad_yardline_zero": 0,
+          "bad_action_for_phase": 9,
+          "timing_s": {
+            "decode_s": 2.163784996850187,
+            "bookkeeping_s": 0.5188482237311045,
+            "encode_s": 8.253310120418693,
+            "loop_s": 10.935943340999984,
+            "iterations": 480,
+            "method": "total measured; split by phase from 20 of 159 steps synchronised at every phase boundary",
+            "path": "kv_cache",
+            "rows": 8192,
+            "shared_prefixes": 32,
+            "fallback_row_steps": 0,
+            "compactions": 65,
+            "cache_mib": 11338.798828125,
+            "cache_mib_per_rollout": 1.505859375,
+            "oom_retries": 0
+          }
+        },
+        {
+          "rollouts": 8192,
+          "transitions": 687811,
+          "ended_by_end": 7371,
+          "ended_by_clock": 821,
+          "truncated_max_steps": 0,
+          "inconsistent": 22,
+          "bad_phase_pad": 0,
+          "bad_poss_pad": 0,
+          "bad_down": 1,
+          "bad_ydstogo": 1,
+          "bad_yardline_zero": 0,
+          "bad_action_for_phase": 22,
+          "timing_s": {
+            "decode_s": 2.371473251222688,
+            "bookkeeping_s": 0.594293747908368,
+            "encode_s": 8.730696061868976,
+            "loop_s": 11.696463061000031,
+            "iterations": 458,
+            "method": "total measured; split by phase from 24 of 190 steps synchronised at every phase boundary",
+            "path": "kv_cache",
+            "rows": 8192,
+            "shared_prefixes": 32,
+            "fallback_row_steps": 0,
+            "compactions": 66,
+            "cache_mib": 11723.736328125,
+            "cache_mib_per_rollout": 1.505859375,
+            "oom_retries": 0
+          }
+        },
+        {
+          "rollouts": 8192,
+          "transitions": 752816,
+          "ended_by_end": 7335,
+          "ended_by_clock": 857,
+          "truncated_max_steps": 0,
+          "inconsistent": 22,
+          "bad_phase_pad": 0,
+          "bad_poss_pad": 0,
+          "bad_down": 3,
+          "bad_ydstogo": 3,
+          "bad_yardline_zero": 0,
+          "bad_action_for_phase": 21,
+          "timing_s": {
+            "decode_s": 2.595569810428921,
+            "bookkeeping_s": 0.6014638909540223,
+            "encode_s": 10.25991269861705,
+            "loop_s": 13.456946399999993,
+            "iterations": 520,
+            "method": "total measured; split by phase from 23 of 185 steps synchronised at every phase boundary",
+            "path": "kv_cache",
+            "rows": 8192,
+            "shared_prefixes": 32,
+            "fallback_row_steps": 0,
+            "compactions": 64,
+            "cache_mib": 11870.35546875,
+            "cache_mib_per_rollout": 1.505859375,
+            "oom_retries": 0
+          }
+        },
+        {
+          "rollouts": 6144,
+          "transitions": 493375,
+          "ended_by_end": 5499,
+          "ended_by_clock": 645,
+          "truncated_max_steps": 0,
+          "inconsistent": 5,
+          "bad_phase_pad": 0,
+          "bad_poss_pad": 0,
+          "bad_down": 0,
+          "bad_ydstogo": 0,
+          "bad_yardline_zero": 0,
+          "bad_action_for_phase": 5,
+          "timing_s": {
+            "decode_s": 1.3850254127713124,
+            "bookkeeping_s": 0.3337341137880464,
+            "encode_s": 5.6908443324407125,
+            "loop_s": 7.409603859000072,
+            "iterations": 315,
+            "method": "total measured; split by phase from 24 of 187 steps synchronised at every phase boundary",
+            "path": "kv_cache",
+            "rows": 6144,
+            "shared_prefixes": 24,
+            "fallback_row_steps": 0,
+            "compactions": 40,
+            "cache_mib": 8441.89453125,
+            "cache_mib_per_rollout": 1.505859375,
+            "oom_retries": 0
+          }
+        }
+      ]
+    },
+    "complete": true,
+    "mean_steps_per_rollout": 81.08559895833334,
+    "outcome_label": "home result at end of regulation: 1 win, 0.5 tie, 0 loss",
+    "simulate_actual_matches_label": 1.0,
+    "metrics": {
+      "ours_simulation": {
+        "log_loss": {
+          "mean": 0.46173384908239096,
+          "lo95": 0.4178824480742542,
+          "hi95": 0.5039038155658042,
+          "n_states": 600,
+          "n_games": 366
+        },
+        "brier": {
+          "mean": 0.1439003054300944,
+          "lo95": 0.12714042743174117,
+          "hi95": 0.16181319693418433,
+          "n_states": 600,
+          "n_games": 366
+        },
+        "reliability": {
+          "bin_mean_pred": [
+            0.03179824561403509,
+            0.14395059121621623,
+            0.2562705592105263,
+            0.34713040865384615,
+            0.4559388241525424,
+            0.5473214285714286,
+            0.6494140625,
+            0.7452182112068966,
+            0.8423927436440678,
+            0.9674974524456522
+          ],
+          "bin_mean_outcome": [
+            0.017543859649122806,
+            0.08108108108108109,
+            0.19736842105263158,
+            0.25961538461538464,
+            0.4830508474576271,
+            0.6142857142857143,
+            0.5256410256410257,
+            0.6724137931034483,
+            0.8728813559322034,
+            0.9782608695652174
+          ],
+          "bin_count": [
+            57,
+            37,
+            38,
+            52,
+            59,
+            70,
+            78,
+            58,
+            59,
+            92
+          ]
+        }
+      },
+      "nflverse_home_wp (theirs)": {
+        "log_loss": {
+          "mean": 0.470451931004272,
+          "lo95": 0.43293298704566885,
+          "hi95": 0.5113528159700359,
+          "n_states": 600,
+          "n_games": 366
+        },
+        "brier": {
+          "mean": 0.1463845463458466,
+          "lo95": 0.13120620675215217,
+          "hi95": 0.16190401173054342,
+          "n_states": 600,
+          "n_games": 366
+        },
+        "reliability": {
+          "bin_mean_pred": [
+            0.038788161521952136,
+            0.1409434787929058,
+            0.2573237743228674,
+            0.35751765166840904,
+            0.4522276520729065,
+            0.5579890933556434,
+            0.6487318155277206,
+            0.747476187068969,
+            0.843898447617045,
+            0.9626406271248319
+          ],
+          "bin_mean_outcome": [
+            0.0,
+            0.09375,
+            0.1875,
+            0.2682926829268293,
+            0.38666666666666666,
+            0.5769230769230769,
+            0.5783132530120482,
+            0.6875,
+            0.8962264150943396,
+            0.9880952380952381
+          ],
+          "bin_count": [
+            50,
+            32,
+            40,
+            41,
+            75,
+            78,
+            83,
+            64,
+            53,
+            84
+          ]
+        }
+      },
+      "nflverse_vegas_home_wp (theirs)": {
+        "log_loss": {
+          "mean": 0.4487133096478479,
+          "lo95": 0.40618412264951614,
+          "hi95": 0.49708404856883887,
+          "n_states": 600,
+          "n_games": 366
+        },
+        "brier": {
+          "mean": 0.13879536157015485,
+          "lo95": 0.12092869227397343,
+          "hi95": 0.1570999155053661,
+          "n_states": 600,
+          "n_games": 366
+        },
+        "reliability": {
+          "bin_mean_pred": [
+            0.03922148981392807,
+            0.15268176806532238,
+            0.2538580123105782,
+            0.35492233489373415,
+            0.4397489798645091,
+            0.5516183884558992,
+            0.653186604846663,
+            0.7491659939929337,
+            0.8505722879473333,
+            0.9675691988454197
+          ],
+          "bin_mean_outcome": [
+            0.015151515151515152,
+            0.1,
+            0.20212765957446807,
+            0.46226415094339623,
+            0.46296296296296297,
+            0.4642857142857143,
+            0.65625,
+            0.6885245901639344,
+            0.8425925925925926,
+            0.98
+          ],
+          "bin_count": [
+            66,
+            45,
+            47,
+            53,
+            54,
+            56,
+            64,
+            61,
+            54,
+            100
+          ]
+        }
+      }
+    },
+    "paired_differences": {
+      "ours minus nflverse_home_wp (theirs)": {
+        "log_loss": {
+          "mean": -0.008718081921881025,
+          "lo95": -0.021533293907259863,
+          "hi95": 0.00484295894171412,
+          "n_states": 600,
+          "n_games": 366
+        },
+        "brier": {
+          "mean": -0.002484240915752209,
+          "lo95": -0.007999887456045384,
+          "hi95": 0.002903763527218413,
+          "n_states": 600,
+          "n_games": 366
+        }
+      },
+      "ours minus nflverse_vegas_home_wp (theirs)": {
+        "log_loss": {
+          "mean": 0.01302053943454312,
+          "lo95": -0.005569612230529245,
+          "hi95": 0.028726041897463837,
+          "n_states": 600,
+          "n_games": 366
+        },
+        "brier": {
+          "mean": 0.005104943859939589,
+          "lo95": -0.0021752634744627575,
+          "hi95": 0.012540563029495798,
+          "n_states": 600,
+          "n_games": 366
+        }
+      }
+    },
+    "source_note": "nflverse home_wp and vegas_home_wp are nflverse's published estimates on the same plays, not ours."
+  },
+  "status": "done",
+  "seconds": 229.3,
+  "hash": "1662184f829b22ec",
+  "src": "7907e8a623297de3"
+}

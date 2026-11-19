@@ -1,0 +1,29 @@
+{
+  "config_hash": "477f07d599027e39",
+  "train_hash": "3b1da6b22dcf52f6",
+  "test_hash": "1662184f829b22ec",
+  "test_seasons": [
+    2024,
+    2025
+  ],
+  "seed": 20261122,
+  "metrics": [
+    "per-field and total NLL per transition, model vs frequency baseline fitted on the training split (P(field | phase, down), add-0.5 smoothing)",
+    "win probability by simulation on 600 random PLAY records with both nflverse probabilities present, 256 rollouts each; log loss and Brier with a 95% game-bootstrap interval (1000 resamples) for ours, nflverse home_wp and nflverse vegas_home_wp on the same states, and paired differences",
+    "fourth-down plan on 300 sampled test fourth downs, 512 rollouts per action; field goals beyond the longest made in the training split plus 3 yards and punts inside the opponent's 30 are not simulated; agreement of the recommended action with the real coach on decisions not flagged too_close, also split by training support (low support: the recommended call made fewer than 10 times by coaches in comparable training states)"
+  ],
+  "outcome_label": "home result at end of regulation: 1 win, 0.5 tie, 0 loss",
+  "preset": "t4",
+  "model": {
+    "d_model": 256,
+    "n_layers": 6,
+    "n_heads": 8,
+    "d_ff": 1024,
+    "dec_hidden": 256,
+    "max_len": 256,
+    "dropout": 0.1
+  },
+  "rule": "each configuration (full config hash: data, model, training, evaluation, test and plan settings) preregisters its own plan in prereg/<hash>.json before it reads the test seasons, and scores them once; a second scoring of the same configuration needs allow_rescore=True and is recorded as such. Every preregistration in the work folder is kept and listed in results.json.",
+  "written_at": 1795051720.310812,
+  "written_by_stage": "test"
+}

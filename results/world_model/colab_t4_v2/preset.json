@@ -1,0 +1,168 @@
+{
+  "name": "t4",
+  "device": "cuda",
+  "seasons": {
+    "train": [
+      2010,
+      2011,
+      2012,
+      2013,
+      2014,
+      2015,
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021
+    ],
+    "val": [
+      2022,
+      2023
+    ],
+    "test": [
+      2024,
+      2025
+    ]
+  },
+  "model": {
+    "d_model": 256,
+    "n_layers": 6,
+    "n_heads": 8,
+    "d_ff": 1024,
+    "dec_hidden": 256,
+    "max_len": 256,
+    "dropout": 0.1
+  },
+  "train": {
+    "batch_games": 64,
+    "lr": 0.00085,
+    "weight_decay": 0.1,
+    "epochs": 40,
+    "patience": 4,
+    "warmup_steps": 300,
+    "max_train_games": null,
+    "sim_batch": 1024,
+    "sim_max_live": 8192,
+    "score_on_end": true
+  },
+  "eval": {
+    "wp_states": 600,
+    "wp_rollouts": 256,
+    "sim_games": 128,
+    "bootstrap": 1000,
+    "nll_max_games": null
+  },
+  "test": {
+    "wp_states": 600,
+    "wp_rollouts": 256,
+    "sim_games": 128,
+    "bootstrap": 1000,
+    "nll_max_games": null
+  },
+  "plan": {
+    "n_fourth": 300,
+    "n_rollouts": 512,
+    "hypo_rollouts": 4096
+  },
+  "budget_min": 55.0,
+  "stage_min": {
+    "data": 8,
+    "train": 20,
+    "eval": 9,
+    "test": 7,
+    "plan": 20,
+    "package": 2
+  },
+  "min_start_s": {
+    "data": 60,
+    "train": 60,
+    "eval": 45,
+    "test": 45,
+    "plan": 45,
+    "package": 0
+  },
+  "reserve_package_s": 90,
+  "assumed": {
+    "train_rec_per_s": 60000,
+    "rollout_units_per_s": 40000
+  },
+  "definition": {
+    "name": "t4",
+    "version": "2 (2026-11-18: GPU training, KV-cache rollouts, action support)",
+    "hash": "66ed58d76727a77d"
+  },
+  "benchmark": {
+    "device": "cuda",
+    "train_records_per_s": 108623.6,
+    "train_speed_basis": "second epoch (after warm-up)",
+    "rollout_steps_per_s": 93730.7,
+    "rollout_speed_basis": "measured",
+    "rollout_batch": {
+      "states": 5,
+      "rollouts_per_state": 512,
+      "rows": 2560,
+      "live_rows_cap": 3840,
+      "max_steps": 90,
+      "path": "kv_cache",
+      "seconds": 1.71,
+      "timing": {
+        "decode_s": 0.517,
+        "bookkeeping_s": 0.111,
+        "encode_s": 1.05,
+        "loop_s": 1.678,
+        "iterations": 82,
+        "path": "kv_cache",
+        "rows": 2560,
+        "shared_prefixes": 5,
+        "fallback_row_steps": 0,
+        "compactions": 17,
+        "cache_mib": 2837.373,
+        "cache_mib_per_rollout": 1.506,
+        "oom_retries": 0
+      }
+    },
+    "assumed": {
+      "train_rec_per_s": 60000,
+      "rollout_units_per_s": 40000
+    },
+    "train_speed_vs_assumed": 1.81,
+    "rollout_speed_vs_assumed": 2.34,
+    "threshold_share": 0.5,
+    "floors": {
+      "n_fourth": 200,
+      "wp_states": 300,
+      "sim_games": 32,
+      "hypo_rollouts": 1024
+    },
+    "decision": "kept the preset sizes: rollouts at 93,731 steps/s are 234% of the 40,000 the preset assumes (it is scaled only below 50%)",
+    "changes": [],
+    "estimated_minutes_at_measured_speed": {
+      "preset": {
+        "eval": 2.5,
+        "test": 2.5,
+        "plan": 7.6
+      },
+      "after_adjustment": {
+        "eval": 2.5,
+        "test": 2.5,
+        "plan": 7.6
+      }
+    },
+    "stage_ceilings_min": {
+      "data": 8,
+      "train": 20,
+      "eval": 9,
+      "test": 7,
+      "plan": 20,
+      "package": 2
+    },
+    "note": "rollout speed from an untrained model with END switched off on synthetic games; each stage also times its own chunks and stops at its deadline, saving what it finished"
+  },
+  "picked": {
+    "at": 1795051285.4643853,
+    "notes": [
+      "Micro-benchmark: kept the preset sizes: rollouts at 93,731 steps/s are 234% of the 40,000 the preset assumes (it is scaled only below 50%)"
+    ]
+  }
+}
