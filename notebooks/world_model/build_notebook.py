@@ -19,8 +19,8 @@ CODE_DIR = "/content/wm_code"
 MODULES = ("schema", "records", "model", "train", "simulate", "support", "toy", "run")
 # Test files that must be in the notebook (all test_*.py files are embedded; these are
 # checked by name so a renamed file cannot silently drop out).
-REQUIRED_TESTS = ("test_amp_cpu.py", "test_model.py", "test_records.py", "test_run.py",
-                  "test_speed.py", "test_support.py")
+REQUIRED_TESTS = ("test_amp_cpu.py", "test_model.py", "test_records.py", "test_refine.py",
+                  "test_run.py", "test_speed.py", "test_support.py")
 
 INTRO = """# NFL world model on Colab: next-play transformer as a fourth-down simulator
 
@@ -55,44 +55,40 @@ its checkpoint. Each configuration preregisters its test plan in
 repo under `results/world_model/` on the branch `claude/world-model-colab`.
 """
 
-CHANGES = """### What changed since the first run
+CHANGES = """### What changed in version 3 (19 November 2026)
 
-The first run (Tesla T4, 18 November 2026) finished every stage, but its training ran on the
-CPU and its fourth-down planning was cut to 67 decisions, 56 of them too close to call. This
-version changes five things.
+The second run (Tesla T4, 18 November 2026; `results/world_model/colab_t4_v2`) trained on the
+GPU and planned all 300 test fourth downs with 512 rollouts per action, but 213 of the 300
+decisions were too close to call, and its field-goal limit allowed kicks up to 69 yards.
+This version changes two things in the fourth-down planner and nothing in the model, the
+training or the evaluation.
 
-- **Training runs on the GPU.** The first run never moved the model to the GPU, so its 20
-  minutes of training happened on the CPU. Training now moves the model to the GPU before the
-  optimizer is built, keeps the training data on the GPU as ready-made tensors, and uses mixed
-  precision (float16 with loss scaling on a T4, bfloat16 on newer GPUs) and a fused AdamW
-  optimizer. Training should be many times faster; the training log shows the device,
-  records per second and how each epoch's time splits between batching, the forward pass,
-  the backward pass, validation and checkpointing.
-- **Faster rollouts.** Each simulated play now encodes only the new record and reuses a
-  key/value cache of everything before it, and the real game so far is stored once for all
-  rollouts of a state. The preflight speed test measures this path at the batch size the
-  planning stage uses, and scales the run down only if the GPU is less than half as fast as
-  the preset assumes, never below 200 fourth downs. Sample sizes are larger: on a T4, 600
-  win-probability states with 256 rollouts each, and 300 fourth downs with 512 rollouts per
-  action.
-- **Action-support guards and a field-goal check.** The planner no longer simulates field
-  goals longer than the longest made field goal in the training seasons plus 3 yards, or
-  punts from inside the opponent's 30. Every recommendation reports how often coaches made
-  that call in comparable training situations; a call made fewer than 10 times is flagged as
-  low support, and agreement with the coaches is reported separately for well-supported and
-  low-support calls. A new figure, `fg_support.png`, compares the simulator's field-goal make
-  rate and punt net yards with the training seasons. These rules were designed after the
-  first run's test-season results had been seen, so they are a post hoc change and are
-  labelled as such in the results.
-- **Preregistration per model.** Each configuration writes its own
-  `prereg/<config hash>.json` before it reads the test seasons, and scores them once. The
-  first run's preregistration is kept. `results.json` lists every preregistration in the
-  work folder, so it is visible that the test seasons have now been scored by more than one
-  model.
-- **A clean restart in the same Drive folder.** The preset saved by the first run is
-  recognised as out of date and replaced automatically. The first run's results, figures and
-  time ledger are moved to `archive/` in the Drive folder, so nothing from it is overwritten
-  and the new run gets the full time budget. The downloaded data is reused.
+- **Field goals only up to 60 yards.** The hard rule is now yardline_100 <= 42 (a 60-yard
+  attempt), the support distance of the repo's hierarchical kicker model: the longest
+  distance up to which the strongest kickers made at least 20 training attempts within 2
+  yards of every distance from 40 yards on (`docs/notes/fg_selection_bias.md`, section 4.5,
+  on branch `claude/optimistic-mendel-v2267n`). Version 2 allowed the longest made field
+  goal in the training seasons plus 3 yards. The limit is a setting
+  (`support.fg_max_distance_yards`; `None` restores the old rule). It was chosen after the
+  second run's results had been seen, so it is post hoc and labelled so in the results.
+- **More rollouts for close calls.** After the first planning pass, every decision flagged
+  too close to call gets more rollouts for its two best actions only, enough to separate
+  them if the margin holds, up to 4,096 per action on a T4 or L4 (8,192 on an A100), in a
+  seeded random order while time lasts. The results record how many decisions were
+  refined, how many were resolved and how many are still too close, and the agreement
+  with the coaches is reported before and after the refinement. The planning stage may
+  now use up to 35 minutes.
+- **A clean restart in the same Drive folder.** The preset version is now 3, so the preset
+  saved by the second run is replaced and its results, figures and time ledger are moved to
+  `archive/` in the Drive folder. Stages whose configuration has not changed are reused by
+  their hash: on a T4 that keeps the same sizes, the data, the trained model, the
+  validation results and the test scoring of the second run are reused, and almost the
+  whole budget goes to planning. The plan settings changed, so this configuration has a new
+  config hash and writes its own `prereg/<config hash>.json` before its plan stage reads the
+  test seasons; the second run's preregistration is kept.
+
+Earlier changes (version 2: GPU training, key/value-cache rollouts, action-support guards,
+preregistration per model) are described in `results/world_model/CHANGES_v2.md`.
 """
 
 RESUME = """### Stopping and resuming

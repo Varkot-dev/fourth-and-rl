@@ -5,7 +5,31 @@ minutes: it downloads nflverse play-by-play for 2010 to 2025, trains a next-play
 evaluates it on the validation seasons, scores the test seasons once, and produces
 fourth-down recommendations. Everything it needs is inside the notebook.
 
-## 0. What is different from the first run
+## 0. What is different in version 3 (19 November 2026)
+
+The second run (T4, 18 November 2026) is in `results/world_model/colab_t4_v2`. Version 3
+changes only the fourth-down planner:
+
+- **Field goals only up to 60 yards** (yardline_100 <= 42), the support distance of the
+  repo's hierarchical kicker model (`docs/notes/fg_selection_bias.md`, section 4.5, on
+  branch `claude/optimistic-mendel-v2267n`), instead of the longest made field goal in the
+  training seasons plus 3 yards (69 yards in the second run). It is the setting
+  `support.fg_max_distance_yards`. It was chosen after the second run's results had been
+  seen, so it is post hoc; `stages.plan.support.rules` and `stages.plan.support.note` say so.
+- **Close-call refinement.** The second run left 213 of its 300 decisions too close to call.
+  After the first pass, each decision flagged too close gets more rollouts for its two best
+  actions only (enough to separate them if the margin holds, at most 4,096 per action on a
+  T4 or L4 and 8,192 on an A100), in a seeded random order while time lasts.
+  `stages.plan.refinement` records how many were refined, resolved, still too close and not
+  reached; `stages.plan.agreement_first_pass` keeps the agreement before refinement. The plan
+  stage may use up to 35 minutes.
+- **Preset version 3.** The second run's saved preset is replaced and its results are
+  archived in the Drive folder (as below). Stages whose configuration is unchanged are
+  reused by hash, so on a T4 with the same benchmark decision the trained model, the
+  validation results and the test scoring are reused and the budget goes to planning. The
+  new plan settings give a new config hash and a new `prereg/<config hash>.json`.
+
+## 0b. What changed between the first and second runs
 
 The first run (T4, 18 November 2026) is summarised in
 `results/world_model/colab_t4_run_summary.md`; every change since then, and why, is in
@@ -122,11 +146,14 @@ the call with the highest simulated win probability. A simulator trained on coac
 choices knows little about calls coaches almost never make, and a planner that maximises
 over actions is drawn to exactly those. So:
 
-- **Hard rules.** Field goals longer than the longest made field goal in the training
-  seasons plus 3 yards, and punts from inside the opponent's 30, are not simulated. Each
+- **Hard rules.** Field goals longer than 60 yards (the kicker model's support distance;
+  version 2 used the longest made field goal in the training seasons plus 3 yards), and
+  punts from inside the opponent's 30, are not simulated. Each
   ruled-out action is listed in `stages.plan.masked_actions`, and the summary says how many
   states had one. The hypothetical (4th and 2 at the offense's own 40) is a 78-yard field
   goal, so its field goal is ruled out and its figure bar reads "not allowed (hard rule)".
+- **Close calls.** `too_close` is the flag after refinement; `too_close_first_pass`,
+  `n_go`, `n_fg`, `n_punt` (rollouts per action) and `refined` are in every decision row.
 - **Low-support flags.** Every decision row has `sup_n` (comparable training fourth downs:
   yard line within 3, same yards-to-go bucket), `sup_go`, `sup_fg`, `sup_punt` (what coaches
   did there), and `low_support`, which is true when coaches made the recommended call fewer
@@ -145,7 +172,8 @@ over actions is drawn to exactly those. So:
   the simulator's make rate on the recommended field goals against the training rate at
   the same yard lines.
 - These rules and flags were designed after the first run's test-season results had been
-  seen, so they are a post hoc change; `results.json` says so in `stages.plan.support.note`.
+  seen, and the 60-yard limit after the second run's, so they are post hoc changes;
+  `results.json` says so in `stages.plan.support.note`.
 
 ## 7. If something fails
 
