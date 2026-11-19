@@ -87,7 +87,9 @@ def _gpu_preset(name: str, model: dict, train: dict, eval_: dict, plan: dict, as
         # stage that finishes early hands its time on; the global deadline is the hard cap.
         # Plan is the last compute stage, so its ceiling is high: it may use whatever the
         # earlier stages left (training on the GPU usually takes well under its 20 minutes).
-        "stage_min": {"data": 8, "train": 20, "eval": 9, "test": 7, "plan": 20, "package": 2},
+        # Plan's ceiling covers the first pass and the close-call refinement (35 minutes; the
+        # second run's first pass took 9 of its 20).
+        "stage_min": {"data": 8, "train": 20, "eval": 9, "test": 7, "plan": 35, "package": 2},
         # Minimum seconds a stage needs to be worth starting; below it, it is skipped.
         "min_start_s": {"data": 60, "train": 60, "eval": 45, "test": 45, "plan": 45,
                         "package": 0},
@@ -111,6 +113,7 @@ PRESETS: dict[str, dict] = {
         "test": {"wp_states": 16, "wp_rollouts": 16, "sim_games": 0, "bootstrap": 200,
                  "nll_max_games": 60},
         "plan": {"n_fourth": 8, "n_rollouts": 16, "hypo_rollouts": 64,
+                 "refine_max_rollouts": 64,
                  "support": {"diag_states_per_band": 4, "diag_draws": 64}},
 
         "budget_min": 12.0,
@@ -130,7 +133,8 @@ PRESETS: dict[str, dict] = {
                "sim_batch": 1024, "sim_max_live": 8192, "score_on_end": True},
         eval_={"wp_states": 600, "wp_rollouts": 256, "sim_games": 128, "bootstrap": 1000,
                "nll_max_games": None},
-        plan={"n_fourth": 300, "n_rollouts": 512, "hypo_rollouts": 4096},
+        plan={"n_fourth": 300, "n_rollouts": 512, "hypo_rollouts": 4096,
+              "refine_max_rollouts": 4096},
         assumed={"train_rec_per_s": 60_000, "rollout_units_per_s": 40_000},
     ),
     "l4": _gpu_preset(
@@ -142,7 +146,8 @@ PRESETS: dict[str, dict] = {
                "sim_batch": 2048, "sim_max_live": 16384, "score_on_end": True},
         eval_={"wp_states": 1000, "wp_rollouts": 384, "sim_games": 256, "bootstrap": 1000,
                "nll_max_games": None},
-        plan={"n_fourth": 400, "n_rollouts": 512, "hypo_rollouts": 8192},
+        plan={"n_fourth": 400, "n_rollouts": 512, "hypo_rollouts": 8192,
+              "refine_max_rollouts": 4096},
         assumed={"train_rec_per_s": 120_000, "rollout_units_per_s": 80_000},
     ),
     "a100": _gpu_preset(
@@ -155,7 +160,8 @@ PRESETS: dict[str, dict] = {
 
         eval_={"wp_states": 1500, "wp_rollouts": 512, "sim_games": 512, "bootstrap": 1000,
                "nll_max_games": None},
-        plan={"n_fourth": 600, "n_rollouts": 1024, "hypo_rollouts": 16384},
+        plan={"n_fourth": 600, "n_rollouts": 1024, "hypo_rollouts": 16384,
+              "refine_max_rollouts": 8192},
         assumed={"train_rec_per_s": 300_000, "rollout_units_per_s": 200_000},
     ),
 }
@@ -163,7 +169,9 @@ DOWNGRADE = {"a100": "l4", "l4": "t4", "t4": "t4", "smoke": "smoke"}
 # Bump when what a preset means changes without its values changing (for example a new rule
 # in how the benchmark adjusts it). preset.json stores this with a hash of the PRESETS entry;
 # a saved preset whose definition differs from the code is replaced by a fresh pick.
-PRESET_VERSION = "2 (2026-11-18: GPU training, KV-cache rollouts, action support)"
+# Version 2 (2026-11-18): GPU training, KV-cache rollouts, action support. Version 3: the
+# 60-yard field-goal limit (support.FG_SUPPORT_DISTANCE_YARDS) and close-call refinement.
+PRESET_VERSION = "3 (2026-11-19: 60-yard field-goal limit, close-call refinement)"
 # The preflight benchmark scales a preset down only when the measured rollout or training
 # speed is below this share of the preset's assumed speed, and never below these floors
 # (or the preset's own value, if that is smaller).
@@ -1142,10 +1150,11 @@ def test_plan(run: Run) -> dict:
             f"({p['test']['bootstrap']} resamples) for ours, nflverse home_wp and nflverse "
             "vegas_home_wp on the same states, and paired differences",
             f"fourth-down plan on {p['plan']['n_fourth']} sampled test fourth downs, "
-            f"{p['plan']['n_rollouts']} rollouts per action; field goals beyond the longest "
-            f"made in the training split plus {sc['fg_margin_yards']} yards and punts inside "
-            f"the opponent's {sc['punt_min_yardline']} are not simulated; agreement of the "
-            "recommended action with the real coach on decisions not flagged too_close, also "
+            f"{p['plan']['n_rollouts']} rollouts per action; {_fg_rule_text(sc)} and punts "
+            f"inside the opponent's {sc['punt_min_yardline']} are not simulated; "
+            f"{_refine_text(p['plan'])}; agreement of the "
+            "recommended action with the real coach on decisions not flagged too_close (after "
+            "refinement; the first-pass agreement is reported too), also "
             "split by training support (low support: the recommended call made fewer than "
             f"{sc['min_support']} times by coaches in comparable training states)",
         ],
@@ -1158,6 +1167,23 @@ def test_plan(run: Run) -> dict:
                 "the same configuration needs allow_rescore=True and is recorded as such. "
                 "Every preregistration in the work folder is kept and listed in results.json.",
     }
+
+
+def _fg_rule_text(sc: dict) -> str:
+    if sc.get("fg_max_distance_yards") is None:
+        return (f"field goals beyond the longest made in the training split plus "
+                f"{sc['fg_margin_yards']} yards")
+    return (f"field goals longer than {sc['fg_max_distance_yards']} yards (the kicker "
+            "model's support distance, post hoc)")
+
+
+def _refine_text(plan: dict) -> str:
+    cap, n0 = int(plan.get("refine_max_rollouts") or 0), int(plan["n_rollouts"])
+    if cap <= n0:
+        return "no close-call refinement"
+    return (f"decisions flagged too_close after the first pass get more rollouts for their "
+            f"two best actions only, up to {cap} per action, in a seeded random order while "
+            "time lasts")
 
 
 # ---------------------------------------------------------------- preregistration files
@@ -1414,7 +1440,15 @@ def _agreement(df) -> dict:
 SUPPORT_NOTE = ("The hard action rules and the support flags were added after the first Colab "
                 "T4 run's test-season fourth-down results had been seen (see "
                 "results/world_model/colab_t4_run_summary.md). They are a post hoc change to "
-                "the planner, not part of that run's preregistered test plan.")
+                "the planner, not part of that run's preregistered test plan. In version 3 the "
+                "field-goal limit is 60 yards (yardline_100 <= 42), the support distance of the "
+                "repo's hierarchical kicker model (docs/notes/fg_selection_bias.md, section "
+                "4.5, on branch claude/optimistic-mendel-v2267n), instead of the longest made "
+                "field goal in the training split plus 3 yards (69 yards in the second run). "
+                "That limit was chosen after the second Colab run's results "
+                "(results/world_model/colab_t4_v2) had been seen, so it is post hoc too; this "
+                "configuration records it in its own preregistration before its plan stage "
+                "reads the test seasons.")
 
 
 def _agreement_by_support(df, min_support: int) -> dict:
@@ -1492,6 +1526,187 @@ def _support_diagnostic(run: Run, sp, model, te: S.Split, support, rules: dict, 
     return d
 
 
+# ---------------------------------------------------------------- close-call refinement
+_CHOICES = ("GO", "FG", "PUNT")
+_WP_COLS = [f"wp_{c.lower()}" for c in _CHOICES]
+_SE_COLS = [f"se_{c.lower()}" for c in _CHOICES]
+
+
+def decide(wp: np.ndarray, se: np.ndarray, done: np.ndarray) -> dict:
+    """Best action, margin over the second best, its standard error and the too_close flag
+    (margin under 2 standard errors), from [n, 3] win probabilities (NaN = not simulated).
+    The same rule as simulate.plan_fourth_downs."""
+    wp, se = np.asarray(wp, dtype=float), np.asarray(se, dtype=float)
+    order = np.argsort(-np.nan_to_num(wp, nan=-1.0), axis=1)
+    r = np.arange(len(wp))
+    b, s2 = order[:, 0], order[:, 1]
+    margin = wp[r, b] - wp[r, s2]
+    margin_se = np.sqrt(se[r, b] ** 2 + se[r, s2] ** 2)
+    with np.errstate(invalid="ignore"):
+        close = done & (margin < 2 * margin_se)
+    return {"best": np.where(done, np.array(_CHOICES, dtype=object)[b], None),
+            "margin": np.where(done, margin, np.nan),
+            "margin_se": np.where(done, margin_se, np.nan),
+            "too_close": close}
+
+
+def top_two_mask(wp: np.ndarray, allowed: np.ndarray) -> np.ndarray:
+    """[n, 3] bool: the two allowed actions with the highest estimated win probability (only
+    one when only one action is allowed)."""
+    v = np.where(np.asarray(allowed, bool) & np.isfinite(wp), wp, -np.inf)
+    order = np.argsort(-v, axis=1)
+    m = np.zeros(v.shape, dtype=bool)
+    r = np.arange(len(v))
+    for k in (0, 1):
+        m[r, order[:, k]] = np.isfinite(v[r, order[:, k]])
+    return m
+
+
+def close_call_rollouts(margin: np.ndarray, margin_se: np.ndarray, n0: int,
+                        cap: int) -> np.ndarray:
+    """Total rollouts per action a close call needs so that its margin, if it stays the same,
+    is 2 standard errors (the standard error falls as 1/sqrt(n)): 10% extra, at least twice
+    n0, rounded up to a multiple of n0, at most cap. A margin of zero asks for the cap."""
+    m = np.abs(np.asarray(margin, dtype=float))
+    se = np.nan_to_num(np.asarray(margin_se, dtype=float), nan=0.0)
+    with np.errstate(divide="ignore", invalid="ignore"):
+        need = np.where(m > 0, n0 * (2 * se / np.where(m > 0, m, 1.0)) ** 2 * 1.1, np.inf)
+    need = np.minimum(np.maximum(need, 2 * n0), cap)
+    return np.minimum(n0 * np.ceil(need / n0), cap).astype(np.int64)
+
+
+def combine_rollouts(wp_a, se_a, n_a, wp_b, se_b, n_b) -> tuple[np.ndarray, np.ndarray]:
+    """Pool two independent batches of rollouts per [state, action]: the n-weighted mean and
+    the standard error of that mean, sqrt(n_a^2 se_a^2 + n_b^2 se_b^2) / (n_a + n_b). Entries
+    with n_b = 0 or a NaN in the second batch keep the first batch's values."""
+    wp_a, se_a, wp_b, se_b = (np.asarray(x, dtype=float) for x in (wp_a, se_a, wp_b, se_b))
+    na = np.asarray(n_a, dtype=float)
+    nb = np.asarray(n_b, dtype=float) * np.isfinite(wp_b)
+    tot = na + nb
+    with np.errstate(invalid="ignore", divide="ignore"):
+        wp = np.where(nb > 0, (na * np.nan_to_num(wp_a) + nb * np.nan_to_num(wp_b)) / tot, wp_a)
+        se = np.where(nb > 0, np.sqrt(na**2 * np.nan_to_num(se_a) ** 2
+                                      + nb**2 * np.nan_to_num(se_b) ** 2) / tot, se_a)
+    return wp, se
+
+
+def refine_close_calls(run: Run, df, plan_fn, n0: int, cap: int, first_pass_complete: bool,
+                       pdir: Path, deadline: float, seed: int):
+    """Second planning pass: more rollouts for the decisions the first pass left too close
+    to call.
+
+    Candidates are finished decisions flagged too_close. Each gets, for its two best
+    actions by the first-pass estimate only, the rollouts close_call_rollouts asks for (at
+    most cap per action in total); the batches are pooled with the first pass and best,
+    margin and too_close are recomputed. The candidates are taken in a seeded random order,
+    so a deadline leaves an unbiased subset refined rather than the earliest games. Chunks
+    are saved and reused like the first pass. The refinement runs only once the first pass
+    is complete (its candidate list must not change between sessions).
+
+    plan_fn(idx, n_rollouts, mask, rng) -> DataFrame from simulate.plan_fourth_downs.
+    Returns (df with pooled values and n_go/n_fg/n_punt, *_first_pass and refined columns,
+    info dict).
+    """
+    import pandas as pd
+
+    df = df.copy().reset_index(drop=True)
+    info: dict[str, Any] = {"n0": int(n0), "cap_per_action": int(cap),
+                            "actions": "the two best by the first-pass estimate",
+                            "order": "seeded random order of the close decisions"}
+    wp = df[_WP_COLS].to_numpy(float, copy=True)
+    se = df[_SE_COLS].to_numpy(float, copy=True)
+    acols = [f"allowed_{c.lower()}" for c in _CHOICES]
+    allowed = (df[acols].to_numpy(bool) if set(acols) <= set(df.columns)
+               else np.isfinite(wp))
+    done = df["done"].to_numpy(bool) if "done" in df.columns else np.ones(len(df), bool)
+    n = np.where(allowed & done[:, None], int(n0), 0).astype(np.int64)
+    for k in ("best", "margin", "margin_se", "too_close"):
+        if k in df.columns:
+            df[f"{k}_first_pass"] = df[k]
+    df["refined"] = False
+    close = (df["too_close"].to_numpy(bool) & done if "too_close" in df.columns
+             else np.zeros(len(df), bool))
+    info["too_close_first_pass"] = int(close.sum())
+    info["enabled"] = bool(cap > n0)
+    todo = np.zeros(0, np.int64)
+    if not info["enabled"]:
+        info["skipped"] = f"refine_max_rollouts {cap} is not above n_rollouts {n0}"
+    elif not first_pass_complete:
+        info["skipped"] = ("the first pass is incomplete; the refinement starts once it is "
+                           "complete (the next session continues both)")
+    else:
+        todo = np.flatnonzero(close)
+        todo = todo[np.random.default_rng(seed).permutation(len(todo))]
+    info["planned_states"] = int(len(todo))
+    if len(todo):
+        total = close_call_rollouts(df["margin"].to_numpy(float)[todo],
+                                    df["margin_se"].to_numpy(float)[todo], n0, cap)
+        extra_of = {int(df["idx"][j]): int(t - n0) for j, t in zip(todo, total, strict=True)}
+        tm = top_two_mask(wp, allowed)
+        mask_of = {int(df["idx"][j]): tm[j] for j in todo}
+
+        def fn_b(part, rng):
+            frames = []
+            for ex in sorted({extra_of[int(i)] for i in part}):
+                sub = np.array([i for i in part if extra_of[int(i)] == ex], dtype=np.int64)
+                d = plan_fn(sub, ex, np.stack([mask_of[int(i)] for i in sub]), rng)
+                d["n_extra"] = ex
+                frames.append(d)
+            out = pd.concat(frames, ignore_index=True)
+            tot: dict = {}
+            for f in frames:
+                for ch, cnt in (f.attrs.get("counters") or {}).items():
+                    for k, v in cnt.items():
+                        tot.setdefault(ch, {}).setdefault(k, 0)
+                        tot[ch][k] += int(v)
+            out.attrs["counters"] = tot
+            return out
+
+        chunk = max(1, _chunk_states(run.preset, 2 * int(cap), "plan"))
+        df_b, info_b = chunked(run, pdir, fn_b, df["idx"].to_numpy(np.int64)[todo], chunk,
+                               deadline, seed)
+        info["rollout_counters"] = info_b.pop("rollout_counters", None)
+        info["progress"] = info_b
+        if len(df_b):
+            df_b = df_b[df_b["done"].astype(bool)]
+            row_of = {int(i): j for j, i in enumerate(df["idx"])}
+            rows = np.array([row_of[int(i)] for i in df_b["idx"]], dtype=np.int64)
+            wp_b = df_b[_WP_COLS].to_numpy(float)
+            nb = df_b["n_extra"].to_numpy(np.int64)[:, None] * np.isfinite(wp_b)
+            wp[rows], se[rows] = combine_rollouts(wp[rows], se[rows], n[rows], wp_b,
+                                                  df_b[_SE_COLS].to_numpy(float), nb)
+            n[rows] += nb.astype(np.int64)
+            df.loc[rows, "refined"] = True
+    else:
+        info["progress"] = {"complete": True, "computed_states": 0, "reused_states": 0}
+    for j, c in enumerate(_CHOICES):
+        df[f"n_{c.lower()}"] = n[:, j]
+    ref = df["refined"].to_numpy(bool)
+    if ref.any():  # only refined rows change; the first pass's own columns stay as they are
+        df[_WP_COLS], df[_SE_COLS] = wp, se
+        dec = decide(wp[ref], se[ref], done[ref])
+        for k, v in dec.items():
+            df.loc[ref, k] = v
+        if "real_choice" in df.columns:
+            df["agrees"] = done & (df["best"] == df["real_choice"])
+    now_close = df["too_close"].to_numpy(bool) if len(df) else np.zeros(0, bool)
+    info.update({
+        "refined_states": int(ref.sum()),
+        "not_refined_close_states": int((close & ~ref).sum()),
+        "still_too_close_after_refinement": int((ref & now_close).sum()),
+        "resolved_by_refinement": int((ref & ~now_close).sum()),
+        "refined_at_cap_and_still_close": int((ref & now_close & (n.max(axis=1) >= cap)).sum()),
+        "best_changed_by_refinement": int((ref & (df["best"] != df["best_first_pass"])).sum())
+        if "best_first_pass" in df.columns else 0,
+        "too_close_now": int(now_close.sum()),
+        "mean_rollouts_per_action_refined": float(n[ref].max(axis=1).mean()) if ref.any()
+        else None,
+        "complete": bool(info["enabled"] and first_pass_complete
+                         and info["progress"].get("complete")),
+    })
+    return df, info
+
+
 def stage_plan(run: Run, deadline: float) -> dict:
     rec, sim, sp = _mod("records"), _mod("simulate"), _mod("support")
     # The plan also reads the test seasons, so it needs this configuration's preregistration
@@ -1558,6 +1773,25 @@ def stage_plan(run: Run, deadline: float) -> dict:
 
     chunk = max(1, _chunk_size(run, 3 * int(p["n_rollouts"]), "plan"))
     df, info = chunked(run, pdir / "fourth", fn, idx, chunk, deadline, run.seed + 5)
+    out["agreement_first_pass"] = _agreement(df)
+
+    def refine_fn(part, n_roll, mask, rng):
+        return sim.plan_fourth_downs(model, te, part, int(n_roll), cfg, deadline, rng,
+                                     action_mask=mask & sp.action_mask(te, part, rules))
+
+    cap = int(p.get("refine_max_rollouts") or 0)
+    if len(df):
+        df, rinfo = refine_close_calls(run, df, refine_fn, int(p["n_rollouts"]), cap,
+                                       bool(info["complete"]), pdir / "refine", deadline,
+                                       run.seed + 6)
+    else:
+        rinfo = {"enabled": cap > int(p["n_rollouts"]), "planned_states": 0,
+                 "refined_states": 0, "complete": False, "skipped": "no first-pass decisions"}
+    out["refinement"] = rinfo
+    run.log(f"[plan] close-call refinement: {rinfo.get('too_close_first_pass', 0)} too close "
+            f"after the first pass, {rinfo['refined_states']} refined, "
+            f"{rinfo.get('too_close_now', 0)} still too close"
+            + (f" ({rinfo['skipped']})" if rinfo.get("skipped") else ""))
     if len(df):
         df = sp.add_support_columns(df, support, te, rules)
         yl = te.states[df["idx"].to_numpy(dtype=np.int64), S.STATE_INDEX["yardline"]]
@@ -1580,6 +1814,11 @@ def stage_plan(run: Run, deadline: float) -> dict:
         out["status"] = "partial"
         out["reason"] = (f"time budget: {info['reused_states'] + info['computed_states']} of "
                          f"{n} fourth downs; the next run continues from the saved chunks")
+    elif rinfo.get("enabled") and not rinfo.get("complete"):
+        out["status"] = "partial"
+        out["reason"] = (f"time budget: close-call refinement reached "
+                         f"{rinfo['refined_states']} of {rinfo['planned_states']} close "
+                         "decisions; the next run continues from the saved chunks")
     return out
 
 
@@ -2238,6 +2477,9 @@ def micro_benchmark(preset: dict, seconds: float = 30.0) -> dict:
         c = p["plan"]
         u = 3 * (c["n_fourth"] * c["n_rollouts"] + c["hypo_rollouts"]) * STEPS_PER_ROLLOUT
         out["plan"] = round(u / max(units, 1e-6) / 60, 1)
+        extra = max(int(c.get("refine_max_rollouts") or 0) - int(c["n_rollouts"]), 0)
+        u = 2 * c["n_fourth"] * extra * STEPS_PER_ROLLOUT
+        out["plan_refinement_if_every_state_is_close"] = round(u / max(units, 1e-6) / 60, 1)
         return out
 
     timing = {k: (round(v, 3) if isinstance(v, float) else v)
@@ -2477,6 +2719,21 @@ def summary(run: Run) -> str:
                  if (res.get(k) or [True])[0] is False]
         lines.append(f"  hypothetical (up 4, 4:00 left, 4th and 2 at own 40): "
                      f"{', '.join(bits)}; best {res.get('best', ['?'])[0]}")
+    rf = p.get("refinement") or {}
+    if p.get("status") in ("done", "partial") and rf.get("enabled"):
+        a1 = p.get("agreement_first_pass") or {}
+        if a1.get("agreement_clear") is not None:
+            lines.append(f"  first pass only: agreement {a1['agreement_all']:.0%} of {a1['n']}, "
+                         f"{a1['agreement_clear']:.0%} of the {a1['n_clear']} not too close")
+        lines.append(
+            f"  close calls: {rf.get('too_close_first_pass', 0)} decisions too close after the "
+            f"first pass; {rf.get('refined_states', 0)} of "
+            f"{rf.get('planned_states', 0)} refined (two best actions, up to "
+            f"{rf.get('cap_per_action')} rollouts each); {rf.get('resolved_by_refinement', 0)} "
+            f"resolved, {rf.get('still_too_close_after_refinement', 0)} still too close, "
+            f"{rf.get('not_refined_close_states', 0)} not reached; the best call changed on "
+            f"{rf.get('best_changed_by_refinement', 0)}"
+            + (f" ({rf['skipped']})" if rf.get("skipped") else ""))
     if p.get("status") in ("done", "partial"):
         lines += _support_summary_lines(p)
     return "\n".join(lines)
