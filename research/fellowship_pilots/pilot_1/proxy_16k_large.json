@@ -1,0 +1,15 @@
+{
+ "name": "16k_large",
+ "data": "d16k.npz",
+ "size": "large",
+ "params": {
+  "num_leaves": 64,
+  "n_estimators": 150,
+  "learning_rate": 0.1,
+  "min_child_samples": 5
+ },
+ "rows": 2238839,
+ "fit_s": 13.6,
+ "train_logloss": 0.5015130598310097,
+ "val_logloss": 0.5088056632021167
+}
