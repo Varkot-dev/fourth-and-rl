@@ -39,6 +39,7 @@ proxy_sizes:
   large: {num_leaves: 64, n_estimators: 150, learning_rate: 0.1, min_child_samples: 5}
 proxy_random_state: 7
 proxy_threads: 4
+threads: 3          # pairs stepped in parallel within a tick, and forward passes at once
 
 # Cells of the Day 5 curves. "oracle" is the exact coach value (no proxy error).
 cells:
