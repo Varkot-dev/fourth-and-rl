@@ -304,6 +304,13 @@ def run_pass(args: argparse.Namespace) -> None:
     write_json(out, CELLS_DIR / f"{cell}.json")
 
 
+def _z(mc: float, exact: float, se: float) -> float:
+    """(mc - exact) / se; 0 when both are zero up to rounding (the coach's KL is 0)."""
+    if abs(mc - exact) < 1e-12:
+        return 0.0
+    return (mc - exact) / se
+
+
 def run_mc(args: argparse.Namespace) -> None:
     """Extra Monte Carlo for one cell: rebuild the fourth-down action values (one backward
     pass of the coach and the proxy only), then simulate `games` games at each beta
@@ -348,7 +355,7 @@ def run_mc(args: argparse.Namespace) -> None:
         kl_ex = exact[b]["kl"] if b in exact else 0.0
         r.update(exact_gain=gain, exact_kl=kl_ex, seed=args.seed,
                  z_gain=(r["win_a"] - 0.5 - gain) / r["win_a_se"],
-                 z_kl=(r["kl"] - kl_ex) / r["kl_se"] if r["kl_se"] > 0 else 0.0)  # fmt: skip
+                 z_kl=_z(r["kl"], kl_ex, r["kl_se"]))  # fmt: skip
         out["runs"].append(r)
         print(r, flush=True)
     out["rebuild_backward_seconds"] = back_s
@@ -412,6 +419,9 @@ def collect(args: argparse.Namespace) -> None:
     cells = {p.stem: read_json(p) for p in sorted(CELLS_DIR.glob("*.json"))
              if not p.stem.endswith("_mc")}  # fmt: skip
     extra_mc = [read_json(p) for p in sorted(CELLS_DIR.glob("*_mc.json"))]
+    for x in extra_mc:
+        for r in x["runs"]:
+            r["z_kl"] = _z(r["kl"], r["exact_kl"], r["kl_se"])
     if "oracle" not in cells:
         raise SystemExit("the oracle cell has not been run")
     summary = {}
@@ -481,7 +491,7 @@ def plot(out: dict) -> None:
     for ax in axs:
         ax.set_xlabel("sqrt of the exact sequence KL(pi_beta || coach) per game")
     axs[0].set_ylabel("points of win probability")
-    axs[0].legend(fontsize=8, loc="upper left", bbox_to_anchor=(0.0, 0.93))
+    axs[0].legend(fontsize=8, loc="lower right")
     betas = ", ".join(str(int(b)) for b in out["betas"])
     fig.text(0.0, -0.04, f"{LABEL} Fourth-down choice only, coach elsewhere; timeouts and tries by "
              f"the coach rules. beta in {{{betas}}}. Thin lines: other data seeds.", fontsize=8.5,
