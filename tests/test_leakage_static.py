@@ -37,6 +37,10 @@ ALLOWLIST: dict[tuple[str, str], tuple[int | None, str]] = {
     ("scripts/build_data.py", "load_plays("): (
         1, "writes the development and test files (splits.write_split_files) and the M0 "
            "data summary; nothing is fitted"),
+    ("src/fourth_and_rl/team_matchups.py", "load_plays("): (
+        1, "the Colab rebuild, as scripts/build_data.py: checks that no holdout season is "
+           "present and writes the development and test files; every fit then reads "
+           "splits.load_dev_plays (and the logged kickoff-table exception)"),
     ("scripts/research/endgame_clock_stats.py", "load_plays("): (
         2, "one call and one source string; the --split all descriptive research record; "
            "the model's constants come from the --dev-only file and the simulator's "
@@ -72,6 +76,11 @@ ALLOWLIST: dict[tuple[str, str], tuple[int | None, str]] = {
         2, "its own caches of the nflverse penalty columns (penalty type, team and yards, "
            "joined by game and play id to plays read through the guarded loaders) and of the "
            "schedule (head coaches per game); nothing is fitted on them"),
+    # ---- field-goal selection bias (kicker model)
+    ("src/fourth_and_rl/kicker.py", "read_parquet("): (
+        1, "its own cache of the nflverse kicker columns (kicker id and name per game and "
+           "play id, no plays), joined to plays read through the guarded loaders; the "
+           "download refuses the holdout and the fit refuses non-training seasons"),
     # ---- pending: being fixed by the win-probability rewrite
     ("src/fourth_and_rl/wp.py", "load_plays("): (
         None, "pending: being fixed by the win-probability rewrite"),

@@ -26,25 +26,25 @@ A *win-probability point* is one percentage point of win probability; 100 of the
 14. **Reinforcement learning against the exact optimum.** On the single-drive model, hand-written REINFORCE reached a regret of 0.0064 expected points per drive after 6 million fourth-down decisions while dynamic programming reaches 0 in 0.2 seconds, and library DQN (0.17) and PPO (0.094), with no hyperparameter search, stalled far from the optimum within their budgets. <sub>[results/m5_rl_tabular.json](results/m5_rl_tabular.json), [results/m5_rl_deep.json](results/m5_rl_deep.json)</sub>
 15. **Offline RL and the optimizer's curse.** In a world where the truth is known, with coach-like logged data of the real size (39,766 fourth downs), naive fitted Q iteration did worse than the coaches it learned from (regret 0.291 against 0.224 points per drive), conservative Q-learning (CQL) cut that to 0.104, and fitted Q iteration claimed a gain of +1.28 points over the coaches' usual call where the true gain was -0.08. <sub>[results/m6_offline_known_truth.json](results/m6_offline_known_truth.json)</sub>
 
-## Win probability (M1)
+## Win probability
 
 ![Late-game win probability, observed against predicted, version 1 against version 2](assets/m1_wp_endgame.png)
 
 A gradient-boosted model (LightGBM, monotone in score, spread and timeouts) is fitted on 2010 to 2023 and scored on 90,931 plays of 2024 and 2025. Using version 1 inside the decision engine exposed a late-game fault: on first downs with a 1 to 3 point lead and 0:41 to 2:00 left, teams won 95.9% and version 1 said 86.2%. Version 2 starts its trees from a structural baseline (a normal approximation of the final margin plus the kneel-out rule), uses smaller leaves and no calibration map; every choice was made on development seasons and preregistered in [results/m1_wp_v2_preregistration.json](results/m1_wp_v2_preregistration.json) before the test seasons were scored once. It predicts 94.9% in that cell, scores log loss 0.4450 overall (version 1: 0.4490; the improvement's interval, -0.0080 to +0.0001, includes zero) and 0.2372 in the last two minutes (version 1: 0.2523), and ties nflfastR's model with the spread (0.4466). It is still wrong when trailing by 4 to 8 in the last 40 seconds (16.6% predicted, 8.1% observed). A small PyTorch network tied with the trees in a version 1 era comparison ([results/m1_wp_nn.json](results/m1_wp_nn.json)). Numbers: [results/m1_wp_metrics.json](results/m1_wp_metrics.json).
 
-## Decisions and uncertainty (M2, M3)
+## Decisions and uncertainty
 
 ![Our engine's go-minus-kick gain against nfl4th's on real fourth downs of 2024 and 2025](assets/m2_nfl4th_comparison.png)
 
 The one-step engine averages win probability over the full outcome distributions of a conversion attempt, a field goal and a punt, using logistic models with splines fitted on development seasons. On 2024 and 2025 it says go on 47.3% of fourth downs, nfl4th on 41.1%; coaches went on 21.3%. The bootstrap resamples whole games, refits the win-probability and play-outcome models 101 times and labels a call confident when at least 83% of refits agree and lean from 67%, the rule of Brill, Yurko and Wyner (arXiv 2311.03490). On calls labelled confident, coaches went for it 49% of the time when the engine said go and kicked 95% of the time when it said kick. For comparison only, that paper reports 48% of 2018 to 2022 fourth downs as confident with its own model (their Section 4.2); samples and models differ. The bootstrap measures sampling noise, not model error: a bias that every refit shares, such as version 1's end-game fault, is still labelled confident. Numbers: [results/m2_nfl4th_comparison.json](results/m2_nfl4th_comparison.json), [results/m3_bootstrap.json](results/m3_bootstrap.json).
 
-## Blown leads (M3b)
+## Blown leads
 
 ![Losers' peak win probability against the continuous formula and a simulation with jumps, for three models](assets/m3b_blown_leads.png)
 
 A calibrated win probability is a martingale, so for a continuous path starting at p0 the chance that the eventual loser peaked at x or more is p0 (1 - x) / (x (1 - p0)): in an even game, 11% of losers should have been 90% favorites at some point. Real paths jump from play to play, which makes that formula an upper bound, and a simulated calibrated game observed at play resolution shows the same shortfall the data does. The test that stays exact for jumpy paths (the share of first crossings of a level that end in a loss), with team-season resampling, finds its largest deviation for nflfastR with the spread at 60% (z = 2.36, p = 0.02), which does not survive a correction for 18 tests. This replicates on open models the benchmark of Pipping-Gamon and Wyner (arXiv 2601.18774), who applied it to ESPN's NFL feed and report no detected departure (1,848 games, 2018 to 2024, p = 0.736; their numbers). A second simulation ([results/m3b_sample_size_sim.json](results/m3b_sample_size_sim.json)) reproduces the effective-sample-size point of arXiv 2406.16171: a simple probit model gets about 1.6 to 2.2 independent observations per game, a boosted-tree model 37% to 50% of its plays (the paper reports 56% at 4,101 games; theirs). Numbers: [results/m3b_blown_leads.json](results/m3b_blown_leads.json).
 
-## The exact game solution (M4)
+## The exact game solution
 
 ![Up 4 late, fourth down in your own half: go or punt, from the exact solution](assets/questions/q1_late_lead_dp.png)
 
@@ -52,19 +52,19 @@ The whole game is a finite-horizon Markov decision process on a 5-second grid: d
 
 ![Win probability on first and 10 across the field as the fourth-quarter clock runs down, from the exact solution](assets/m7_value_function.gif)
 
-## Reinforcement learning against the exact optimum (M5)
+## Reinforcement learning against the exact optimum
 
 ![Learning curves of tabular and deep agents, regret against the exact optimum](assets/m5_learning_curves.png)
 
 Two Gymnasium environments wrap the solved model, so every agent's regret is measured exactly, not estimated from wins. On the single drive (regret in expected points per drive): REINFORCE with a baseline 0.0064 (its greedy policy 0.0041), tabular Q-learning 0.014, SARSA 0.017, PPO 0.094, DQN 0.17; a coach-like policy loses 0.224 and never going for it 0.357. Close calls are learned last, not rare states: for Q-learning the steps needed to learn a state's action have rank correlation -0.87 with the value gap between the two best actions and -0.42 with how often the state is visited. In the last five minutes (regret in win-probability points per game, summed exactly over decisions), DQN reaches 2.08 (seeds 1.52 to 2.55) after 800,000 play calls and PPO 4.41, still improving; measured the same way, a coach-like policy loses 2.71 and a network fitted directly to the exact optimal values 1.18, so more than half of DQN's remaining gap is the network's inability to represent the optimum. The deep agents got no hyperparameter sweep. Numbers: [results/m5_rl_tabular.json](results/m5_rl_tabular.json), [results/m5_rl_deep.json](results/m5_rl_deep.json).
 
-## Offline RL (M6)
+## Offline RL
 
 ![Value errors where coaches rarely or never went for it: fitted Q iteration against CQL](assets/m6_distribution_shift.png)
 
 Real data come from coaches' choices, so almost no one has gone for it on fourth and 15 from their own 20. In the known-truth world (hypotheses written into the config before the runs), where coaches never went for it fitted Q iteration overestimates the value of going by 1.1 points on average and CQL underestimates it by 2.6. At the real data size, regret in points per drive: d3rlpy DoubleDQN 0.063, boosted-tree fitted Q iteration 0.084, tabular CQL 0.104, a model-based plug-in 0.135, the coaches 0.224, naive tabular fitted Q iteration 0.291. Always deferring to the coaches' usual call loses 0.098 against the plug-in (interval 0.069 to 0.127). On real 2010 to 2023 fourth downs, CQL agrees with the coaches' usual call 71% of the time against 31% for fitted Q iteration, and off-policy evaluation on 2024 and 2025 cannot rank the learned methods (effective sample sizes of about 2 to 17 of 5,352 drives). Numbers: [results/m6_offline_known_truth.json](results/m6_offline_known_truth.json), [results/m6_offline_real_data.json](results/m6_offline_real_data.json).
 
-## Coaches (M7)
+## Coaches
 
 ![League go rate and win probability given up on fourth downs by season, 2011 to 2025](assets/m7_league_trend.png)
 
@@ -147,7 +147,7 @@ Nothing from the world model enters the results above. Sources: `results/world_m
 - **Penalties are not the coach's, as far as this test can tell.** The ledger reports them in a separate column; delays of game alone show a possible coach effect that was found after the main result and is reported only as a lead.
 - **RL and offline RL results are about the model, not the NFL.** Deep agents got no hyperparameter sweep. The known-truth offline world gives learners the true terminal values (the easiest case) and has no confounding.
 - **The world model is experimental.** It is too optimistic about long field goals, and its post hoc 60-yard rule has not yet been tested on a full run.
-- **Unfinished.** M7 (app, notebook, write-up) is being finished; the malpractice check (M11) has only its first part; the referee question (M12) is not built; a planned data clean-up and the final rerun before the 2026 holdout are still to do.
+- **Unfinished.** The malpractice check covers only calls from before 2026; the referee question is not built; a planned data clean-up and the final rerun before the 2026 holdout are still to do.
 
 ## How it was built
 
@@ -158,11 +158,11 @@ Nothing from the world model enters the results above. Sources: `results/world_m
 **Reproduce.** Python 3.11 or later (3.12 was used). Configuration is in `configs/`, and every results file records its seed.
 
 ```bash
-pip install -e ".[dev]"          # add ".[rl]" for M5 and M6, ".[app]" for the app
+pip install -e ".[dev]"          # add ".[rl]" for the RL parts, ".[app]" for the app
 python scripts/build_data.py
 ```
 
-Then, in order: `fit_components.py` and `fit_wp.py` (M1, with `--tune`, `--preregister` and `--evaluate` as separate steps); `blown_leads.py` and `wp_sample_size_sim.py` (M3b); `decision_chart.py` and `compare_nfl4th.py` (M2); `bootstrap_decisions.py` (M3); `research/endgame_clock_stats.py`, `solve_mdp.py` and `validate_simulator.py` (M4); `questions/q1_late_lead_one_step.py` and `questions/q1_late_lead_dp.py`; `rl_tabular.py` and `rl_deep.py` (M5); `offline_known_truth.py` and `offline_real_data.py` (M6); `questions/q2_run_vs_pass.py`, `m8_team_strength.py`, `questions/q3_team_aware.py`, `m9_distance_error.py`, `questions/q5_goal_line_and_two_point.py` and `m10_predictability.py`; `m7_penalty_ledger.py`, `m7_coach_evaluation.py`, `m7_build_app_bundle.py`, `m7_build_static_page.py` and `m7_value_animation.py` (M7). All live under `scripts/`; each writes its numbers to `results/` and its figure to `assets/`.
+Then, in order: `fit_components.py` and `fit_wp.py` (`--tune`, `--preregister` and `--evaluate` as separate steps); `blown_leads.py` and `wp_sample_size_sim.py`; `decision_chart.py` and `compare_nfl4th.py`; `bootstrap_decisions.py`; `research/endgame_clock_stats.py`, `solve_mdp.py` and `validate_simulator.py`; `questions/q1_late_lead_one_step.py` and `questions/q1_late_lead_dp.py`; `rl_tabular.py` and `rl_deep.py`; `offline_known_truth.py` and `offline_real_data.py`; `questions/q2_run_vs_pass.py`, `m8_team_strength.py`, `questions/q3_team_aware.py`, `m9_distance_error.py`, `questions/q5_goal_line_and_two_point.py` and `m10_predictability.py`; `m7_penalty_ledger.py`, `m7_coach_evaluation.py`, `m7_build_app_bundle.py`, `m7_build_static_page.py` and `m7_value_animation.py`. All live under `scripts/`; each writes its numbers to `results/` and its figure to `assets/`.
 
 **Tests and CI.** `pytest` and `ruff` run on every push through GitHub Actions ([.github/workflows/ci.yml](.github/workflows/ci.yml)); tests that need the cached play-by-play data are marked and skipped there.
 
@@ -177,7 +177,7 @@ Then, in order: `fit_components.py` and `fit_wp.py` (M1, with `--tune`, `--prere
 - J. Pipping-Gamon, A. J. Wyner, "The Blown Lead Paradox: A Pathwise Calibration Benchmark for Win Probability Forecasts", arXiv 2601.18774.
 - N. Sandholtz, L. Wu, M. Puterman, T. C. Y. Chan, "Learning Risk Preferences in Markov Decision Processes: an Application to the Fourth Down Decision in the National Football League", arXiv 2309.00756 (The Annals of Applied Statistics, 2024).
 - D. Romer, "Do Firms Maximize? Evidence from Professional Football", Journal of Political Economy 114 (2006), 340 to 365.
-- Biro and Walker, arXiv 2103.06939: a late-game MDP with score and time (without timeouts or kneels, solved approximately), the closest prior work to M4 that was found.
+- Biro and Walker, arXiv 2103.06939: a late-game MDP with score and time (without timeouts or kneels, solved approximately), the closest prior work to the exact game solution that was found.
 - M. Lopez, arXiv 1909.10631: earlier work on how whole-yard distances hide the true distance, the issue behind the "fourth and 1" question.
 - Libraries: LightGBM, scikit-learn, PyTorch, Gymnasium, Stable-Baselines3, d3rlpy, polars, matplotlib, Plotly, Streamlit.
 
