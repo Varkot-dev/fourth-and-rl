@@ -27,8 +27,9 @@ team instead of the 1.6 GB of a full value array.
 
 Post-decisions
 --------------
-Timeouts and the try after a touchdown are the solver's own choices, made with each
-team's own values.
+Timeouts and the try after a touchdown follow `post`: "model" (the default, the solver's
+own choices made with each team's own values) or "coach" (the simulator's coach rules,
+which do not depend on values; see `mdp_game.Solution`).
 
 Policies
 --------
@@ -78,8 +79,10 @@ class RingSolution(mg.Solution):
     `put(t, v)` stores the slice at t; the tick-0 slice (the final score) is there from
     the start. Everything else (`backup`, `post`, `_aug_at`, `other`) is the solver's."""
 
-    def __init__(self, model: mg.GameModel) -> None:
-        super().__init__(model, v={}, pol={})
+    def __init__(
+        self, model: mg.GameModel, post: str = "model", coach: dict[str, Any] | None = None
+    ) -> None:
+        super().__init__(model, v={}, pol={}, post=post, coach=coach)
         self.lag = clock_lag(model.clock)
         self.buf: dict[int, np.ndarray] = {}
         e = model.extra_shape(model.phase(0))
@@ -337,7 +340,7 @@ class PolicyPair:
     """Team A playing `policy_a` against team B playing `policy_b`, evaluated exactly.
 
     `policy_b=None` means both teams play `policy_a`: one self-linked solution then holds
-    both sides.
+    both sides. `post` and `coach` set the post-decisions (see `mdp_game.Solution`).
     `record` lists (team, GameState) pairs whose values are kept as the pass goes; the
     state is described from the side of the team with the ball, and team is "A" or "B".
     `keep_slices` keeps every slice of team A (for tests on small games).
@@ -351,15 +354,17 @@ class PolicyPair:
         record: list[tuple[str, mg.GameState]] | None = None,
         keep_slices: bool = False,
         check: bool = True,
+        post: str = "model",
+        coach: dict[str, Any] | None = None,
     ) -> None:
         self.model = model
         self.symmetric = policy_b is None
-        a = RingSolution(model)
+        a = RingSolution(model, post=post, coach=coach)
         if self.symmetric:
             self.sols = {"A": a}
             self.policies = {"A": policy_a}
         else:
-            b = RingSolution(model)
+            b = RingSolution(model, post=post, coach=coach)
             a._other, b._other = b, a
             self.sols = {"A": a, "B": b}
             self.policies = {"A": policy_a, "B": policy_b}
@@ -455,9 +460,11 @@ def evaluate(
     record: list[tuple[str, mg.GameState]] | None = None,
     keep_slices: bool = False,
     progress: bool = False,
+    post: str = "model",
+    coach: dict[str, Any] | None = None,
 ) -> tuple[PolicyPair, dict[str, float]]:
     """Evaluate one pair of policies over the whole game. Returns the pair (start value,
     recorded values, kept slices) and the time and memory of the pass."""
-    pair = PolicyPair(model, policy_a, policy_b, record, keep_slices)
+    pair = PolicyPair(model, policy_a, policy_b, record, keep_slices, post=post, coach=coach)
     stats = run([pair], progress=progress)
     return pair, stats

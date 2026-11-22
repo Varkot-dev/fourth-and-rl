@@ -344,6 +344,71 @@ def test_ring_buffer_keeps_only_recent_slices(toy: mg.Solution) -> None:
 
 
 # --------------------------------------------------------------------------------------
+# Post-decisions fixed to the coach's rules (Solution(post="coach"))
+# --------------------------------------------------------------------------------------
+
+
+def test_default_post_decisions_are_unchanged(toy: mg.Solution) -> None:
+    explicit = mg.Solution(toy.model, post="model")
+    mg.backward_induction([explicit])
+    for ph in toy.v:
+        assert np.array_equal(explicit.v[ph], toy.v[ph])
+        assert np.array_equal(explicit.pol[ph], toy.pol[ph])
+    with pytest.raises(ValueError, match="post must be"):
+        mg.Solution(toy.model, post="other")
+
+
+@pytest.mark.parametrize(("seed", "defense"), [(1, "optimal"), (2, "empirical")])
+def test_coach_post_decisions_match_the_reference(seed: int, defense: str) -> None:
+    m = toy_football(seed=seed, defense=defense)
+    g = m.kern.grid
+    table = toy_coach(g, seed)
+    coach = pe.CoachPolicy(m, table)
+    rand = random_fourth(m, seed + 10)
+    pol_a = coach.with_fourth(lambda t, q: rand[t])
+    pair, _ = pe.evaluate(m, pol_a, coach, keep_slices=True, post="coach", coach=table)
+    model_pair, _ = pe.evaluate(m, pol_a, coach, keep_slices=True)
+    brute = TwoTeamBrute(m, [lambda t: pol_a(t, {}), lambda t: coach(t, {})], post="coach",
+                         coach=table)  # fmt: skip
+    states = all_values(mg.Solution(m))
+    rng = np.random.default_rng(seed)
+    worst, moved = 0.0, 0.0
+    for i in rng.choice(len(states), size=1200, replace=False):
+        (t, f, s, e1, e2), _ = states[i]
+        exact = float(pair.slices[t][f, s + m.score_max, e1, e2])
+        worst = max(worst, abs(exact - brute.v(0, t, f, s, e1, e2)))
+        moved = max(moved, abs(exact - float(model_pair.slices[t][f, s + m.score_max, e1, e2])))
+    assert worst < 1e-10
+    assert moved > 1e-3  # the flag really changes the game
+
+
+def test_coach_post_decisions_match_the_simulator_on_the_toy_game(toy: mg.Solution) -> None:
+    m, g = toy.model, toy.grid
+    table = toy_coach(g, 5)
+    coach = pe.CoachPolicy(m, table)
+    cases = [
+        dict(t=20, s=0, f=int(g.fidx(1, 1, 4)), r=1),
+        dict(t=13, s=1, f=int(g.fidx(1, 1, 3))),
+        dict(t=9, s=-2, f=int(g.fidx(1, 1, 5)), a=2, b=1),
+        dict(t=7, s=1, f=int(g.fidx(2, 2, 4)), a=0, b=2),
+        dict(t=5, s=0, f=int(g.fidx(3, 0, 3)), a=1, b=1),
+        dict(t=4, s=-1, f=int(g.fidx(1, 1, 4)), a=2, b=2),
+    ]
+    pair, _ = pe.evaluate(m, coach, keep_slices=True, post="coach", coach=table)
+    sim = mg.Simulator(toy, table)
+    rng = np.random.default_rng(17)
+    n = 40000
+    for case in cases:
+        st = sim.start(n, **case)
+        ph = m.phase(case["t"])
+        e = (case.get("a", 2), case.get("b", 2)) if ph == "end" else (case.get("r", 0), 0)
+        exact = float(pair.slices[case["t"]][case["f"], case["s"] + m.score_max, *e])
+        out = mg.simulate(sim, st, rng, policy="coach", post="coach")["result"]
+        se = max(float(out.std()) / np.sqrt(n), 1e-4)
+        assert abs(out.mean() - exact) < 4.5 * se, (case, exact, out.mean())
+
+
+# --------------------------------------------------------------------------------------
 # The real solved game (needs data/mdp)
 # --------------------------------------------------------------------------------------
 
