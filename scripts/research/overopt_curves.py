@@ -304,6 +304,57 @@ def run_pass(args: argparse.Namespace) -> None:
     write_json(out, CELLS_DIR / f"{cell}.json")
 
 
+def run_mc(args: argparse.Namespace) -> None:
+    """Extra Monte Carlo for one cell: rebuild the fourth-down action values (one backward
+    pass of the coach and the proxy only), then simulate `games` games at each beta
+    (beta 0 is coach against coach, exactly 0.5). The exact values come from the cell's
+    saved pass. Appends to results/research/overopt_cells/<cell>_mc.json."""
+    from fourth_and_rl.grid_predict import GridPredictor, slice_values
+
+    cfg = oo.load_config()
+    spec = cfg["cells"][args.cell]
+    post = cfg["post"]
+    sol, coach = oo.load_game()
+    m = sol.model
+    g = m.kern.grid
+    cp = pe.CoachPolicy(m, coach)
+    oracle = oo.FourthQ(m)
+    coach_pair = pe.PolicyPair(m, cp, post=post, coach=coach)
+    if spec["proxy"] == "oracle":
+        q_proxy, gp, proxy_sol = oracle, None, None
+    else:
+        q_proxy = oo.FourthQ(m)
+        gp = GridPredictor(work_dir(cfg) / f"proxy_{args.cell}.txt")
+        proxy_sol = pe.RingSolution(m, post=post, coach=coach)
+    t0 = time.time()
+    for t in range(1, m.clock.n_ticks + 1):
+        shape = (g.nf, m.n_score, *m.extra_shape(m.phase(t)))
+        coach_pair.step(t)
+        oracle.put(t, pe.fourth_q(coach_pair.last_q("A"), cp.slice(t), cp.f4, shape))
+        if proxy_sol is not None:
+            q, _ = proxy_sol.backup(t)
+            q_proxy.put(t, pe.fourth_q(q, cp.slice(t), cp.f4, shape))
+            proxy_sol.put(t, slice_values(gp, m, t, dtype=np.dtype(m.dtype)))
+    back_s = time.time() - t0
+    exact = {r["beta"]: r for r in read_json(CELLS_DIR / f"{args.cell}.json")["rows"]}
+    sim = oo.TiltSimulator(sol, coach, q_proxy, {"oracle": oracle, "proxy": q_proxy})
+    path = CELLS_DIR / f"{args.cell}_mc.json"
+    out = read_json(path) if path.exists() else {"cell": args.cell, "runs": []}
+    for b in args.betas:
+        t1 = time.time()
+        r = oo.tilt_monte_carlo(sim, b, args.games, args.seed, post=post)
+        r["seconds"] = time.time() - t1
+        gain = exact[b]["true_gain"] if b in exact else 0.0
+        kl_ex = exact[b]["kl"] if b in exact else 0.0
+        r.update(exact_gain=gain, exact_kl=kl_ex, seed=args.seed,
+                 z_gain=(r["win_a"] - 0.5 - gain) / r["win_a_se"],
+                 z_kl=(r["kl"] - kl_ex) / r["kl_se"] if r["kl_se"] > 0 else 0.0)  # fmt: skip
+        out["runs"].append(r)
+        print(r, flush=True)
+    out["rebuild_backward_seconds"] = back_s
+    write_json(out, path)
+
+
 # --------------------------------------------------------------------------------------
 # Collect and plot
 # --------------------------------------------------------------------------------------
@@ -358,7 +409,9 @@ def _seed_summary(cells: dict[str, dict], names: list[str], betas: list[float],
 def collect(args: argparse.Namespace) -> None:
     cfg = oo.load_config()
     betas = [float(b) for b in cfg["betas"]]
-    cells = {p.stem: read_json(p) for p in sorted(CELLS_DIR.glob("*.json"))}
+    cells = {p.stem: read_json(p) for p in sorted(CELLS_DIR.glob("*.json"))
+             if not p.stem.endswith("_mc")}  # fmt: skip
+    extra_mc = [read_json(p) for p in sorted(CELLS_DIR.glob("*_mc.json"))]
     if "oracle" not in cells:
         raise SystemExit("the oracle cell has not been run")
     summary = {}
@@ -379,6 +432,7 @@ def collect(args: argparse.Namespace) -> None:
            "cells": {n: {"proxy": c["proxy"], "rows": c["rows"], "diagnostics": c["diagnostics"],
                          "timing": c["timing"]} for n, c in cells.items()},
            "seed_summary": summary, "monte_carlo_checks": checks,
+           "extra_monte_carlo": extra_mc,
            "exactness": {"max_abs_forward_minus_backward":
                          max(abs(x["forward_minus_backward"]) for x in exactness),
                          "max_abs_pdl_minus_backward":
@@ -443,9 +497,15 @@ def main() -> None:
     p = sub.add_parser("pass")
     p.add_argument("cell")
     p.add_argument("--mc", action="store_true")
+    p = sub.add_parser("mc")
+    p.add_argument("cell")
+    p.add_argument("--betas", type=float, nargs="+", required=True)
+    p.add_argument("--games", type=int, required=True)
+    p.add_argument("--seed", type=int, required=True)
     sub.add_parser("collect")
     args = ap.parse_args()
-    {"data": make_data, "train": train, "pass": run_pass, "collect": collect}[args.cmd](args)
+    {"data": make_data, "train": train, "pass": run_pass, "mc": run_mc,
+     "collect": collect}[args.cmd](args)  # fmt: skip
 
 
 if __name__ == "__main__":
