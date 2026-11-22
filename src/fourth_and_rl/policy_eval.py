@@ -211,17 +211,26 @@ class CoachPolicy:
         return self.coach[name] if name in self.coach else mg.COACH_DEFAULTS[name]
 
     def slice(self, t: int) -> CoachSlice:
+        """The coach at every (field state, score) of tick t."""
         if self._cache is not None and self._cache[0] == t:
             return self._cache[1]
+        g, m = self.model.kern.grid, self.model
+        f, s = np.broadcast_arrays(np.arange(g.nf)[:, None],
+                                   np.arange(-m.score_max, m.score_max + 1)[None, :])  # fmt: skip
+        out = self.at(np.full(f.shape, t), f, s)
+        self._cache = (t, out)
+        return out
+
+    def at(self, t: np.ndarray, f: np.ndarray, s: np.ndarray) -> CoachSlice:
+        """The coach at arbitrary states: arrays of ticks, field states and (clipped) score
+        differentials of one shape. The same arithmetic as `Simulator.coach_actions`."""
         m, c = self.model, self.model.clock
         g, k = m.kern.grid, m.kern
-        f = np.arange(g.nf)[:, None]
-        s = np.arange(-m.score_max, m.score_max + 1)[None, :]
-        f, s = np.broadcast_arrays(f, s)
+        t, f, s = np.broadcast_arrays(np.asarray(t), np.asarray(f), np.asarray(s))
         down, dbin, yl = g.unpack(f)
-        sec = np.full(f.shape, t * c.tick_seconds)
-        half_sec = np.full(f.shape, (t - c.th) * c.tick_seconds if t > c.th else t * c.tick_seconds)
-        end = (t <= c.endgame_ticks) and c.endgame_ticks > 0
+        sec = t * c.tick_seconds
+        half_sec = np.where(t > c.th, (t - c.th) * c.tick_seconds, sec)
+        end = (t <= c.endgame_ticks) & (c.endgame_ticks > 0)
         warn = c.warning_tick if c.warning_tick is not None else 0
         chase = (s < 0) | ((s == 0) & (t <= warn))
         lead_mode = np.where(end & (s > 0), mg.A_PROTECT, mg.A_NEUTRAL)
@@ -241,15 +250,13 @@ class CoachPolicy:
         in_range = (yl <= self.setting("end_fg_max_yardline")) & okf
         ticks = self.setting("end_fg_ticks")
         last_game = (t <= ticks) & (s <= 0) & (s >= -m.fg_points)
-        last_half = (t > c.th) and (t - c.th <= ticks)
+        last_half = (t > c.th) & (t - c.th <= ticks)
         forced = np.where((last_game | last_half) & in_range, mg.A_FG, forced)
         late4 = fourth & end & (t <= warn)
         forced = np.where(late4 & (s < -m.fg_points), mg.A_CHASE, forced)
         lm = late4 & (t <= warn // 2) & (s < 0) & (s >= -m.fg_points)
         forced = np.where(lm, np.where(in_range, mg.A_FG, mg.A_CHASE), forced)
-        out = CoachSlice(base=base, p=p3, forced=forced, fourth=fourth)
-        self._cache = (t, out)
-        return out
+        return CoachSlice(base=base, p=p3, forced=forced, fourth=fourth)
 
     def probs(self, t: int, fourth: np.ndarray | None = None) -> Probs:
         """Action probabilities at tick t. `fourth`, if given, replaces the coach's
@@ -341,8 +348,10 @@ class PolicyPair:
 
     `policy_b=None` means both teams play `policy_a`: one self-linked solution then holds
     both sides. `post` and `coach` set the post-decisions (see `mdp_game.Solution`).
-    `record` lists (team, GameState) pairs whose values are kept as the pass goes; the
-    state is described from the side of the team with the ball, and team is "A" or "B".
+    `record` lists (team, state) pairs whose values are kept as the pass goes, in
+    `recorded`. A state is a GameState or a raw (t, f, s, e1, e2) tuple of ticks, field
+    state, score differential and extra state, from the side of the team with the ball;
+    team is "A" or "B".
     `keep_slices` keeps every slice of team A (for tests on small games).
     """
 
@@ -351,7 +360,7 @@ class PolicyPair:
         model: mg.GameModel,
         policy_a: Policy,
         policy_b: Policy | None = None,
-        record: list[tuple[str, mg.GameState]] | None = None,
+        record: list[tuple[str, Any]] | None = None,
         keep_slices: bool = False,
         check: bool = True,
         post: str = "model",
@@ -373,9 +382,13 @@ class PolicyPair:
         self.recorded: list[float] = [float("nan")] * len(record or [])
         for i, (team, state) in enumerate(record or []):
             team = "A" if self.symmetric else team
-            ph, ix = a.index(state)
-            t = ix[0] + model.phase_range(ph)[0]
-            self.records.setdefault((team, t), []).append((i, ix[1:]))
+            if isinstance(state, mg.GameState):
+                ph, ix = a.index(state)
+                t, ix = ix[0] + model.phase_range(ph)[0], ix[1:]
+            else:
+                t, f, sc, e1, e2 = (int(x) for x in state)
+                ix = (f, sc + model.score_max, e1, e2)
+            self.records.setdefault((team, t), []).append((i, ix))
         self.slices: dict[int, np.ndarray] | None = {} if keep_slices else None
         if self.slices is not None:
             self.slices[0] = a.native(0).copy()
@@ -457,7 +470,7 @@ def evaluate(
     model: mg.GameModel,
     policy_a: Policy,
     policy_b: Policy | None = None,
-    record: list[tuple[str, mg.GameState]] | None = None,
+    record: list[tuple[str, Any]] | None = None,
     keep_slices: bool = False,
     progress: bool = False,
     post: str = "model",
