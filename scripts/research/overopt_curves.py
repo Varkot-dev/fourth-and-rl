@@ -74,7 +74,9 @@ def make_data(args: argparse.Namespace) -> None:
             continue
         t0 = time.time()
         d = oo.coach_games(sol, coach, g["n"], g["seed"], post=cfg["post"])
-        np.savez_compressed(path, X=d["X"], y=d["y"], game=d["game"], seed=g["seed"])
+        tmp = path.with_suffix(".tmp.npz")
+        np.savez_compressed(tmp, X=d["X"], y=d["y"], game=d["game"], seed=g["seed"])
+        tmp.replace(path)  # never leave a half-written file behind
         print(f"{name}: {g['n']} games, seed {g['seed']}, {len(d['y'])} rows, "
               f"{time.time() - t0:.1f} s, receiver wins {d['result'].mean():.4f}", flush=True)
 

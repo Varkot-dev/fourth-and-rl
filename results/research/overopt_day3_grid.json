@@ -1,0 +1,15 @@
+{
+  "what": "grid predictor against LightGBM Booster.predict on every state of every tick of the solved game",
+  "runs": [
+    {
+      "cell": "1k_large",
+      "n_ticks": 720,
+      "n_states": 404585280,
+      "max_abs_diff_float64": 2.220446049250313e-16,
+      "max_abs_diff_float32_storage": 2.9802321721561498e-08,
+      "grid_seconds": 60.39908957481384,
+      "booster_predict_seconds": 361.09334921836853,
+      "booster_threads": 4
+    }
+  ]
+}

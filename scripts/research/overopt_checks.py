@@ -12,6 +12,9 @@ Subcommands (settings in configs/overopt.yaml, section `checks`):
             rules, against Monte Carlo from `Simulator` (coach policy, post="coach"),
             at states drawn from synthetic coach games.
             Writes results/research/overopt_day2_post_mc.json.
+  grid      Day 3. The grid predictor against Booster.predict on every state of every tick
+            for each proxy named (default: the config's `checks.grid.cell`; trained by
+            overopt_curves.py train). Writes results/research/overopt_day3_grid.json.
 
 The real game is the solved MDP in data/mdp. No play-by-play is loaded.
 
@@ -156,6 +159,44 @@ def post_mc(args: argparse.Namespace) -> None:
                OUT / "overopt_day2_post_mc.json")  # fmt: skip
 
 
+def grid(args: argparse.Namespace) -> None:
+    from fourth_and_rl.grid_predict import GridPredictor, slice_features, slice_values
+    from fourth_and_rl.paths import ROOT
+
+    cfg = oo.load_config()
+    sol, _ = oo.load_game()
+    m = sol.model
+    cells = args.cells or [cfg["checks"]["grid"]["cell"]]
+    runs = []
+    for cell in cells:
+        gp = GridPredictor(ROOT / cfg["work_dir"] / f"proxy_{cell}.txt")
+        worst = worst_raw = 0.0
+        t_grid = t_ref = 0.0
+        n_states = 0
+        for t in range(1, m.clock.n_ticks + 1):
+            t0 = time.time()
+            v = slice_values(gp, m, t, dtype=np.float64)
+            t1 = time.time()
+            x = slice_features(m, t)
+            ref = gp.bst.predict(x, num_threads=cfg["proxy_threads"]).reshape(v.shape)
+            t2 = time.time()
+            t_grid += t1 - t0
+            t_ref += t2 - t1
+            worst = max(worst, float(np.abs(v - ref).max()))
+            v32 = slice_values(gp, m, t)
+            worst_raw = max(worst_raw, float(np.abs(v32 - ref).max()))
+            n_states += v.size
+            del x, ref
+        runs.append({"cell": cell, "n_ticks": m.clock.n_ticks, "n_states": n_states,
+                     "max_abs_diff_float64": worst, "max_abs_diff_float32_storage": worst_raw,
+                     "grid_seconds": t_grid, "booster_predict_seconds": t_ref,
+                     "booster_threads": cfg["proxy_threads"]})  # fmt: skip
+        print(runs[-1], flush=True)
+    write_json({"what": "grid predictor against LightGBM Booster.predict on every state of "
+                        "every tick of the solved game",
+                "runs": runs}, OUT / "overopt_day3_grid.json")  # fmt: skip
+
+
 def main() -> None:
     if len(sys.argv) > 1 and sys.argv[1] == "_timing":
         print(json.dumps(_one_timing(sys.argv[2], sys.argv[3])))
@@ -164,8 +205,9 @@ def main() -> None:
     sub = ap.add_subparsers(dest="cmd", required=True)
     for name in ("timing", "post_mc"):
         sub.add_parser(name)
+    sub.add_parser("grid").add_argument("cells", nargs="*")
     args = ap.parse_args()
-    {"timing": timing, "post_mc": post_mc}[args.cmd](args)
+    {"timing": timing, "post_mc": post_mc, "grid": grid}[args.cmd](args)
 
 
 if __name__ == "__main__":
