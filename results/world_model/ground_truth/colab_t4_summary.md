@@ -21,3 +21,9 @@ Preset t4 on Tesla T4; sizes 1,000, 4,000, 16,000, 64,000 games.
     headline state (up 4, 4:00, 4th and 2 at own 40): learned GO 0.747, FG n/a, PUNT 0.724; true GO 0.769, FG n/a, PUNT 0.729
 
 Run facts from results.json (as printed): seed 20261121; exact game built on 2010 to 2023 (637,139 rows, 3,793 games) plus the documented 2024 and 2025 kickoff rule tables; 407,854,656 states; 64,000 synthetic training games (10,068,362 records), 2,000 validation games; ground truth 300 states x 20,000 rollouts per action, coach-value standard error at most 0.0035.
+
+## Figures (screenshots of the notebook's figures, as shared by the owner)
+
+- `figures/gt_q_scatter.png`: learned against true action values per size. The spread shrinks with data; mean errors +0.05, +0.25, -0.08, +0.05 points.
+- `figures/gt_regret_accuracy.png`: regret and decision accuracy per size, with the coach-like policy's own regret (0.81) and its probability of picking the best action (58%) as reference lines.
+- `figures/gt_overestimation_by_coverage.png`: learned minus true value, by how often the coach-like policy takes the action in that state. Every size's 95% interval includes zero in every coverage band, so this run shows no systematic overestimation of rarely taken actions on average. The overrating of GO at the headline state by the 4,000-game model (learned 0.845, true 0.769) is a single state, not a pattern across the 300.
