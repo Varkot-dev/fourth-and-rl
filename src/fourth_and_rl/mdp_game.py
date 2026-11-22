@@ -288,6 +288,19 @@ class Solution:
     v[phase] has shape (ticks in phase, nf, n_score, E1, E2); pol[phase] the same, uint8
     codes into ACTION_NAMES. On fourth down "play", "play_protect" and "play_chase" mean
     going for it.
+
+    `post` sets who makes the decisions that follow a play, as `Simulator`'s argument of
+    the same name does. "model" (the default): the offense takes its own timeout when that
+    is worth more to it, the defense takes one when that is worth less to the offense (or
+    at the measured rates if `clock.defense_timeout` is "empirical"), and the scoring team
+    takes the better try, all judged by this solution's own values. "coach": the
+    simulator's coach rules, which do not depend on any values: a chasing offense spends
+    its own timeout after an in-bounds play inside the two-minute warning, the defense
+    spends one at the measured rates when the offense leads, and the scorer goes for two
+    only in the last `two_point_seconds` at the leads in `two_point_leads` (read from
+    `coach`, the coach table, or `COACH_DEFAULTS`). With "coach" the backup is linear in
+    the values, which is what fixed-policy evaluation and the forward occupancy pass of
+    `policy_eval` need.
     """
 
     def __init__(
@@ -296,9 +309,21 @@ class Solution:
         v: dict[str, np.ndarray] | None = None,
         pol: dict[str, np.ndarray] | None = None,
         meta: dict | None = None,
+        post: str = "model",
+        coach: dict[str, Any] | None = None,
     ) -> None:
+        if post not in ("model", "coach"):
+            raise ValueError(f"post must be 'model' or 'coach', not {post!r}")
         self.model = model
         self.meta = meta or {}
+        self.post_mode = post
+        self.coach_post: dict[str, Any] | None = None
+        if post == "coach":
+            src = coach or {}
+            self.coach_post = {
+                k: src[k] if k in src else COACH_DEFAULTS[k]
+                for k in ("two_point_seconds", "two_point_leads")
+            }
         self.grid = model.kern.grid
         self.f10 = self.grid.first10()[1:]
         m, g = model, self.grid
@@ -384,12 +409,13 @@ class Solution:
         ko: np.ndarray | None = None,
         opp_kicks: tuple[np.ndarray, np.ndarray] | None = None,
         fk: np.ndarray | None = None,
+        t: int | None = None,
     ) -> _Post:
         """Values of the outcomes that end a possession, at one moment. `ko` and `fk` are
         our values of receiving a kickoff and a free kick (computed from `v` if `ko` is
         None; `fk` defaults to `ko`). `opp_kicks` is the other team's (kickoff, free kick)
         values at that moment, held from its side; None means the teams are identical and
-        our own are used."""
+        our own are used. `t` is the moment (ticks left); the coach's try rule needs it."""
         m = self.model
         if ko is None:
             ko, fk = self._kicks(v)
@@ -400,7 +426,15 @@ class Solution:
         td0 = opp_ko[self._shift(m.td_points)]
         xp = m.p_xp * opp_ko[self._shift(m.td_points + 1)] + (1.0 - m.p_xp) * td0
         two = m.p_two * opp_ko[self._shift(m.td_points + 2)] + (1.0 - m.p_two) * td0
-        better = (two > xp) if m.two_point_choice else np.zeros(xp.shape, dtype=bool)
+        if self.post_mode == "coach":
+            if t is None:
+                raise ValueError("the coach's try rule needs the time of the touchdown")
+            cp = self.coach_post
+            late = t * m.clock.tick_seconds <= cp["two_point_seconds"]
+            lead = np.isin(self.scores + m.td_points, list(cp["two_point_leads"]))
+            better = np.broadcast_to(late & lead[:, None, None], xp.shape).copy()
+        else:
+            better = (two > xp) if m.two_point_choice else np.zeros(xp.shape, dtype=bool)
         return _Post(
             v=v,
             ko=ko,
@@ -447,7 +481,7 @@ class Solution:
             return self._posts[key]
         v, ko, fk = self._base(t, phase)
         opp_kicks = None if self.other is self else self.other._base(t, phase)[1:]
-        p = self._derive(v, phase, ko=ko, opp_kicks=opp_kicks, fk=fk)
+        p = self._derive(v, phase, ko=ko, opp_kicks=opp_kicks, fk=fk, t=t)
         self._posts[key] = p
         return p
 
@@ -492,6 +526,7 @@ class Solution:
                     u = term if u is None else u + term
             return {"neutral": np.asarray(u, dtype=self.model.dtype)}
         v1 = self.native(t - 1)
+        coach = self.post_mode == "coach"
         out = {"protect": self.native(self.next_tick(t, c.burn_ticks)).copy()}
         for mode in ("neutral", "chase"):
             u = None
@@ -500,11 +535,15 @@ class Solution:
                     term = np.dtype(self.model.dtype).type(p) * self.native(self.next_tick(t, h))
                     u = term if u is None else u + term
             u = u.astype(self.model.dtype)
-            # An offense that is not burning clock may spend its own timeout instead.
-            u[:, :, 1:, :] = np.maximum(u[:, :, 1:, :], v1[:, :, :-1, :])
+            if not coach:
+                # An offense that is not burning clock may spend its own timeout instead.
+                u[:, :, 1:, :] = np.maximum(u[:, :, 1:, :], v1[:, :, :-1, :])
+            elif mode == "chase" and c.late(t):
+                # The coach rule: a chasing offense always stops the clock inside the warning.
+                u[:, :, 1:, :] = v1[:, :, :-1, :]
             out[mode] = u
         for u in out.values():
-            if c.defense_timeout == "optimal":
+            if c.defense_timeout == "optimal" and not coach:
                 u[..., 1:] = np.minimum(u[..., 1:], v1[..., :-1])
             else:
                 q = self._defense_rate(t)[:, None, 1:].astype(self.model.dtype)
