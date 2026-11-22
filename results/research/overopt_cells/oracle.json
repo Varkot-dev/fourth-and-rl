@@ -1,0 +1,219 @@
+{
+  "cell": "oracle",
+  "proxy": {
+    "proxy": "oracle"
+  },
+  "post": "coach",
+  "betas": [
+    10.0,
+    30.0,
+    100.0,
+    300.0,
+    1000.0,
+    10000.0
+  ],
+  "coach_start_value": 0.5,
+  "rows": [
+    {
+      "beta": 10.0,
+      "true_gain": 0.005797967314720154,
+      "forward_gain": 0.005797952939677331,
+      "pdl_gain": 0.005797953295096427,
+      "claimed_gain": 0.005797953295096427,
+      "kl": 0.027629754970940164,
+      "sqrt_kl": 0.1662220050743588,
+      "decisions_per_game": 7.1447681942190355,
+      "total_mass": 1.0000000000000022,
+      "forward_seconds": 228.44368314743042
+    },
+    {
+      "beta": 30.0,
+      "true_gain": 0.01372632384300232,
+      "forward_gain": 0.01372636472098887,
+      "pdl_gain": 0.01372636570428836,
+      "claimed_gain": 0.01372636570428836,
+      "kl": 0.18006318812539987,
+      "sqrt_kl": 0.4243385300976095,
+      "decisions_per_game": 7.173156973870856,
+      "total_mass": 1.0000000000000027,
+      "forward_seconds": 229.9072403907776
+    },
+    {
+      "beta": 100.0,
+      "true_gain": 0.027802377939224243,
+      "forward_gain": 0.02780233600780846,
+      "pdl_gain": 0.027802338502513114,
+      "claimed_gain": 0.027802338502513114,
+      "kl": 1.0186934982948095,
+      "sqrt_kl": 1.0093034718531437,
+      "decisions_per_game": 7.2493978848656955,
+      "total_mass": 1.0000000000000022,
+      "forward_seconds": 229.02859497070312
+    },
+    {
+      "beta": 300.0,
+      "true_gain": 0.040079087018966675,
+      "forward_gain": 0.04007911935818653,
+      "pdl_gain": 0.04007912330792477,
+      "claimed_gain": 0.04007912330792477,
+      "kl": 3.150115271930906,
+      "sqrt_kl": 1.7748564088204166,
+      "decisions_per_game": 7.3587781551628275,
+      "total_mass": 1.0000000000000009,
+      "forward_seconds": 234.2091703414917
+    },
+    {
+      "beta": 1000.0,
+      "true_gain": 0.04569554328918457,
+      "forward_gain": 0.045695547901506206,
+      "pdl_gain": 0.04569555249736555,
+      "claimed_gain": 0.04569555249736555,
+      "kl": 5.898909366529511,
+      "sqrt_kl": 2.4287670465751776,
+      "decisions_per_game": 7.456719197232191,
+      "total_mass": 0.9999999999999977,
+      "forward_seconds": 233.25585794448853
+    },
+    {
+      "beta": 10000.0,
+      "true_gain": 0.046836644411087036,
+      "forward_gain": 0.046836674818219404,
+      "pdl_gain": 0.04683668133535837,
+      "claimed_gain": 0.04683668133535837,
+      "kl": 8.002405007825546,
+      "sqrt_kl": 2.828852242133821,
+      "decisions_per_game": 7.510122047579982,
+      "total_mass": 1.0000000000000007,
+      "forward_seconds": 238.07538962364197
+    }
+  ],
+  "diagnostics": {
+    "n_states": 100000,
+    "n_fourth_down_states": 10067,
+    "q_rmse_fourth": 0.0,
+    "greedy_uniform": {
+      "n_states": 10067,
+      "n_tied_true": 28,
+      "n_tied_proxy": 28,
+      "disagree": 0.0,
+      "mean_regret": 0.0
+    },
+    "greedy_exclude": {
+      "n_states": 10039,
+      "n_tied_true": 28,
+      "n_tied_proxy": 28,
+      "disagree": 0.0,
+      "mean_regret": 0.0
+    },
+    "exact_top_two_gap": {
+      "exact_ties": 28,
+      "below_1e-3": 782,
+      "n": 10067
+    }
+  },
+  "best_response_gain": 0.04690895974636078,
+  "timing": {
+    "backward_seconds": 450.799222946167,
+    "grid_predict_seconds": 0.0,
+    "forward_seconds": 468.15151596069336,
+    "backward_peak_rss_gb": 7.062736511230469,
+    "peak_rss_gb": 7.062736511230469,
+    "n_backward_solutions": 15,
+    "total_seconds": 931.4822218418121
+  },
+  "label": "Exact for the fitted game MDP, not real football.",
+  "monte_carlo": {
+    "kl_mc": [
+      {
+        "games": 20000,
+        "beta": 10.0,
+        "win_a": 0.504,
+        "win_a_se": 0.003438901176548274,
+        "kl": 0.027139520688650977,
+        "kl_se": 0.00033254698422256567,
+        "decisions": 7.14045,
+        "decisions_se": 0.01290036863235088,
+        "claim_oracle": 0.005695163945795301,
+        "claim_oracle_se": 7.31629347408635e-05,
+        "claim_proxy": 0.005695163945795301,
+        "claim_proxy_se": 7.31629347408635e-05,
+        "seconds": 1.7167809009552002
+      },
+      {
+        "games": 20000,
+        "beta": 30.0,
+        "win_a": 0.519125,
+        "win_a_se": 0.0034397206721862076,
+        "kl": 0.1796192202409797,
+        "kl_se": 0.0016316282138158337,
+        "decisions": 7.1597,
+        "decisions_se": 0.01300108637431294,
+        "claim_oracle": 0.013731008845008295,
+        "claim_oracle_se": 0.0001397657087249308,
+        "claim_proxy": 0.013731008845008295,
+        "claim_proxy_se": 0.0001397657087249308,
+        "seconds": 1.6866469383239746
+      },
+      {
+        "games": 20000,
+        "beta": 100.0,
+        "win_a": 0.529275,
+        "win_a_se": 0.0034305046475492265,
+        "kl": 1.0159553397011167,
+        "kl_se": 0.006565236075434036,
+        "decisions": 7.24245,
+        "decisions_se": 0.013110377339142406,
+        "claim_oracle": 0.027702615269747197,
+        "claim_oracle_se": 0.00020242399909339216,
+        "claim_proxy": 0.027702615269747197,
+        "claim_proxy_se": 0.00020242399909339216,
+        "seconds": 2.0585269927978516
+      },
+      {
+        "games": 20000,
+        "beta": 300.0,
+        "win_a": 0.537825,
+        "win_a_se": 0.0034372487839419087,
+        "kl": 3.1329169621417448,
+        "kl_se": 0.016967387916676763,
+        "decisions": 7.3382,
+        "decisions_se": 0.013537363148340614,
+        "claim_oracle": 0.039685368291004795,
+        "claim_oracle_se": 0.00023848046417840977,
+        "claim_proxy": 0.039685368291004795,
+        "claim_proxy_se": 0.00023848046417840977,
+        "seconds": 1.8521583080291748
+      },
+      {
+        "games": 20000,
+        "beta": 1000.0,
+        "win_a": 0.54455,
+        "win_a_se": 0.0034287538104440557,
+        "kl": 5.879438640944812,
+        "kl_se": 0.028670603927812583,
+        "decisions": 7.43675,
+        "decisions_se": 0.013665442147638492,
+        "claim_oracle": 0.04547020601345301,
+        "claim_oracle_se": 0.00024731875426784735,
+        "claim_proxy": 0.04547020601345301,
+        "claim_proxy_se": 0.00024731875426784735,
+        "seconds": 1.776885747909546
+      },
+      {
+        "games": 20000,
+        "beta": 10000.0,
+        "win_a": 0.552325,
+        "win_a_se": 0.00342188766392312,
+        "kl": 8.007267248912983,
+        "kl_se": 0.03761850632487899,
+        "decisions": 7.5092,
+        "decisions_se": 0.013852630175101707,
+        "claim_oracle": 0.04687478043109026,
+        "claim_oracle_se": 0.0002466783612414448,
+        "claim_proxy": 0.04687478043109026,
+        "claim_proxy_se": 0.0002466783612414448,
+        "seconds": 1.9146673679351807
+      }
+    ]
+  }
+}
