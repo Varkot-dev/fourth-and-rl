@@ -107,3 +107,14 @@ def test_fourth_q_lookup_matches_the_arrays() -> None:
         want = q4.get(int(t[i]))[f[i] - q4.f0, s[i] + m.score_max, e[0], e[1]]
         assert np.array_equal(got[i], want)
     assert g.unpack(q4.f0)[0] == g.n_down
+
+
+@pytest.mark.data
+def test_real_game_forward_pass_conserves_mass_and_is_even() -> None:
+    if not mg.solution_exists():
+        pytest.skip("solved game not built (run scripts/solve_mdp.py)")
+    sol, coach = oo.load_game()
+    cp = pe.CoachPolicy(sol.model, coach)
+    fw = oc.ForwardPass(sol.model, cp, pe.CoachPolicy(sol.model, coach), coach=coach).run()
+    assert fw.total_mass == pytest.approx(1.0, abs=1e-9)
+    assert fw.result_a == pytest.approx(0.5, abs=1e-9)

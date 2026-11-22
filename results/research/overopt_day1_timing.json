@@ -1,0 +1,60 @@
+{
+  "what": "time and peak memory of one full-game pass of the exact policy evaluator (backward) and of the forward occupancy pass, coach policy, each run in its own process",
+  "machine": "this CPU session (4 cores, 15 GB)",
+  "runs": [
+    {
+      "seconds": 62.87964749336243,
+      "peak_rss_gb": 0.6021041870117188,
+      "kind": "symmetric",
+      "post": "coach",
+      "start_value": 0.5,
+      "n_solutions": 1,
+      "n_ticks": 720,
+      "ring_slices_kept": 12,
+      "lag": 10
+    },
+    {
+      "seconds": 63.40208387374878,
+      "peak_rss_gb": 0.5844306945800781,
+      "kind": "symmetric",
+      "post": "model",
+      "start_value": 0.5,
+      "n_solutions": 1,
+      "n_ticks": 720,
+      "ring_slices_kept": 12,
+      "lag": 10
+    },
+    {
+      "seconds": 132.95252537727356,
+      "peak_rss_gb": 0.875030517578125,
+      "kind": "pair",
+      "post": "coach",
+      "start_value": 0.5,
+      "n_solutions": 2,
+      "n_ticks": 720,
+      "ring_slices_kept": 12,
+      "lag": 10
+    },
+    {
+      "seconds": 124.26453733444214,
+      "peak_rss_gb": 0.8751564025878906,
+      "kind": "pair",
+      "post": "model",
+      "start_value": 0.5,
+      "n_solutions": 2,
+      "n_ticks": 720,
+      "ring_slices_kept": 12,
+      "lag": 10
+    },
+    {
+      "kind": "forward",
+      "post": "coach",
+      "seconds": 179.59899950027466,
+      "peak_rss_gb": 0.9706573486328125,
+      "result_a": 0.5000000000000012,
+      "total_mass": 1.0000000000000024,
+      "n_teams": 2,
+      "dtype": "float64"
+    }
+  ]
+}
