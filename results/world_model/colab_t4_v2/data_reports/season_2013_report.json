@@ -1,0 +1,48 @@
+{
+  "seasons": [
+    2013
+  ],
+  "rows_in": 48158,
+  "rows_kept": 44512,
+  "dropped": {
+    "overtime_or_null_qtr": 382,
+    "not_a_snap_or_kick": 1388,
+    "null_posteam": 1875,
+    "timeout_only": 0,
+    "two_minute_or_end_of_quarter": 0,
+    "null_clock": 0,
+    "null_yardline": 0,
+    "play_without_down": 1,
+    "play_without_ydstogo": 0,
+    "posteam_not_home_or_away": 0,
+    "games_with_illegal_score_delta": 0,
+    "records_in_dropped_games": 0
+  },
+  "repairs": {
+    "noplay_null_down_as_try": 19,
+    "yardline_clipped_1_99": 0,
+    "ydstogo_clipped_1_30": 22,
+    "clock_clipped_0_3600": 0,
+    "first_half_clock_1800_set_to_1801": 4
+  },
+  "soft": {
+    "games_scoring_on_last_record": 12,
+    "score_delta_illegal_pairs": 0,
+    "elapsed_negative": 0,
+    "elapsed_over_60": 92,
+    "elapsed_over_45": 1582,
+    "halftime_crossings": 267,
+    "timeout_increase_mid_half": 0,
+    "timeouts_used_over_2": 0,
+    "games_missing_spread": 0,
+    "games_first_record_not_kickoff": 0,
+    "final_diff_vs_box_mismatch_non_ot": 0
+  },
+  "games": 267,
+  "overtime_games_cut": 16,
+  "records_per_game": {
+    "min": 137,
+    "mean": 166.7,
+    "max": 208
+  }
+}

@@ -121,13 +121,20 @@ streamlit run app/streamlit_app.py
 
 The app reads a precomputed grid under `app/data/` (built by `scripts/m7_build_app_bundle.py`), because the fitted models and the 2 GB solved game are not in the repository; controls snap to grid values and nothing is interpolated.
 
-**Static page.** [`app/fourth_down_explorer.html`](app/fourth_down_explorer.html) is one self-contained file (even spread only) that needs no server; it can be hosted on GitHub Pages once the repository is public.
+**Static page.** [`app/fourth_down_explorer.html`](app/fourth_down_explorer.html) is one self-contained file (even spread only) that needs no server; it can be hosted on GitHub Pages.
 
-**Colab notebook.** [`notebooks/fourth_down_demo.ipynb`](notebooks/fourth_down_demo.ipynb) answers a situation both ways and trains a tabular agent against a known optimum on a toy drive model (the real environments need tables that are not in the repository). [Open in Colab](https://colab.research.google.com/github/Varkot-dev/fourth-and-rl/blob/main/notebooks/fourth_down_demo.ipynb); the link works once the repository is public.
+**Colab notebook.** [`notebooks/fourth_down_demo.ipynb`](notebooks/fourth_down_demo.ipynb) answers a situation both ways and trains a tabular agent against a known optimum on a toy drive model (the real environments need tables that are not in the repository). [Open in Colab](https://colab.research.google.com/github/Varkot-dev/fourth-and-rl/blob/main/notebooks/fourth_down_demo.ipynb).
 
 ## Experimental: a learned world model
 
-On the branch `claude/world-model-colab`, a next-play transformer (6,495,984 parameters) is trained on 2010 to 2021 in a Colab notebook and used to simulate games. Its first run reached a negative log likelihood per transition of 9.654 on the 2024 to 2025 test seasons against 12.998 for a frequency baseline; its simulated win probability scored log loss 0.5252 on 372 test states (95% game bootstrap 0.4616 to 0.5868), against 0.5058 for nflfastR's model without the spread and 0.4628 with it (their models, scored on the same states); it agreed with coaches on 45% of 67 test fourth downs; and for the late-lead case above it said go (0.898) over punt (0.790). That run was undertrained: a bug, since fixed, left the model on the CPU for its 20 minutes of training, and the fourth-down planning was cut short by slow rollouts. Version 2 has not been run yet. Nothing from it enters the results above. Source: `results/world_model/colab_t4_run_summary.md` on that branch.
+On the branch `claude/world-model-colab`, a next-play transformer (6,495,984 parameters) is trained on 2010 to 2021 in a Colab notebook and then used as a game simulator. Its second run (a Tesla T4, 32 epochs in 176 s, best validation epoch 27) gave these results on the 2024 to 2025 test seasons:
+
+- **Next play:** negative log likelihood per transition 6.536, against 12.998 for a frequency baseline.
+- **Win probability by simulation:** log loss 0.4617 on 600 test states (95% game bootstrap 0.4179 to 0.5039). On the same states nflfastR's model without the spread scored 0.4705 and its model with the spread 0.4487 (their models). The paired differences are -0.0087 (95% interval -0.0215 to 0.0048) and +0.0130 (-0.0056 to 0.0287), so the simulator is statistically tied with both.
+- **Fourth downs:** it agreed with the coach on 49% of 300 test fourth downs, and on 53% of the 87 that were not too close to call. Most disagreements are plays where the coach punted and the simulator would go.
+- **Its known failure:** it is too optimistic about long field goals. Simulated make rates are 0.676 at 54 to 58 yards and 0.521 at 59 to 63 yards, against 0.566 and 0.378 for kicks in the training seasons. A kicker-aware model (`docs/notes/fg_selection_bias.md`) shows that selection of who kicks does not explain this, so the planner now refuses field goals beyond 60 yards. That rule was set after seeing these results.
+
+Nothing from the world model enters the results above. Sources: `results/world_model/colab_t4_v2/results.json` and `results/world_model/colab_t4_run_summary.md` (the first, undertrained run) on that branch.
 
 ## Honest limits
 
@@ -139,7 +146,7 @@ On the branch `claude/world-model-colab`, a next-play transformer (6,495,984 par
 - **The test seasons were looked at more than once.** 2024 and 2025 informed the diagnosis that led to win-probability version 2 and were read by several milestones and an audit, so they are not an untouched test set. The 2026 season is sealed as the final holdout; no model, chart or diagnostic has read it, and it has **not yet been evaluated**.
 - **Penalties are not the coach's, as far as this test can tell.** The ledger reports them in a separate column; delays of game alone show a possible coach effect that was found after the main result and is reported only as a lead.
 - **RL and offline RL results are about the model, not the NFL.** Deep agents got no hyperparameter sweep. The known-truth offline world gives learners the true terminal values (the easiest case) and has no confounding.
-- **The world model is experimental** and undertrained, as described above.
+- **The world model is experimental.** It is too optimistic about long field goals, and its post hoc 60-yard rule has not yet been tested on a full run.
 - **Unfinished.** The malpractice check covers only calls from before 2026; the referee question is not built; a planned data clean-up and the final rerun before the 2026 holdout are still to do.
 
 ## How it was built

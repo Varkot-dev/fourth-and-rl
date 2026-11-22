@@ -1,0 +1,525 @@
+{
+ "version": "gt_v1",
+ "created": "2026-11-19T01:30:45+0000",
+ "actions": [
+  "go_best",
+  "go_coach",
+  "fg",
+  "punt"
+ ],
+ "solution": {
+  "stamp": {
+   "what": "solved game model (components plus count, mode and coach tables)",
+   "seasons": [
+    2010,
+    2011,
+    2012,
+    2013,
+    2014,
+    2015,
+    2016,
+    2017,
+    2018,
+    2019,
+    2020,
+    2021,
+    2022,
+    2023
+   ],
+   "tables": {
+    "what": "game-model tables (count, mode, coach)",
+    "seasons": [
+     2010,
+     2011,
+     2012,
+     2013,
+     2014,
+     2015,
+     2016,
+     2017,
+     2018,
+     2019,
+     2020,
+     2021,
+     2022,
+     2023
+    ],
+    "n_games": 3793,
+    "n_rows": 637141,
+    "fitted_at": "2026-11-17T09:03:33+00:00"
+   },
+   "components": {
+    "what": "component models",
+    "seasons": [
+     2010,
+     2011,
+     2012,
+     2013,
+     2014,
+     2015,
+     2016,
+     2017,
+     2018,
+     2019,
+     2020,
+     2021,
+     2022,
+     2023
+    ],
+    "n_games": 3793,
+    "n_rows": 637141,
+    "fitted_at": "2026-11-17T08:27:32+00:00",
+    "config_hash": "fff6405221c9aa66",
+    "data_fingerprint": {
+     "n_rows": 637141,
+     "by_season": {
+      "2010": {
+       "rows": 44501,
+       "games": 267
+      },
+      "2011": {
+       "rows": 45051,
+       "games": 267
+      },
+      "2012": {
+       "rows": 45413,
+       "games": 267
+      },
+      "2013": {
+       "rows": 45714,
+       "games": 267
+      },
+      "2014": {
+       "rows": 45267,
+       "games": 267
+      },
+      "2015": {
+       "rows": 45666,
+       "games": 267
+      },
+      "2016": {
+       "rows": 45245,
+       "games": 267
+      },
+      "2017": {
+       "rows": 44797,
+       "games": 267
+      },
+      "2018": {
+       "rows": 44568,
+       "games": 267
+      },
+      "2019": {
+       "rows": 44821,
+       "games": 267
+      },
+      "2020": {
+       "rows": 45173,
+       "games": 269
+      },
+      "2021": {
+       "rows": 47187,
+       "games": 285
+      },
+      "2022": {
+       "rows": 46711,
+       "games": 284
+      },
+      "2023": {
+       "rows": 47027,
+       "games": 285
+      }
+     },
+     "columns_hashed": [
+      "game_id",
+      "play_id",
+      "down",
+      "ydstogo",
+      "yardline_100",
+      "play_type",
+      "yards_gained",
+      "posteam_won"
+     ],
+     "columns_missing": [],
+     "hash": "180536b538b20206"
+    },
+    "test_seasons_allowed": false,
+    "reason": null,
+    "kickoff_rule_tables": {
+     "touchback_at_25": {
+      "seasons": [
+       2018,
+       2019,
+       2020,
+       2021,
+       2022,
+       2023
+      ],
+      "n_used": 16741,
+      "uses_test_seasons": false,
+      "reason": null,
+      "data_fingerprint": {
+       "n_rows": 16940,
+       "by_season": {
+        "2018": {
+         "rows": 2741,
+         "games": 267
+        },
+        "2019": {
+         "rows": 2716,
+         "games": 267
+        },
+        "2020": {
+         "rows": 2898,
+         "games": 269
+        },
+        "2021": {
+         "rows": 2912,
+         "games": 285
+        },
+        "2022": {
+         "rows": 2835,
+         "games": 284
+        },
+        "2023": {
+         "rows": 2838,
+         "games": 285
+        }
+       },
+       "columns_hashed": [
+        "game_id",
+        "play_id",
+        "down",
+        "ydstogo",
+        "yardline_100",
+        "play_type",
+        "yards_gained",
+        "posteam_won"
+       ],
+       "columns_missing": [],
+       "hash": "b0d12cc87ecbd07f"
+      }
+     },
+     "dynamic_kickoff_2024": {
+      "seasons": [
+       2024
+      ],
+      "n_used": 2920,
+      "uses_test_seasons": true,
+      "reason": "rule constant; no data under this rule exists before the season",
+      "data_fingerprint": {
+       "n_rows": 2955,
+       "by_season": {
+        "2024": {
+         "rows": 2955,
+         "games": 285
+        }
+       },
+       "columns_hashed": [
+        "game_id",
+        "play_id",
+        "down",
+        "ydstogo",
+        "yardline_100",
+        "play_type",
+        "yards_gained",
+        "posteam_won"
+       ],
+       "columns_missing": [],
+       "hash": "0334f7a96282d957"
+      }
+     },
+     "dynamic_kickoff_2025": {
+      "seasons": [
+       2025
+      ],
+      "n_used": 2893,
+      "uses_test_seasons": true,
+      "reason": "rule constant; no data under this rule exists before the season",
+      "data_fingerprint": {
+       "n_rows": 2927,
+       "by_season": {
+        "2025": {
+         "rows": 2927,
+         "games": 285
+        }
+       },
+       "columns_hashed": [
+        "game_id",
+        "play_id",
+        "down",
+        "ydstogo",
+        "yardline_100",
+        "play_type",
+        "yards_gained",
+        "posteam_won"
+       ],
+       "columns_missing": [],
+       "hash": "7f52724334ea0457"
+      }
+     }
+    }
+   },
+   "note": "the only test-season content is the components' kickoff rule tables; the solved game uses the latest rule's table for every kickoff"
+  },
+  "tables_key": {
+   "mdp_config_hash": "bb0a360520c426d5",
+   "components_config_hash": "fff6405221c9aa66",
+   "components_seasons": [
+    2010,
+    2011,
+    2012,
+    2013,
+    2014,
+    2015,
+    2016,
+    2017,
+    2018,
+    2019,
+    2020,
+    2021,
+    2022,
+    2023
+   ],
+   "components_data_fingerprint": {
+    "n_rows": 637141,
+    "by_season": {
+     "2010": {
+      "rows": 44501,
+      "games": 267
+     },
+     "2011": {
+      "rows": 45051,
+      "games": 267
+     },
+     "2012": {
+      "rows": 45413,
+      "games": 267
+     },
+     "2013": {
+      "rows": 45714,
+      "games": 267
+     },
+     "2014": {
+      "rows": 45267,
+      "games": 267
+     },
+     "2015": {
+      "rows": 45666,
+      "games": 267
+     },
+     "2016": {
+      "rows": 45245,
+      "games": 267
+     },
+     "2017": {
+      "rows": 44797,
+      "games": 267
+     },
+     "2018": {
+      "rows": 44568,
+      "games": 267
+     },
+     "2019": {
+      "rows": 44821,
+      "games": 267
+     },
+     "2020": {
+      "rows": 45173,
+      "games": 269
+     },
+     "2021": {
+      "rows": 47187,
+      "games": 285
+     },
+     "2022": {
+      "rows": 46711,
+      "games": 284
+     },
+     "2023": {
+      "rows": 47027,
+      "games": 285
+     }
+    },
+    "columns_hashed": [
+     "game_id",
+     "play_id",
+     "down",
+     "ydstogo",
+     "yardline_100",
+     "play_type",
+     "yards_gained",
+     "posteam_won"
+    ],
+    "columns_missing": [],
+    "hash": "180536b538b20206"
+   },
+   "data_fingerprint": {
+    "n_rows": 637141,
+    "by_season": {
+     "2010": {
+      "rows": 44501,
+      "games": 267
+     },
+     "2011": {
+      "rows": 45051,
+      "games": 267
+     },
+     "2012": {
+      "rows": 45413,
+      "games": 267
+     },
+     "2013": {
+      "rows": 45714,
+      "games": 267
+     },
+     "2014": {
+      "rows": 45267,
+      "games": 267
+     },
+     "2015": {
+      "rows": 45666,
+      "games": 267
+     },
+     "2016": {
+      "rows": 45245,
+      "games": 267
+     },
+     "2017": {
+      "rows": 44797,
+      "games": 267
+     },
+     "2018": {
+      "rows": 44568,
+      "games": 267
+     },
+     "2019": {
+      "rows": 44821,
+      "games": 267
+     },
+     "2020": {
+      "rows": 45173,
+      "games": 269
+     },
+     "2021": {
+      "rows": 47187,
+      "games": 285
+     },
+     "2022": {
+      "rows": 46711,
+      "games": 284
+     },
+     "2023": {
+      "rows": 47027,
+      "games": 285
+     }
+    },
+    "columns_hashed": [
+     "game_id",
+     "play_id",
+     "down",
+     "ydstogo",
+     "yardline_100",
+     "play_type",
+     "yards_gained",
+     "posteam_won"
+    ],
+    "columns_missing": [],
+    "hash": "180536b538b20206"
+   }
+  },
+  "seed": 20261117
+ },
+ "data_fingerprint": "180536b538b20206",
+ "code": {
+  "synthetic.py": "546fb6dc1bd29e91",
+  "schema.py": "96d7acc211c7f2cf",
+  "mdp_game.py": "c8496d3e5364da91",
+  "mdp.py": "5b2067f13a2205fc",
+  "git_head": "05caa777f42a3eac9becf919cc02ce7fd97cc6b5"
+ },
+ "seeds": {
+  "eval_states": 20261119,
+  "ground_truth": 20261120,
+  "train_default": 1,
+  "streams": {
+   "games": 0,
+   "eval": 1,
+   "headline": 2,
+   "ground_truth": 3
+  }
+ },
+ "n_states": 300,
+ "n_rollouts": 40000,
+ "policy": "coach",
+ "post": "coach",
+ "strata_seconds": [
+  [
+   1800,
+   3600,
+   0.2
+  ],
+  [
+   900,
+   1800,
+   0.3
+  ],
+  [
+   300,
+   900,
+   0.3
+  ],
+  [
+   0,
+   300,
+   0.2
+  ]
+ ],
+ "max_abs_diff": 16,
+ "headline": {
+  "seconds": 240,
+  "lead": 4,
+  "down": 4,
+  "ydstogo": 2,
+  "yardline_100": 60,
+  "timeouts": [
+   3,
+   3
+  ]
+ },
+ "headline_index": 299,
+ "se_coach": {
+  "max": 0.002497728892130652,
+  "mean": 0.0017889002291899996,
+  "median": 0.002049738331993966
+ },
+ "outcomes_true_vs_clipped_differ": 13895,
+ "timing_seconds": {
+  "load_simulator": 0.6,
+  "eval_states": 3.8,
+  "ground_truth": 237.7
+ },
+ "benchmark": {
+  "one_process": {
+   "games": 3000,
+   "seconds": 0.89,
+   "games_per_second": 3380.2,
+   "records_per_game": 157.3,
+   "n_workers": 1,
+   "chunk_games": 1000
+  },
+  "parallel": {
+   "games": 3000,
+   "seconds": 0.64,
+   "games_per_second": 4666.1,
+   "records_per_game": 157.3,
+   "n_workers": 3,
+   "chunk_games": 1000
+  },
+  "cpu_count": 4
+ },
+ "files": {
+  "gt_v1.npz": 28690,
+  "gt_v1_states.npz": 502787
+ }
+}
