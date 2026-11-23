@@ -599,26 +599,28 @@ def plot(out: dict[str, Any], path: Path) -> Path:
     for ax, cap in zip(axs[0], caps, strict=True):
         ax.axhline(0, color=style.MUTED, lw=1)
         if oracle is not None:
-            x = [r["sqrt_kl"] for r in oracle["rows"]]
-            ax.plot(x, [100 * r["true_gain"] for r in oracle["rows"]], "-", color=style.INK,
+            x = [0.0] + [r["sqrt_kl"] for r in oracle["rows"]]
+            ax.plot(x, [0.0] + [100 * r["true_gain"] for r in oracle["rows"]], "-", color=style.INK,
                     lw=1.6, label="exact coach value (no proxy error)")  # fmt: skip
             if oracle.get("best_response_gain") is not None:
                 ax.axhline(100 * oracle["best_response_gain"], color=style.MUTED, lw=1, ls=":")
         leaves = next((c["leaves"] for c in out["cells"].values()
                        if c["capacity"] == cap and c["leaves"]), None)  # fmt: skip
         for g in [g for g in groups if g["capacity"] == cap]:
-            x = np.array(g["sqrt_kl_mean"])
-            y = np.array(g["gain_mean_points"])
+            # beta = 0 is the coach itself: zero KL and zero gain, exactly.
+            x = np.array([0.0, *g["sqrt_kl_mean"]])
+            y = np.array([0.0, *g["gain_mean_points"]])
             col = colors[g["n_games"]]
             if g["n_seeds"] > 1:
-                sd = np.array(g["gain_sd_points"], dtype=float)
+                sd = np.array([0.0, *g["gain_sd_points"]], dtype=float)
                 ax.fill_between(x, y - sd, y + sd, color=col, alpha=0.22, lw=0)
             flag = ""
             if g["drop_exceeds_2sd"]:
                 flag = ", drop > 2 SD"
             ax.plot(x, y, "-o", ms=3.5, color=col,
-                    label=f"{g['n_games']:,} games ({g['n_seeds']} seeds{flag})")  # fmt: skip
-        name = f"{leaves} leaves" if leaves else cap
+                    label=f"{g['n_games']:,} games ({g['n_seeds']} seed"
+                    f"{'s' if g['n_seeds'] > 1 else ''}{flag})")  # fmt: skip
+        name = f"{leaves}-leaf" if leaves else cap
         style.title(ax, f"True gain, {name} proxies",
                     "mean over data seeds; band: plus or minus one seed SD")  # fmt: skip
         ax.set_xlabel("sqrt of the exact sequence KL(pi_beta || coach) per game")
