@@ -87,8 +87,6 @@ def _logloss(p: np.ndarray, y: np.ndarray) -> float:
 
 
 def train(args: argparse.Namespace) -> None:
-    import lightgbm as lgb
-
     cfg = oo.load_config()
     wd = work_dir(cfg)
     val = np.load(wd / "games_val.npz")
@@ -100,20 +98,30 @@ def train(args: argparse.Namespace) -> None:
             print(f"{cell}: exists", flush=True)
             continue
         d = np.load(wd / f"games_{spec['games']}.npz")
-        params = cfg["proxy_sizes"][spec["proxy"]]
-        reg = lgb.LGBMRegressor(objective="cross_entropy", random_state=cfg["proxy_random_state"],
-                                n_jobs=cfg["proxy_threads"], verbose=-1, **params)  # fmt: skip
-        t0 = time.time()
-        reg.fit(d["X"], d["y"])
-        reg.booster_.save_model(str(path))
         meta = {"cell": cell, "games": spec["games"], "n_games": cfg["games"][spec["games"]]["n"],
-                "games_seed": cfg["games"][spec["games"]]["seed"], "size": spec["proxy"],
-                "params": params, "random_state": cfg["proxy_random_state"],
-                "rows": int(len(d["y"])), "fit_seconds": time.time() - t0,
-                "train_logloss": _logloss(reg.predict(d["X"]), d["y"]),
-                "val_logloss": _logloss(reg.predict(val["X"]), val["y"])}  # fmt: skip
+                "games_seed": cfg["games"][spec["games"]]["seed"]}  # fmt: skip
+        meta |= fit_proxy(cfg, spec["proxy"], d, val, path)
         (wd / f"proxy_{cell}.json").write_text(json.dumps(meta, indent=1))
         print(meta, flush=True)
+
+
+def fit_proxy(cfg: dict, size: str, d: Any, val: Any, path: Path) -> dict[str, Any]:
+    """Fit one LightGBM proxy of capacity `size` (configs/overopt.yaml, proxy_sizes) on the
+    games `d` (X, y), save it to `path` and return its training record."""
+    import lightgbm as lgb
+
+    params = cfg["proxy_sizes"][size]
+    reg = lgb.LGBMRegressor(objective="cross_entropy", random_state=cfg["proxy_random_state"],
+                            n_jobs=cfg["proxy_threads"], verbose=-1, **params)  # fmt: skip
+    t0 = time.time()
+    reg.fit(d["X"], d["y"])
+    fit_s = time.time() - t0
+    reg.booster_.save_model(str(path))
+    return {"size": size, "params": params, "random_state": cfg["proxy_random_state"],
+            "rows": int(len(d["y"])), "fit_seconds": fit_s,
+            "train_logloss": _logloss(reg.predict(d["X"]), d["y"]),
+            "val_logloss": _logloss(reg.predict(val["X"]), val["y"]),
+            "lightgbm": lgb.__version__}  # fmt: skip
 
 
 # --------------------------------------------------------------------------------------
@@ -170,22 +178,37 @@ def _diagnostics(m: mg.GameModel, cfg: dict, cp: pe.CoachPolicy, X: np.ndarray,
 
 
 def run_pass(args: argparse.Namespace) -> None:
-    from fourth_and_rl.grid_predict import GridPredictor, slice_values
-    from fourth_and_rl.occupancy import ForwardPass
-
     cfg = oo.load_config()
     cell = args.cell
     spec = cfg["cells"][cell]
+    wd = work_dir(cfg)
+    proxy = None
+    if spec["proxy"] != "oracle":
+        proxy = (wd / f"proxy_{cell}.txt", json.loads((wd / f"proxy_{cell}.json").read_text()))
+    out = exact_pass(cfg, cell, proxy, wd / "games_val.npz", mc=args.mc)
+    write_json(out, CELLS_DIR / f"{cell}.json")
+
+
+def exact_pass(cfg: dict, cell: str, proxy: tuple[Path, dict] | None, val_path: Path,
+               mc: bool = False, game_dir: Path | None = None) -> dict[str, Any]:  # fmt: skip
+    """One exact pass for one cell (steps 2 and 3 of the module docstring, and 4 with `mc`).
+
+    `proxy` is (LightGBM model file, its training record), or None for the oracle cell.
+    `val_path` holds the validation games for the diagnostics. The betas, threads, tie rule
+    and post-decision rule are read from `cfg`. Returns the cell record (also used by
+    scripts/research/overopt_grid.py)."""
+    from fourth_and_rl.grid_predict import GridPredictor, slice_values
+    from fourth_and_rl.occupancy import ForwardPass
+
     post = cfg["post"]
     betas = [float(b) for b in cfg["betas"]]
-    sol, coach = oo.load_game()
+    sol, coach = oo.load_game(game_dir)
     m = sol.model
     g = m.kern.grid
-    wd = work_dir(cfg)
     T0 = time.time()
 
     # Held-out states for the diagnostics (a fixed random subset of the validation games).
-    val = np.load(wd / "games_val.npz")
+    val = np.load(val_path)
     rng = np.random.default_rng(cfg["seed"])
     pick = rng.choice(len(val["y"]), size=min(100_000, len(val["y"])), replace=False)
     Xv = val["X"][pick]
@@ -193,15 +216,15 @@ def run_pass(args: argparse.Namespace) -> None:
     cp = pe.CoachPolicy(m, coach)
     oracle = oo.FourthQ(m)
     coach_pair = pe.PolicyPair(m, cp, post=post, coach=coach, record=_val_states(m, Xv))
-    is_oracle = spec["proxy"] == "oracle"
+    is_oracle = proxy is None
     if is_oracle:
         q_proxy, gp, bst, proxy_meta = oracle, None, None, {"proxy": "oracle"}
         proxy_sol = None
     else:
         q_proxy = oo.FourthQ(m)
-        gp = GridPredictor(wd / f"proxy_{cell}.txt")
+        gp = GridPredictor(proxy[0])
         bst = gp.bst
-        proxy_meta = json.loads((wd / f"proxy_{cell}.json").read_text())
+        proxy_meta = proxy[1]
         proxy_sol = pe.RingSolution(m, post=post, coach=coach)
 
     def best_fourth(t: int, q: dict) -> np.ndarray:
@@ -277,7 +300,7 @@ def run_pass(args: argparse.Namespace) -> None:
         "label": LABEL,
     }  # fmt: skip
 
-    if args.mc:
+    if mc:
         checks = cfg["checks"]
         sim = oo.TiltSimulator(sol, coach, q_proxy, {"oracle": oracle, "proxy": q_proxy})
         mc = {}
@@ -301,7 +324,7 @@ def run_pass(args: argparse.Namespace) -> None:
                 print("large mc", r, flush=True)
         out["monte_carlo"] = mc
     out["timing"]["total_seconds"] = time.time() - T0
-    write_json(out, CELLS_DIR / f"{cell}.json")
+    return out
 
 
 def _z(mc: float, exact: float, se: float) -> float:
