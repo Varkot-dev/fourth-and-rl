@@ -62,3 +62,34 @@ checks:
   kl_mc: {cells: [oracle, 1k_large], games: 20000, seed: 2027}
   # Day 5: one large Monte Carlo check of the exact win probability.
   large_mc: {cells: [1k_large], betas: [100, 10000], games: 200000, seed: 2028}
+
+# Day 6, run A: the seeded grid (scripts/research/overopt_grid.py and
+# notebooks/overopt_grid_colab.ipynb). A cell is (games, capacity, seed); its key is
+# n<games>_<capacity>_s<seed>, for example n250_large_s101. The seed is the seed of the
+# synthetic training games (the proxy's only source of randomness, as on day 5), so
+# n1000_<capacity>_s101 to s103 use the same games as day 5's 1k_<capacity>, _b and _c.
+grid:
+  # Priority blocks, run in this order: the turnover region first, so a short session still
+  # yields the most informative cells. Within a block the order is seed, then games, then
+  # capacity, so every finished prefix holds whole replicates.
+  blocks:
+    - [250, 500, 1000]
+    - [4000, 16000]
+    - [64000]
+  capacities: [small, large]      # proxy_sizes above: 8 and 64 leaves
+  seeds: [101, 102, 103, 104, 105]
+  # The oracle cell (exact coach values, no proxy) gives the reference curve and the best
+  # response; it is planned after this block (0 = after the first block, null = not at all).
+  oracle_after_block: 0
+  val_games: val                  # the validation games of `games` above (4,000, seed 999)
+  results_dir: results/research/overopt_grid/cells
+  # Resources per cell, from the day 5 passes on this machine (3 threads): 718 to 947 s and
+  # 7.06 to 7.64 GB peak. The parallelism rule keeps reserve_gb free for the system.
+  mem_gb_per_cell: 8.0
+  reserve_gb: 2.0
+  threads_per_cell: 3
+  seconds_per_cell: 1000          # starting estimate for the deadline guard (measured later)
+  # The local data/mdp's identity (overopt_grid.game_key of its meta.json). A game rebuilt
+  # from a fresh download usually differs (nflverse revises its data), and collect never
+  # pools cells from different games.
+  reference_game_key: ea0c61dd52ab0fe7
