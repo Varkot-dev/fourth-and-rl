@@ -275,8 +275,8 @@ def run(*, sizes=None, capacities=None, seeds=None, include_oracle: bool = True,
     for w in par["warnings"]:
         log(f"WARNING: {w}")
     for row in og.block_hours(plan, todo, par["n_parallel"], est):
-        log(f"  block {row['block'] + 1} ({row['label']}): {row['todo']} of {row['cells']} cells to "
-            f"run, about {row['hours']:.1f} h at {est / 60:.0f} min per cell")
+        log(f"  block {row['block'] + 1} ({row['label']}): {row['todo']} of {row['cells']} "
+            f"cells to run, about {row['hours']:.1f} h at {est / 60:.0f} min per cell")
     deadline = deadline if deadline is not None else time.time() + 3600 * 5
     out = {"plan": [c.key for c in plan], "already_done": sorted(done), "parallel": par,
            "resources": res, "game_key": gkey, "seconds_per_cell_estimate": est}  # fmt: skip
