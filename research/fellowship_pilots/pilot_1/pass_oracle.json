@@ -1,0 +1,20 @@
+{
+ "tag": "oracle",
+ "proxy": "oracle",
+ "seconds": 1299.5,
+ "backup_s": 1283.9,
+ "predict_s": 0.0,
+ "peak_gb": 5.62,
+ "start_value": {
+  "coach_0.0": 0.5,
+  "beta_10.0": 0.505472332239151,
+  "beta_30.0": 0.5130056440830231,
+  "beta_100.0": 0.5266904085874557,
+  "beta_300.0": 0.5389226078987122,
+  "beta_1000.0": 0.5446218401193619,
+  "beta_10000.0": 0.5458029955625534,
+  "br_inf": 0.5458709746599197
+ },
+ "proxy_start_claim": 0.5,
+ "check_coach_vs_prototype_maxabs_lastslice": 2.384185791015625e-07
+}

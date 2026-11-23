@@ -1,0 +1,15 @@
+{
+ "name": "1k_small",
+ "data": "d1k.npz",
+ "size": "small",
+ "params": {
+  "num_leaves": 8,
+  "n_estimators": 100,
+  "learning_rate": 0.1,
+  "min_child_samples": 50
+ },
+ "rows": 140151,
+ "fit_s": 0.5,
+ "train_logloss": 0.5192216335509217,
+ "val_logloss": 0.5110596062876592
+}

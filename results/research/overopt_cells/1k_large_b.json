@@ -1,0 +1,143 @@
+{
+  "cell": "1k_large_b",
+  "proxy": {
+    "cell": "1k_large_b",
+    "games": "g1k_b",
+    "n_games": 1000,
+    "games_seed": 102,
+    "size": "large",
+    "params": {
+      "num_leaves": 64,
+      "n_estimators": 150,
+      "learning_rate": 0.1,
+      "min_child_samples": 5
+    },
+    "random_state": 7,
+    "rows": 141138,
+    "fit_seconds": 0.6338233947753906,
+    "train_logloss": 0.49047370351766817,
+    "val_logloss": 0.5165099236804417
+  },
+  "post": "coach",
+  "betas": [
+    10.0,
+    30.0,
+    100.0,
+    300.0,
+    1000.0,
+    10000.0
+  ],
+  "coach_start_value": 0.5,
+  "rows": [
+    {
+      "beta": 10.0,
+      "true_gain": 0.004796832799911499,
+      "forward_gain": 0.0047968209547888385,
+      "pdl_gain": 0.004796820859450403,
+      "claimed_gain": 0.012781522947198575,
+      "kl": 0.06180069868597,
+      "sqrt_kl": 0.24859746315272407,
+      "decisions_per_game": 7.143456022399377,
+      "total_mass": 1.0000000000000022,
+      "forward_seconds": 202.79913568496704
+    },
+    {
+      "beta": 30.0,
+      "true_gain": 0.010696634650230408,
+      "forward_gain": 0.010696604324984094,
+      "pdl_gain": 0.010696603947056219,
+      "claimed_gain": 0.03204261517311131,
+      "kl": 0.43237542413616725,
+      "sqrt_kl": 0.6575526018016865,
+      "decisions_per_game": 7.170221483414003,
+      "total_mass": 1.0000000000000027,
+      "forward_seconds": 202.63096642494202
+    },
+    {
+      "beta": 100.0,
+      "true_gain": 0.017820656299591064,
+      "forward_gain": 0.01782063931645239,
+      "pdl_gain": 0.01782063787146138,
+      "claimed_gain": 0.06406772526076886,
+      "kl": 2.2734630999697303,
+      "sqrt_kl": 1.5078007494260408,
+      "decisions_per_game": 7.241136538835081,
+      "total_mass": 1.000000000000002,
+      "forward_seconds": 202.48979425430298
+    },
+    {
+      "beta": 300.0,
+      "true_gain": 0.019136041402816772,
+      "forward_gain": 0.019136105298850792,
+      "pdl_gain": 0.019136102368446525,
+      "claimed_gain": 0.08411855022733637,
+      "kl": 5.469636044045847,
+      "sqrt_kl": 2.3387253032465884,
+      "decisions_per_game": 7.327149365756177,
+      "total_mass": 0.9999999999999994,
+      "forward_seconds": 199.49933767318726
+    },
+    {
+      "beta": 1000.0,
+      "true_gain": 0.016823425889015198,
+      "forward_gain": 0.016823425156820337,
+      "pdl_gain": 0.01682342076192823,
+      "claimed_gain": 0.09058986266676637,
+      "kl": 8.198877332835087,
+      "sqrt_kl": 2.863368179755284,
+      "decisions_per_game": 7.3865161594753745,
+      "total_mass": 0.9999999999999967,
+      "forward_seconds": 199.23274493217468
+    },
+    {
+      "beta": 10000.0,
+      "true_gain": 0.014710724353790283,
+      "forward_gain": 0.014710674974844795,
+      "pdl_gain": 0.01471066942450616,
+      "claimed_gain": 0.0920035554041063,
+      "kl": 10.005780712260833,
+      "sqrt_kl": 3.1631915389778142,
+      "decisions_per_game": 7.4202597321681285,
+      "total_mass": 1.0000000000000009,
+      "forward_seconds": 209.55941557884216
+    }
+  ],
+  "diagnostics": {
+    "n_states": 100000,
+    "value_rmse": 0.051689998226828404,
+    "value_mae": 0.034795419463923644,
+    "value_bias": 0.0007416577186226417,
+    "n_fourth_down_states": 10067,
+    "q_rmse_fourth": 0.040397351604582035,
+    "greedy_uniform": {
+      "n_states": 10067,
+      "n_tied_true": 28,
+      "n_tied_proxy": 1,
+      "disagree": 0.3160822489321546,
+      "mean_regret": 0.004427313296959259
+    },
+    "greedy_exclude": {
+      "n_states": 10039,
+      "n_tied_true": 28,
+      "n_tied_proxy": 1,
+      "disagree": 0.3162665604143839,
+      "mean_regret": 0.004439661526687836
+    },
+    "exact_top_two_gap": {
+      "exact_ties": 28,
+      "below_1e-3": 782,
+      "n": 10067
+    }
+  },
+  "best_response_gain": null,
+  "timing": {
+    "backward_seconds": 341.75834918022156,
+    "grid_predict_seconds": 59.431206703186035,
+    "forward_seconds": 412.4883165359497,
+    "backward_peak_rss_gb": 7.528163909912109,
+    "peak_rss_gb": 7.528163909912109,
+    "n_backward_solutions": 14,
+    "total_seconds": 815.3640673160553
+  },
+  "label": "Exact for the fitted game MDP, not real football."
+}

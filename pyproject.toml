@@ -35,7 +35,7 @@ packages = ["src/fourth_and_rl"]
 [tool.ruff]
 line-length = 100
 # Generated notebooks are checked by running them, not by the linter.
-extend-exclude = ["notebooks/*.ipynb"]
+extend-exclude = ["notebooks/*.ipynb", "research/fellowship_pilots"]
 target-version = "py311"
 
 [tool.ruff.lint]

@@ -1,0 +1,1620 @@
+{
+  "what": "R1 day 5: exact true gain of KL-tilted fourth-down policies built on learned win-probability proxies, against coach-vs-coach play, with the exact sequence KL and the proxy's claimed gain from the forward occupancy pass",
+  "label": "Exact for the fitted game MDP, not real football.",
+  "betas": [
+    10.0,
+    30.0,
+    100.0,
+    300.0,
+    1000.0,
+    10000.0
+  ],
+  "post": "coach",
+  "best_response_gain": 0.04690895974636078,
+  "cells": {
+    "16k_large": {
+      "proxy": {
+        "cell": "16k_large",
+        "games": "g16k_a",
+        "n_games": 16000,
+        "games_seed": 116,
+        "size": "large",
+        "params": {
+          "num_leaves": 64,
+          "n_estimators": 150,
+          "learning_rate": 0.1,
+          "min_child_samples": 5
+        },
+        "random_state": 7,
+        "rows": 2253495,
+        "fit_seconds": 6.827427387237549,
+        "train_logloss": 0.5031706671344164,
+        "val_logloss": 0.5110737783741137
+      },
+      "rows": [
+        {
+          "beta": 10.0,
+          "true_gain": 0.00509469211101532,
+          "forward_gain": 0.005094710784598777,
+          "pdl_gain": 0.005094711128625843,
+          "claimed_gain": 0.005638067223415113,
+          "kl": 0.027168304448564846,
+          "sqrt_kl": 0.16482810576040982,
+          "decisions_per_game": 7.144980837261349,
+          "total_mass": 1.0000000000000024,
+          "forward_seconds": 189.42578625679016
+        },
+        {
+          "beta": 30.0,
+          "true_gain": 0.012422233819961548,
+          "forward_gain": 0.012422248847719364,
+          "pdl_gain": 0.012422249808401608,
+          "claimed_gain": 0.014087546578679512,
+          "kl": 0.1905331735940474,
+          "sqrt_kl": 0.4365010579529532,
+          "decisions_per_game": 7.173912607790167,
+          "total_mass": 1.000000000000002,
+          "forward_seconds": 189.59832286834717
+        },
+        {
+          "beta": 100.0,
+          "true_gain": 0.02547915279865265,
+          "forward_gain": 0.025479210843591393,
+          "pdl_gain": 0.02547921335867802,
+          "claimed_gain": 0.03061270745052481,
+          "kl": 1.1797338859088162,
+          "sqrt_kl": 1.0861555532743992,
+          "decisions_per_game": 7.25246561828279,
+          "total_mass": 1.000000000000002,
+          "forward_seconds": 189.5484960079193
+        },
+        {
+          "beta": 300.0,
+          "true_gain": 0.03539678454399109,
+          "forward_gain": 0.035396781507501585,
+          "pdl_gain": 0.0353967856753977,
+          "claimed_gain": 0.045459489857680356,
+          "kl": 3.710215247309731,
+          "sqrt_kl": 1.9261919030329588,
+          "decisions_per_game": 7.362303065435931,
+          "total_mass": 1.0000000000000009,
+          "forward_seconds": 186.54275488853455
+        },
+        {
+          "beta": 1000.0,
+          "true_gain": 0.03845904767513275,
+          "forward_gain": 0.038459044202686976,
+          "pdl_gain": 0.038459049091362274,
+          "claimed_gain": 0.05147204278243432,
+          "kl": 6.529758163584633,
+          "sqrt_kl": 2.5553391484467642,
+          "decisions_per_game": 7.4518196444315015,
+          "total_mass": 0.999999999999997,
+          "forward_seconds": 187.1515395641327
+        },
+        {
+          "beta": 10000.0,
+          "true_gain": 0.038455232977867126,
+          "forward_gain": 0.03845525346140144,
+          "pdl_gain": 0.03845526072822542,
+          "claimed_gain": 0.05266774092309701,
+          "kl": 8.488957101889927,
+          "sqrt_kl": 2.9135814905181436,
+          "decisions_per_game": 7.502984015618235,
+          "total_mass": 1.0000000000000007,
+          "forward_seconds": 193.72245979309082
+        }
+      ],
+      "diagnostics": {
+        "n_states": 100000,
+        "value_rmse": 0.018228025056821015,
+        "value_mae": 0.01194483568138412,
+        "value_bias": -0.00019487159171907922,
+        "n_fourth_down_states": 10067,
+        "q_rmse_fourth": 0.014045788627205394,
+        "greedy_uniform": {
+          "n_states": 10067,
+          "n_tied_true": 28,
+          "n_tied_proxy": 1,
+          "disagree": 0.16449786430912883,
+          "mean_regret": 0.0011198173013608858
+        },
+        "greedy_exclude": {
+          "n_states": 10039,
+          "n_tied_true": 28,
+          "n_tied_proxy": 1,
+          "disagree": 0.16455822293057076,
+          "mean_regret": 0.0011229405376575656
+        },
+        "exact_top_two_gap": {
+          "exact_ties": 28,
+          "below_1e-3": 782,
+          "n": 10067
+        }
+      },
+      "timing": {
+        "backward_seconds": 308.76285219192505,
+        "grid_predict_seconds": 56.351890325546265,
+        "forward_seconds": 383.4538314342499,
+        "backward_peak_rss_gb": 7.602287292480469,
+        "peak_rss_gb": 7.602287292480469,
+        "n_backward_solutions": 14,
+        "total_seconds": 750.1134459972382
+      }
+    },
+    "16k_small": {
+      "proxy": {
+        "cell": "16k_small",
+        "games": "g16k_a",
+        "n_games": 16000,
+        "games_seed": 116,
+        "size": "small",
+        "params": {
+          "num_leaves": 8,
+          "n_estimators": 100,
+          "learning_rate": 0.1,
+          "min_child_samples": 50
+        },
+        "random_state": 7,
+        "rows": 2253495,
+        "fit_seconds": 3.7699739933013916,
+        "train_logloss": 0.5071590668054272,
+        "val_logloss": 0.5119687970250378
+      },
+      "rows": [
+        {
+          "beta": 10.0,
+          "true_gain": 0.004244402050971985,
+          "forward_gain": 0.004244421844542434,
+          "pdl_gain": 0.004244422207010998,
+          "claimed_gain": 0.004429759334079606,
+          "kl": 0.021517225231471142,
+          "sqrt_kl": 0.14668750877791586,
+          "decisions_per_game": 7.144479427488298,
+          "total_mass": 1.0000000000000027,
+          "forward_seconds": 189.5519471168518
+        },
+        {
+          "beta": 30.0,
+          "true_gain": 0.010767355561256409,
+          "forward_gain": 0.01076738269605515,
+          "pdl_gain": 0.01076738368651547,
+          "claimed_gain": 0.01147031494916404,
+          "kl": 0.1584489842640697,
+          "sqrt_kl": 0.3980565088829345,
+          "decisions_per_game": 7.172553730072244,
+          "total_mass": 1.0000000000000027,
+          "forward_seconds": 189.49525833129883
+        },
+        {
+          "beta": 100.0,
+          "true_gain": 0.023196280002593994,
+          "forward_gain": 0.023196258502529044,
+          "pdl_gain": 0.023196261024109842,
+          "claimed_gain": 0.02594367282414834,
+          "kl": 1.026775178538521,
+          "sqrt_kl": 1.013299155500744,
+          "decisions_per_game": 7.2494039616121775,
+          "total_mass": 1.0000000000000027,
+          "forward_seconds": 189.36029028892517
+        },
+        {
+          "beta": 300.0,
+          "true_gain": 0.033311039209365845,
+          "forward_gain": 0.03331103472392938,
+          "pdl_gain": 0.03331103866972517,
+          "claimed_gain": 0.03977603287641193,
+          "kl": 3.406270782137572,
+          "sqrt_kl": 1.8456085126964419,
+          "decisions_per_game": 7.363700089293783,
+          "total_mass": 1.0000000000000007,
+          "forward_seconds": 190.9643199443817
+        },
+        {
+          "beta": 1000.0,
+          "true_gain": 0.0365479439496994,
+          "forward_gain": 0.036547983580742294,
+          "pdl_gain": 0.0365479871115589,
+          "claimed_gain": 0.046021347728263724,
+          "kl": 6.37010613170024,
+          "sqrt_kl": 2.523906918192555,
+          "decisions_per_game": 7.463262771035537,
+          "total_mass": 0.9999999999999974,
+          "forward_seconds": 190.01853132247925
+        },
+        {
+          "beta": 10000.0,
+          "true_gain": 0.03635390102863312,
+          "forward_gain": 0.036353869155527074,
+          "pdl_gain": 0.03635386909656163,
+          "claimed_gain": 0.047446133129331575,
+          "kl": 8.814148416322434,
+          "sqrt_kl": 2.9688631521716244,
+          "decisions_per_game": 7.522335095731924,
+          "total_mass": 1.0000000000000009,
+          "forward_seconds": 196.08038783073425
+        }
+      ],
+      "diagnostics": {
+        "n_states": 100000,
+        "value_rmse": 0.023544854571842053,
+        "value_mae": 0.01664169373330119,
+        "value_bias": -0.00020672874760614996,
+        "n_fourth_down_states": 10067,
+        "q_rmse_fourth": 0.01989546931289489,
+        "greedy_uniform": {
+          "n_states": 10067,
+          "n_tied_true": 28,
+          "n_tied_proxy": 1,
+          "disagree": 0.19539088109665242,
+          "mean_regret": 0.0014013923665889255
+        },
+        "greedy_exclude": {
+          "n_states": 10039,
+          "n_tied_true": 28,
+          "n_tied_proxy": 1,
+          "disagree": 0.19553740412391674,
+          "mean_regret": 0.001405300979900209
+        },
+        "exact_top_two_gap": {
+          "exact_ties": 28,
+          "below_1e-3": 782,
+          "n": 10067
+        }
+      },
+      "timing": {
+        "backward_seconds": 297.59133076667786,
+        "grid_predict_seconds": 33.39966344833374,
+        "forward_seconds": 385.7691240310669,
+        "backward_peak_rss_gb": 7.598278045654297,
+        "peak_rss_gb": 7.598278045654297,
+        "n_backward_solutions": 14,
+        "total_seconds": 718.0498666763306
+      }
+    },
+    "1k_large": {
+      "proxy": {
+        "cell": "1k_large",
+        "games": "g1k_a",
+        "n_games": 1000,
+        "games_seed": 101,
+        "size": "large",
+        "params": {
+          "num_leaves": 64,
+          "n_estimators": 150,
+          "learning_rate": 0.1,
+          "min_child_samples": 5
+        },
+        "random_state": 7,
+        "rows": 140615,
+        "fit_seconds": 0.6366209983825684,
+        "train_logloss": 0.4732655817435191,
+        "val_logloss": 0.5183027132888471
+      },
+      "rows": [
+        {
+          "beta": 10.0,
+          "true_gain": 0.004873305559158325,
+          "forward_gain": 0.00487331768955368,
+          "pdl_gain": 0.004873318251226413,
+          "claimed_gain": 0.012995551360091543,
+          "kl": 0.06281249907058302,
+          "sqrt_kl": 0.25062421884283853,
+          "decisions_per_game": 7.144282224524937,
+          "total_mass": 1.0000000000000022,
+          "forward_seconds": 219.73112154006958
+        },
+        {
+          "beta": 30.0,
+          "true_gain": 0.011096462607383728,
+          "forward_gain": 0.011096467180617076,
+          "pdl_gain": 0.0110964687150409,
+          "claimed_gain": 0.03205023624434226,
+          "kl": 0.4297905554297246,
+          "sqrt_kl": 0.6555841329911246,
+          "decisions_per_game": 7.173494458684313,
+          "total_mass": 1.0000000000000024,
+          "forward_seconds": 219.60133147239685
+        },
+        {
+          "beta": 100.0,
+          "true_gain": 0.018897786736488342,
+          "forward_gain": 0.01889786408848182,
+          "pdl_gain": 0.018897867899029794,
+          "claimed_gain": 0.06565241554282353,
+          "kl": 2.3802506348212584,
+          "sqrt_kl": 1.5428060911278703,
+          "decisions_per_game": 7.256485785932023,
+          "total_mass": 1.000000000000002,
+          "forward_seconds": 219.9683132171631
+        },
+        {
+          "beta": 300.0,
+          "true_gain": 0.01988421380519867,
+          "forward_gain": 0.01988425577753361,
+          "pdl_gain": 0.019884260932254778,
+          "claimed_gain": 0.08584714624472065,
+          "kl": 5.628335283161719,
+          "sqrt_kl": 2.372411280356279,
+          "decisions_per_game": 7.3511984746842645,
+          "total_mass": 0.9999999999999994,
+          "forward_seconds": 219.14488911628723
+        },
+        {
+          "beta": 1000.0,
+          "true_gain": 0.017379701137542725,
+          "forward_gain": 0.01737970248349452,
+          "pdl_gain": 0.017379708190939966,
+          "claimed_gain": 0.09181103892187138,
+          "kl": 8.280629280559936,
+          "sqrt_kl": 2.87760825696618,
+          "decisions_per_game": 7.412092311455414,
+          "total_mass": 0.9999999999999969,
+          "forward_seconds": 216.14704823493958
+        },
+        {
+          "beta": 10000.0,
+          "true_gain": 0.015318110585212708,
+          "forward_gain": 0.0153181355714892,
+          "pdl_gain": 0.015318143780909206,
+          "claimed_gain": 0.09304759874354458,
+          "kl": 10.175595285999107,
+          "sqrt_kl": 3.1899208902414973,
+          "decisions_per_game": 7.448551242803461,
+          "total_mass": 1.0000000000000013,
+          "forward_seconds": 228.43040084838867
+        }
+      ],
+      "diagnostics": {
+        "n_states": 100000,
+        "value_rmse": 0.051444122753102325,
+        "value_mae": 0.03686080112443176,
+        "value_bias": -0.001002424910923107,
+        "n_fourth_down_states": 10067,
+        "q_rmse_fourth": 0.04042413065460936,
+        "greedy_uniform": {
+          "n_states": 10067,
+          "n_tied_true": 28,
+          "n_tied_proxy": 1,
+          "disagree": 0.30515545842852887,
+          "mean_regret": 0.0043375067668998445
+        },
+        "greedy_exclude": {
+          "n_states": 10039,
+          "n_tied_true": 28,
+          "n_tied_proxy": 1,
+          "disagree": 0.3057077398147226,
+          "mean_regret": 0.004349604574594831
+        },
+        "exact_top_two_gap": {
+          "exact_ties": 28,
+          "below_1e-3": 782,
+          "n": 10067
+        }
+      },
+      "timing": {
+        "backward_seconds": 389.30681443214417,
+        "grid_predict_seconds": 63.22056317329407,
+        "forward_seconds": 448.54044485092163,
+        "backward_peak_rss_gb": 7.642299652099609,
+        "peak_rss_gb": 7.642299652099609,
+        "n_backward_solutions": 14,
+        "total_seconds": 946.7793228626251
+      }
+    },
+    "1k_large_b": {
+      "proxy": {
+        "cell": "1k_large_b",
+        "games": "g1k_b",
+        "n_games": 1000,
+        "games_seed": 102,
+        "size": "large",
+        "params": {
+          "num_leaves": 64,
+          "n_estimators": 150,
+          "learning_rate": 0.1,
+          "min_child_samples": 5
+        },
+        "random_state": 7,
+        "rows": 141138,
+        "fit_seconds": 0.6338233947753906,
+        "train_logloss": 0.49047370351766817,
+        "val_logloss": 0.5165099236804417
+      },
+      "rows": [
+        {
+          "beta": 10.0,
+          "true_gain": 0.004796832799911499,
+          "forward_gain": 0.0047968209547888385,
+          "pdl_gain": 0.004796820859450403,
+          "claimed_gain": 0.012781522947198575,
+          "kl": 0.06180069868597,
+          "sqrt_kl": 0.24859746315272407,
+          "decisions_per_game": 7.143456022399377,
+          "total_mass": 1.0000000000000022,
+          "forward_seconds": 202.79913568496704
+        },
+        {
+          "beta": 30.0,
+          "true_gain": 0.010696634650230408,
+          "forward_gain": 0.010696604324984094,
+          "pdl_gain": 0.010696603947056219,
+          "claimed_gain": 0.03204261517311131,
+          "kl": 0.43237542413616725,
+          "sqrt_kl": 0.6575526018016865,
+          "decisions_per_game": 7.170221483414003,
+          "total_mass": 1.0000000000000027,
+          "forward_seconds": 202.63096642494202
+        },
+        {
+          "beta": 100.0,
+          "true_gain": 0.017820656299591064,
+          "forward_gain": 0.01782063931645239,
+          "pdl_gain": 0.01782063787146138,
+          "claimed_gain": 0.06406772526076886,
+          "kl": 2.2734630999697303,
+          "sqrt_kl": 1.5078007494260408,
+          "decisions_per_game": 7.241136538835081,
+          "total_mass": 1.000000000000002,
+          "forward_seconds": 202.48979425430298
+        },
+        {
+          "beta": 300.0,
+          "true_gain": 0.019136041402816772,
+          "forward_gain": 0.019136105298850792,
+          "pdl_gain": 0.019136102368446525,
+          "claimed_gain": 0.08411855022733637,
+          "kl": 5.469636044045847,
+          "sqrt_kl": 2.3387253032465884,
+          "decisions_per_game": 7.327149365756177,
+          "total_mass": 0.9999999999999994,
+          "forward_seconds": 199.49933767318726
+        },
+        {
+          "beta": 1000.0,
+          "true_gain": 0.016823425889015198,
+          "forward_gain": 0.016823425156820337,
+          "pdl_gain": 0.01682342076192823,
+          "claimed_gain": 0.09058986266676637,
+          "kl": 8.198877332835087,
+          "sqrt_kl": 2.863368179755284,
+          "decisions_per_game": 7.3865161594753745,
+          "total_mass": 0.9999999999999967,
+          "forward_seconds": 199.23274493217468
+        },
+        {
+          "beta": 10000.0,
+          "true_gain": 0.014710724353790283,
+          "forward_gain": 0.014710674974844795,
+          "pdl_gain": 0.01471066942450616,
+          "claimed_gain": 0.0920035554041063,
+          "kl": 10.005780712260833,
+          "sqrt_kl": 3.1631915389778142,
+          "decisions_per_game": 7.4202597321681285,
+          "total_mass": 1.0000000000000009,
+          "forward_seconds": 209.55941557884216
+        }
+      ],
+      "diagnostics": {
+        "n_states": 100000,
+        "value_rmse": 0.051689998226828404,
+        "value_mae": 0.034795419463923644,
+        "value_bias": 0.0007416577186226417,
+        "n_fourth_down_states": 10067,
+        "q_rmse_fourth": 0.040397351604582035,
+        "greedy_uniform": {
+          "n_states": 10067,
+          "n_tied_true": 28,
+          "n_tied_proxy": 1,
+          "disagree": 0.3160822489321546,
+          "mean_regret": 0.004427313296959259
+        },
+        "greedy_exclude": {
+          "n_states": 10039,
+          "n_tied_true": 28,
+          "n_tied_proxy": 1,
+          "disagree": 0.3162665604143839,
+          "mean_regret": 0.004439661526687836
+        },
+        "exact_top_two_gap": {
+          "exact_ties": 28,
+          "below_1e-3": 782,
+          "n": 10067
+        }
+      },
+      "timing": {
+        "backward_seconds": 341.75834918022156,
+        "grid_predict_seconds": 59.431206703186035,
+        "forward_seconds": 412.4883165359497,
+        "backward_peak_rss_gb": 7.528163909912109,
+        "peak_rss_gb": 7.528163909912109,
+        "n_backward_solutions": 14,
+        "total_seconds": 815.3640673160553
+      }
+    },
+    "1k_large_c": {
+      "proxy": {
+        "cell": "1k_large_c",
+        "games": "g1k_c",
+        "n_games": 1000,
+        "games_seed": 103,
+        "size": "large",
+        "params": {
+          "num_leaves": 64,
+          "n_estimators": 150,
+          "learning_rate": 0.1,
+          "min_child_samples": 5
+        },
+        "random_state": 7,
+        "rows": 140546,
+        "fit_seconds": 0.5924139022827148,
+        "train_logloss": 0.47425030524144657,
+        "val_logloss": 0.5174822491889758
+      },
+      "rows": [
+        {
+          "beta": 10.0,
+          "true_gain": 0.00486321747303009,
+          "forward_gain": 0.004863177221032355,
+          "pdl_gain": 0.004863177693537381,
+          "claimed_gain": 0.013741165264776513,
+          "kl": 0.06695619551671335,
+          "sqrt_kl": 0.25875895253442605,
+          "decisions_per_game": 7.146383519873579,
+          "total_mass": 1.0000000000000022,
+          "forward_seconds": 197.70388841629028
+        },
+        {
+          "beta": 30.0,
+          "true_gain": 0.011264726519584656,
+          "forward_gain": 0.011264766359860623,
+          "pdl_gain": 0.011264767535879417,
+          "claimed_gain": 0.035788272476256745,
+          "kl": 0.49287574224960395,
+          "sqrt_kl": 0.7020510966087895,
+          "decisions_per_game": 7.179839210967115,
+          "total_mass": 1.0000000000000022,
+          "forward_seconds": 198.29565954208374
+        },
+        {
+          "beta": 100.0,
+          "true_gain": 0.019134551286697388,
+          "forward_gain": 0.019134546022420706,
+          "pdl_gain": 0.019134548270782873,
+          "claimed_gain": 0.0755322880595481,
+          "kl": 2.7648097961082705,
+          "sqrt_kl": 1.6627717209852562,
+          "decisions_per_game": 7.272119996471324,
+          "total_mass": 1.0000000000000024,
+          "forward_seconds": 198.24513602256775
+        },
+        {
+          "beta": 300.0,
+          "true_gain": 0.020186737179756165,
+          "forward_gain": 0.020186659948599472,
+          "pdl_gain": 0.02018666204150259,
+          "claimed_gain": 0.0997455769144498,
+          "kl": 6.547588597650864,
+          "sqrt_kl": 2.558825628613811,
+          "decisions_per_game": 7.378070250024307,
+          "total_mass": 0.9999999999999999,
+          "forward_seconds": 198.5140450000763
+        },
+        {
+          "beta": 1000.0,
+          "true_gain": 0.017639249563217163,
+          "forward_gain": 0.01763924786616078,
+          "pdl_gain": 0.017639249802277757,
+          "claimed_gain": 0.10701219880848035,
+          "kl": 9.549291700682558,
+          "sqrt_kl": 3.090192825809185,
+          "decisions_per_game": 7.444181253737331,
+          "total_mass": 0.9999999999999968,
+          "forward_seconds": 198.3006808757782
+        },
+        {
+          "beta": 10000.0,
+          "true_gain": 0.015457093715667725,
+          "forward_gain": 0.015457045126111901,
+          "pdl_gain": 0.015457048550292816,
+          "claimed_gain": 0.10847049897965827,
+          "kl": 11.300047690477777,
+          "sqrt_kl": 3.3615543563175914,
+          "decisions_per_game": 7.475202021250632,
+          "total_mass": 1.0000000000000013,
+          "forward_seconds": 210.86664462089539
+        }
+      ],
+      "diagnostics": {
+        "n_states": 100000,
+        "value_rmse": 0.052376688856244434,
+        "value_mae": 0.03689818074923837,
+        "value_bias": 0.002901192978569093,
+        "n_fourth_down_states": 10067,
+        "q_rmse_fourth": 0.04216397804292098,
+        "greedy_uniform": {
+          "n_states": 10067,
+          "n_tied_true": 28,
+          "n_tied_proxy": 1,
+          "disagree": 0.2907519618555677,
+          "mean_regret": 0.00433757133633275
+        },
+        "greedy_exclude": {
+          "n_states": 10039,
+          "n_tied_true": 28,
+          "n_tied_proxy": 1,
+          "disagree": 0.290865624066142,
+          "mean_regret": 0.004349669276621318
+        },
+        "exact_top_two_gap": {
+          "exact_ties": 28,
+          "below_1e-3": 782,
+          "n": 10067
+        }
+      },
+      "timing": {
+        "backward_seconds": 334.61156940460205,
+        "grid_predict_seconds": 57.39574694633484,
+        "forward_seconds": 409.29532384872437,
+        "backward_peak_rss_gb": 7.638957977294922,
+        "peak_rss_gb": 7.638957977294922,
+        "n_backward_solutions": 14,
+        "total_seconds": 802.9489262104034
+      }
+    },
+    "1k_small": {
+      "proxy": {
+        "cell": "1k_small",
+        "games": "g1k_a",
+        "n_games": 1000,
+        "games_seed": 101,
+        "size": "small",
+        "params": {
+          "num_leaves": 8,
+          "n_estimators": 100,
+          "learning_rate": 0.1,
+          "min_child_samples": 50
+        },
+        "random_state": 7,
+        "rows": 140615,
+        "fit_seconds": 0.3928256034851074,
+        "train_logloss": 0.5012074442173867,
+        "val_logloss": 0.5128504921621464
+      },
+      "rows": [
+        {
+          "beta": 10.0,
+          "true_gain": 0.004078924655914307,
+          "forward_gain": 0.0040789205343647605,
+          "pdl_gain": 0.004078921131234052,
+          "claimed_gain": 0.006184153955569958,
+          "kl": 0.029932387217116583,
+          "sqrt_kl": 0.1730097893678753,
+          "decisions_per_game": 7.143270869499259,
+          "total_mass": 1.0000000000000022,
+          "forward_seconds": 209.47347831726074
+        },
+        {
+          "beta": 30.0,
+          "true_gain": 0.009996995329856873,
+          "forward_gain": 0.009996983757179279,
+          "pdl_gain": 0.009996985376768356,
+          "claimed_gain": 0.015667675193789612,
+          "kl": 0.21358007437568366,
+          "sqrt_kl": 0.4621472431765483,
+          "decisions_per_game": 7.168976032988164,
+          "total_mass": 1.0000000000000022,
+          "forward_seconds": 209.51787781715393
+        },
+        {
+          "beta": 100.0,
+          "true_gain": 0.020106643438339233,
+          "forward_gain": 0.020106683968931893,
+          "pdl_gain": 0.020106687951993607,
+          "claimed_gain": 0.03351250008870983,
+          "kl": 1.2716768926437232,
+          "sqrt_kl": 1.1276865223295538,
+          "decisions_per_game": 7.239783832959178,
+          "total_mass": 1.0000000000000022,
+          "forward_seconds": 209.09126591682434
+        },
+        {
+          "beta": 300.0,
+          "true_gain": 0.026977166533470154,
+          "forward_gain": 0.02697720354689437,
+          "pdl_gain": 0.026977210619197944,
+          "claimed_gain": 0.04817638031325874,
+          "kl": 3.740635169202593,
+          "sqrt_kl": 1.9340721726974393,
+          "decisions_per_game": 7.34195979872287,
+          "total_mass": 1.0000000000000002,
+          "forward_seconds": 208.2431721687317
+        },
+        {
+          "beta": 1000.0,
+          "true_gain": 0.02842956781387329,
+          "forward_gain": 0.028429501190521567,
+          "pdl_gain": 0.0284295108992901,
+          "claimed_gain": 0.05372367196577714,
+          "kl": 6.345976577427314,
+          "sqrt_kl": 2.5191221839020264,
+          "decisions_per_game": 7.422143504239616,
+          "total_mass": 0.9999999999999963,
+          "forward_seconds": 208.1501612663269
+        },
+        {
+          "beta": 10000.0,
+          "true_gain": 0.02762848138809204,
+          "forward_gain": 0.027628486552925824,
+          "pdl_gain": 0.0276284985643584,
+          "claimed_gain": 0.05497877012480664,
+          "kl": 8.50025974414645,
+          "sqrt_kl": 2.9155204928359617,
+          "decisions_per_game": 7.473184000007282,
+          "total_mass": 1.0000000000000007,
+          "forward_seconds": 214.87950801849365
+        }
+      ],
+      "diagnostics": {
+        "n_states": 100000,
+        "value_rmse": 0.03487705621161287,
+        "value_mae": 0.02700856299658377,
+        "value_bias": -0.0011835983340480335,
+        "n_fourth_down_states": 10067,
+        "q_rmse_fourth": 0.0324775261122983,
+        "greedy_uniform": {
+          "n_states": 10067,
+          "n_tied_true": 28,
+          "n_tied_proxy": 1,
+          "disagree": 0.243866097149101,
+          "mean_regret": 0.00264417716758066
+        },
+        "greedy_exclude": {
+          "n_states": 10039,
+          "n_tied_true": 28,
+          "n_tied_proxy": 1,
+          "disagree": 0.2442474350034864,
+          "mean_regret": 0.002651552083596032
+        },
+        "exact_top_two_gap": {
+          "exact_ties": 28,
+          "below_1e-3": 782,
+          "n": 10067
+        }
+      },
+      "timing": {
+        "backward_seconds": 357.1205322742462,
+        "grid_predict_seconds": 38.45334005355835,
+        "forward_seconds": 424.56413745880127,
+        "backward_peak_rss_gb": 7.5870361328125,
+        "peak_rss_gb": 7.5870361328125,
+        "n_backward_solutions": 14,
+        "total_seconds": 821.8836464881897
+      }
+    },
+    "1k_small_b": {
+      "proxy": {
+        "cell": "1k_small_b",
+        "games": "g1k_b",
+        "n_games": 1000,
+        "games_seed": 102,
+        "size": "small",
+        "params": {
+          "num_leaves": 8,
+          "n_estimators": 100,
+          "learning_rate": 0.1,
+          "min_child_samples": 50
+        },
+        "random_state": 7,
+        "rows": 141138,
+        "fit_seconds": 0.3493325710296631,
+        "train_logloss": 0.5198185332727521,
+        "val_logloss": 0.5134178143052671
+      },
+      "rows": [
+        {
+          "beta": 10.0,
+          "true_gain": 0.003528594970703125,
+          "forward_gain": 0.0035285941317594327,
+          "pdl_gain": 0.003528594363318435,
+          "claimed_gain": 0.004773285138460938,
+          "kl": 0.023187679373047276,
+          "sqrt_kl": 0.15227501230683674,
+          "decisions_per_game": 7.142266386721285,
+          "total_mass": 1.000000000000002,
+          "forward_seconds": 199.3484628200531
+        },
+        {
+          "beta": 30.0,
+          "true_gain": 0.008884310722351074,
+          "forward_gain": 0.008884302619627471,
+          "pdl_gain": 0.008884303226351246,
+          "claimed_gain": 0.012355459776941533,
+          "kl": 0.1706086179041228,
+          "sqrt_kl": 0.4130479607795235,
+          "decisions_per_game": 7.166341756014494,
+          "total_mass": 1.000000000000002,
+          "forward_seconds": 200.30244946479797
+        },
+        {
+          "beta": 100.0,
+          "true_gain": 0.018901348114013672,
+          "forward_gain": 0.01890132847933701,
+          "pdl_gain": 0.01890132986632524,
+          "claimed_gain": 0.028033451210305618,
+          "kl": 1.10899174459888,
+          "sqrt_kl": 1.0530867697387902,
+          "decisions_per_game": 7.23337979710095,
+          "total_mass": 1.0000000000000018,
+          "forward_seconds": 200.27990913391113
+        },
+        {
+          "beta": 300.0,
+          "true_gain": 0.026263833045959473,
+          "forward_gain": 0.026263801500649664,
+          "pdl_gain": 0.026263803264707036,
+          "claimed_gain": 0.042327524396182044,
+          "kl": 3.519982241612088,
+          "sqrt_kl": 1.8761615712971225,
+          "decisions_per_game": 7.330775578643335,
+          "total_mass": 1.0000000000000004,
+          "forward_seconds": 201.63604545593262
+        },
+        {
+          "beta": 1000.0,
+          "true_gain": 0.02796010673046112,
+          "forward_gain": 0.027960209821513482,
+          "pdl_gain": 0.02796021079791651,
+          "claimed_gain": 0.04822882230782032,
+          "kl": 6.218944150321792,
+          "sqrt_kl": 2.493781095108749,
+          "decisions_per_game": 7.408475362121072,
+          "total_mass": 0.9999999999999963,
+          "forward_seconds": 200.85401272773743
+        },
+        {
+          "beta": 10000.0,
+          "true_gain": 0.027715831995010376,
+          "forward_gain": 0.02771581166885384,
+          "pdl_gain": 0.027715811490323063,
+          "claimed_gain": 0.049538770749531176,
+          "kl": 8.174991252557405,
+          "sqrt_kl": 2.8591941613953753,
+          "decisions_per_game": 7.454105267914783,
+          "total_mass": 1.0000000000000009,
+          "forward_seconds": 208.39483451843262
+        }
+      ],
+      "diagnostics": {
+        "n_states": 100000,
+        "value_rmse": 0.03450163808379415,
+        "value_mae": 0.02593493417772669,
+        "value_bias": -0.00011958783421489908,
+        "n_fourth_down_states": 10067,
+        "q_rmse_fourth": 0.03139932665422398,
+        "greedy_uniform": {
+          "n_states": 10067,
+          "n_tied_true": 28,
+          "n_tied_proxy": 1,
+          "disagree": 0.2577729214264428,
+          "mean_regret": 0.0026267733916640183
+        },
+        "greedy_exclude": {
+          "n_states": 10039,
+          "n_tied_true": 28,
+          "n_tied_proxy": 1,
+          "disagree": 0.2576949895407909,
+          "mean_regret": 0.0026340997011073458
+        },
+        "exact_top_two_gap": {
+          "exact_ties": 28,
+          "below_1e-3": 782,
+          "n": 10067
+        }
+      },
+      "timing": {
+        "backward_seconds": 331.50516986846924,
+        "grid_predict_seconds": 38.06040549278259,
+        "forward_seconds": 408.8343198299408,
+        "backward_peak_rss_gb": 7.597358703613281,
+        "peak_rss_gb": 7.597358703613281,
+        "n_backward_solutions": 14,
+        "total_seconds": 779.7902550697327
+      }
+    },
+    "1k_small_c": {
+      "proxy": {
+        "cell": "1k_small_c",
+        "games": "g1k_c",
+        "n_games": 1000,
+        "games_seed": 103,
+        "size": "small",
+        "params": {
+          "num_leaves": 8,
+          "n_estimators": 100,
+          "learning_rate": 0.1,
+          "min_child_samples": 50
+        },
+        "random_state": 7,
+        "rows": 140546,
+        "fit_seconds": 0.2827119827270508,
+        "train_logloss": 0.5054532431503289,
+        "val_logloss": 0.5136361247622325
+      },
+      "rows": [
+        {
+          "beta": 10.0,
+          "true_gain": 0.004595860838890076,
+          "forward_gain": 0.004595846910575907,
+          "pdl_gain": 0.004595847383634741,
+          "claimed_gain": 0.007109628205023937,
+          "kl": 0.034660053983831915,
+          "sqrt_kl": 0.18617210850133248,
+          "decisions_per_game": 7.145766234958125,
+          "total_mass": 1.0000000000000027,
+          "forward_seconds": 192.61120462417603
+        },
+        {
+          "beta": 30.0,
+          "true_gain": 0.01137174665927887,
+          "forward_gain": 0.011371751997387158,
+          "pdl_gain": 0.011371753240358258,
+          "claimed_gain": 0.018601021681266358,
+          "kl": 0.2578728200528472,
+          "sqrt_kl": 0.5078117958976999,
+          "decisions_per_game": 7.176242517601011,
+          "total_mass": 1.0000000000000027,
+          "forward_seconds": 192.86518549919128
+        },
+        {
+          "beta": 100.0,
+          "true_gain": 0.022464483976364136,
+          "forward_gain": 0.022464530406808403,
+          "pdl_gain": 0.02246453320181695,
+          "claimed_gain": 0.04144949490689516,
+          "kl": 1.6016320486571294,
+          "sqrt_kl": 1.265556023515802,
+          "decisions_per_game": 7.259415117960178,
+          "total_mass": 1.000000000000002,
+          "forward_seconds": 192.6777093410492
+        },
+        {
+          "beta": 300.0,
+          "true_gain": 0.028865158557891846,
+          "forward_gain": 0.02886518416298245,
+          "pdl_gain": 0.028865188276758675,
+          "claimed_gain": 0.05909646665273152,
+          "kl": 4.492257111187294,
+          "sqrt_kl": 2.1194945414384287,
+          "decisions_per_game": 7.376156286533362,
+          "total_mass": 1.0000000000000004,
+          "forward_seconds": 187.49204111099243
+        },
+        {
+          "beta": 1000.0,
+          "true_gain": 0.029463380575180054,
+          "forward_gain": 0.02946334788028715,
+          "pdl_gain": 0.02946335209581375,
+          "claimed_gain": 0.06572802252360131,
+          "kl": 7.437538701545332,
+          "sqrt_kl": 2.727185124179386,
+          "decisions_per_game": 7.466964253154999,
+          "total_mass": 0.999999999999997,
+          "forward_seconds": 186.97408747673035
+        },
+        {
+          "beta": 10000.0,
+          "true_gain": 0.028413966298103333,
+          "forward_gain": 0.02841395708608241,
+          "pdl_gain": 0.028413960174405402,
+          "claimed_gain": 0.06719974959402283,
+          "kl": 9.542194676969903,
+          "sqrt_kl": 3.0890442983178312,
+          "decisions_per_game": 7.517912126032889,
+          "total_mass": 1.0000000000000009,
+          "forward_seconds": 193.50869297981262
+        }
+      ],
+      "diagnostics": {
+        "n_states": 100000,
+        "value_rmse": 0.03774928300585447,
+        "value_mae": 0.029650363721322733,
+        "value_bias": 0.0024999821408989518,
+        "n_fourth_down_states": 10067,
+        "q_rmse_fourth": 0.035358126322193394,
+        "greedy_uniform": {
+          "n_states": 10067,
+          "n_tied_true": 28,
+          "n_tied_proxy": 1,
+          "disagree": 0.23442932353233337,
+          "mean_regret": 0.002470670193049624
+        },
+        "greedy_exclude": {
+          "n_states": 10039,
+          "n_tied_true": 28,
+          "n_tied_proxy": 1,
+          "disagree": 0.23468472955473652,
+          "mean_regret": 0.002477561159059936
+        },
+        "exact_top_two_gap": {
+          "exact_ties": 28,
+          "below_1e-3": 782,
+          "n": 10067
+        }
+      },
+      "timing": {
+        "backward_seconds": 320.4352378845215,
+        "grid_predict_seconds": 32.366533517837524,
+        "forward_seconds": 386.49617409706116,
+        "backward_peak_rss_gb": 7.628971099853516,
+        "peak_rss_gb": 7.628971099853516,
+        "n_backward_solutions": 14,
+        "total_seconds": 740.6594808101654
+      }
+    },
+    "oracle": {
+      "proxy": {
+        "proxy": "oracle"
+      },
+      "rows": [
+        {
+          "beta": 10.0,
+          "true_gain": 0.005797967314720154,
+          "forward_gain": 0.005797952939677331,
+          "pdl_gain": 0.005797953295096427,
+          "claimed_gain": 0.005797953295096427,
+          "kl": 0.027629754970940164,
+          "sqrt_kl": 0.1662220050743588,
+          "decisions_per_game": 7.1447681942190355,
+          "total_mass": 1.0000000000000022,
+          "forward_seconds": 228.44368314743042
+        },
+        {
+          "beta": 30.0,
+          "true_gain": 0.01372632384300232,
+          "forward_gain": 0.01372636472098887,
+          "pdl_gain": 0.01372636570428836,
+          "claimed_gain": 0.01372636570428836,
+          "kl": 0.18006318812539987,
+          "sqrt_kl": 0.4243385300976095,
+          "decisions_per_game": 7.173156973870856,
+          "total_mass": 1.0000000000000027,
+          "forward_seconds": 229.9072403907776
+        },
+        {
+          "beta": 100.0,
+          "true_gain": 0.027802377939224243,
+          "forward_gain": 0.02780233600780846,
+          "pdl_gain": 0.027802338502513114,
+          "claimed_gain": 0.027802338502513114,
+          "kl": 1.0186934982948095,
+          "sqrt_kl": 1.0093034718531437,
+          "decisions_per_game": 7.2493978848656955,
+          "total_mass": 1.0000000000000022,
+          "forward_seconds": 229.02859497070312
+        },
+        {
+          "beta": 300.0,
+          "true_gain": 0.040079087018966675,
+          "forward_gain": 0.04007911935818653,
+          "pdl_gain": 0.04007912330792477,
+          "claimed_gain": 0.04007912330792477,
+          "kl": 3.150115271930906,
+          "sqrt_kl": 1.7748564088204166,
+          "decisions_per_game": 7.3587781551628275,
+          "total_mass": 1.0000000000000009,
+          "forward_seconds": 234.2091703414917
+        },
+        {
+          "beta": 1000.0,
+          "true_gain": 0.04569554328918457,
+          "forward_gain": 0.045695547901506206,
+          "pdl_gain": 0.04569555249736555,
+          "claimed_gain": 0.04569555249736555,
+          "kl": 5.898909366529511,
+          "sqrt_kl": 2.4287670465751776,
+          "decisions_per_game": 7.456719197232191,
+          "total_mass": 0.9999999999999977,
+          "forward_seconds": 233.25585794448853
+        },
+        {
+          "beta": 10000.0,
+          "true_gain": 0.046836644411087036,
+          "forward_gain": 0.046836674818219404,
+          "pdl_gain": 0.04683668133535837,
+          "claimed_gain": 0.04683668133535837,
+          "kl": 8.002405007825546,
+          "sqrt_kl": 2.828852242133821,
+          "decisions_per_game": 7.510122047579982,
+          "total_mass": 1.0000000000000007,
+          "forward_seconds": 238.07538962364197
+        }
+      ],
+      "diagnostics": {
+        "n_states": 100000,
+        "n_fourth_down_states": 10067,
+        "q_rmse_fourth": 0.0,
+        "greedy_uniform": {
+          "n_states": 10067,
+          "n_tied_true": 28,
+          "n_tied_proxy": 28,
+          "disagree": 0.0,
+          "mean_regret": 0.0
+        },
+        "greedy_exclude": {
+          "n_states": 10039,
+          "n_tied_true": 28,
+          "n_tied_proxy": 28,
+          "disagree": 0.0,
+          "mean_regret": 0.0
+        },
+        "exact_top_two_gap": {
+          "exact_ties": 28,
+          "below_1e-3": 782,
+          "n": 10067
+        }
+      },
+      "timing": {
+        "backward_seconds": 450.799222946167,
+        "grid_predict_seconds": 0.0,
+        "forward_seconds": 468.15151596069336,
+        "backward_peak_rss_gb": 7.062736511230469,
+        "peak_rss_gb": 7.062736511230469,
+        "n_backward_solutions": 15,
+        "total_seconds": 931.4822218418121
+      }
+    }
+  },
+  "seed_summary": {
+    "1k_large": {
+      "cells": [
+        "1k_large",
+        "1k_large_b",
+        "1k_large_c"
+      ],
+      "gain_mean": [
+        0.004844451944033305,
+        0.011019274592399597,
+        0.01861766477425893,
+        0.019735664129257202,
+        0.017280792196591694,
+        0.015161976218223572
+      ],
+      "gain_sd": [
+        4.154671510002514e-05,
+        0.00029180573203673333,
+        0.000700307964097384,
+        0.0005408702788897763,
+        0.0004168084701600236,
+        0.0003969260151510082
+      ],
+      "peak_beta": [
+        300.0,
+        300.0,
+        300.0
+      ],
+      "peak_gain": [
+        0.01988421380519867,
+        0.019136041402816772,
+        0.020186737179756165
+      ],
+      "final_gain": [
+        0.015318110585212708,
+        0.014710724353790283,
+        0.015457093715667725
+      ],
+      "drop_peak_to_final": [
+        0.004566103219985962,
+        0.004425317049026489,
+        0.00472964346408844
+      ],
+      "drop_mean": 0.00457368791103363,
+      "drop_sd": 0.00015230491580980277,
+      "fixed_peak_beta": 100.0,
+      "drop_fixed": [
+        0.0035796761512756348,
+        0.0031099319458007812,
+        0.003677457571029663
+      ],
+      "drop_fixed_mean": 0.00345568855603536,
+      "drop_fixed_sd": 0.0003033991210484269,
+      "drop_survives_2sd": true,
+      "drop_fixed_survives_2sd": true
+    },
+    "1k_small": {
+      "cells": [
+        "1k_small",
+        "1k_small_b",
+        "1k_small_c"
+      ],
+      "gain_mean": [
+        0.0040677934885025024,
+        0.01008435090382894,
+        0.020490825176239014,
+        0.02736871937910716,
+        0.028617685039838154,
+        0.027919426560401917
+      ],
+      "gain_sd": [
+        0.0005337199972974346,
+        0.0012460167062716121,
+        0.0018123688915874074,
+        0.0013441386937189117,
+        0.000769089806903295,
+        0.00043050516403010707
+      ],
+      "peak_beta": [
+        1000.0,
+        1000.0,
+        1000.0
+      ],
+      "peak_gain": [
+        0.02842956781387329,
+        0.02796010673046112,
+        0.029463380575180054
+      ],
+      "final_gain": [
+        0.02762848138809204,
+        0.027715831995010376,
+        0.028413966298103333
+      ],
+      "drop_peak_to_final": [
+        0.00080108642578125,
+        0.00024427473545074463,
+        0.0010494142770767212
+      ],
+      "drop_mean": 0.0006982584794362386,
+      "drop_sd": 0.00041230160111812723,
+      "fixed_peak_beta": 300.0,
+      "drop_fixed": [
+        -0.0006513148546218872,
+        -0.0014519989490509033,
+        0.0004511922597885132
+      ],
+      "drop_fixed_mean": -0.0005507071812947592,
+      "drop_fixed_sd": 0.0009555760682960482,
+      "drop_survives_2sd": false,
+      "drop_fixed_survives_2sd": false
+    }
+  },
+  "monte_carlo_checks": [
+    {
+      "cell": "1k_large",
+      "kind": "kl_mc",
+      "beta": 10.0,
+      "games": 20000,
+      "exact_kl": 0.06281249907058302,
+      "mc_kl": 0.06256904226463952,
+      "mc_kl_se": 0.0007708420317864475,
+      "exact_gain": 0.004873305559158325,
+      "mc_gain": 0.007325000000000026,
+      "mc_gain_se": 0.003436718314088095,
+      "z": {
+        "kl": -0.31583229235603266,
+        "win_a": 0.7133824238057281,
+        "claim_proxy": -0.31641638900187363,
+        "claim_oracle": -0.08539227491964886,
+        "decisions": -0.3019219980281606
+      }
+    },
+    {
+      "cell": "1k_large",
+      "kind": "kl_mc",
+      "beta": 30.0,
+      "games": 20000,
+      "exact_kl": 0.4297905554297246,
+      "mc_kl": 0.4266394318230354,
+      "mc_kl_se": 0.003353077271298151,
+      "exact_gain": 0.011096462607383728,
+      "mc_gain": 0.015525000000000011,
+      "mc_gain_se": 0.003440627212374326,
+      "z": {
+        "kl": -0.9397706499824467,
+        "win_a": 1.287130839600671,
+        "claim_proxy": -1.57402121966207,
+        "claim_oracle": -1.2910575228068528,
+        "decisions": 0.163482512024656
+      }
+    },
+    {
+      "cell": "1k_large",
+      "kind": "kl_mc",
+      "beta": 100.0,
+      "games": 20000,
+      "exact_kl": 2.3802506348212584,
+      "mc_kl": 2.399276662149466,
+      "mc_kl_se": 0.01494128440871209,
+      "exact_gain": 0.018897786736488342,
+      "mc_gain": 0.01715,
+      "mc_gain_se": 0.0034394236954419905,
+      "z": {
+        "kl": 1.273386330636582,
+        "win_a": -0.5081626723699537,
+        "claim_proxy": 1.365784169602242,
+        "claim_oracle": -0.007701224044102585,
+        "decisions": -0.2809828323152152
+      }
+    },
+    {
+      "cell": "1k_large",
+      "kind": "kl_mc",
+      "beta": 300.0,
+      "games": 20000,
+      "exact_kl": 5.628335283161719,
+      "mc_kl": 5.642661368180126,
+      "mc_kl_se": 0.028662079523161722,
+      "exact_gain": 0.01988421380519867,
+      "mc_gain": 0.01485000000000003,
+      "mc_gain_se": 0.00344177514747961,
+      "z": {
+        "kl": 0.4998271324601617,
+        "win_a": -1.4626794573971988,
+        "claim_proxy": 0.67384942173935,
+        "claim_oracle": 1.1536453015688852,
+        "decisions": 0.9152190521518927
+      }
+    },
+    {
+      "cell": "1k_large",
+      "kind": "kl_mc",
+      "beta": 1000.0,
+      "games": 20000,
+      "exact_kl": 8.280629280559936,
+      "mc_kl": 8.275923336430552,
+      "mc_kl_se": 0.038264175920365996,
+      "exact_gain": 0.017379701137542725,
+      "mc_gain": 0.01200000000000001,
+      "mc_gain_se": 0.0034405147662948422,
+      "z": {
+        "kl": -0.12298563907864642,
+        "win_a": -1.5636326256306754,
+        "claim_proxy": -0.4354970752007457,
+        "claim_oracle": 1.5721222009147586,
+        "decisions": 1.0499273063290318
+      }
+    },
+    {
+      "cell": "1k_large",
+      "kind": "kl_mc",
+      "beta": 10000.0,
+      "games": 20000,
+      "exact_kl": 10.175595285999107,
+      "mc_kl": 10.217317095232007,
+      "mc_kl_se": 0.04486343343805219,
+      "exact_gain": 0.015318110585212708,
+      "mc_gain": 0.020275000000000043,
+      "mc_gain_se": 0.0034412081184397605,
+      "z": {
+        "kl": 0.9299736118170707,
+        "win_a": 1.4404503430716022,
+        "claim_proxy": 1.05825167394991,
+        "claim_oracle": 0.3696123966077587,
+        "decisions": 0.8193123504557235
+      }
+    },
+    {
+      "cell": "1k_large",
+      "kind": "large_mc",
+      "beta": 100.0,
+      "games": 200000,
+      "exact_kl": 2.3802506348212584,
+      "mc_kl": 2.376725877087971,
+      "mc_kl_se": 0.0046112810511560395,
+      "exact_gain": 0.018897786736488342,
+      "mc_gain": 0.016595000000000026,
+      "mc_gain_se": 0.0010872230406612532,
+      "z": {
+        "kl": -0.7643771208444688,
+        "win_a": -2.118044458557236,
+        "claim_proxy": -0.6138479116725176,
+        "claim_oracle": 0.5390276900042692,
+        "decisions": -0.3399593002666577
+      }
+    },
+    {
+      "cell": "1k_large",
+      "kind": "large_mc",
+      "beta": 10000.0,
+      "games": 200000,
+      "exact_kl": 10.175595285999107,
+      "mc_kl": 10.13911263472946,
+      "mc_kl_se": 0.01417319661813084,
+      "exact_gain": 0.015318110585212708,
+      "mc_gain": 0.013569999999999971,
+      "mc_gain_se": 0.0010887252647539282,
+      "z": {
+        "kl": -2.5740594907840046,
+        "win_a": -1.6056489564498546,
+        "claim_proxy": -1.259603933080361,
+        "claim_oracle": 0.6486525832020925,
+        "decisions": -0.7464697980406865
+      }
+    },
+    {
+      "cell": "oracle",
+      "kind": "kl_mc",
+      "beta": 10.0,
+      "games": 20000,
+      "exact_kl": 0.027629754970940164,
+      "mc_kl": 0.027139520688650977,
+      "mc_kl_se": 0.00033254698422256567,
+      "exact_gain": 0.005797967314720154,
+      "mc_gain": 0.0040000000000000036,
+      "mc_gain_se": 0.003438901176548274,
+      "z": {
+        "kl": -1.4741805084633866,
+        "win_a": -0.5228319228774183,
+        "claim_proxy": -1.404937481871068,
+        "claim_oracle": -1.404937481871068,
+        "decisions": -0.33473417249536386
+      }
+    },
+    {
+      "cell": "oracle",
+      "kind": "kl_mc",
+      "beta": 30.0,
+      "games": 20000,
+      "exact_kl": 0.18006318812539987,
+      "mc_kl": 0.1796192202409797,
+      "mc_kl_se": 0.0016316282138158337,
+      "exact_gain": 0.01372632384300232,
+      "mc_gain": 0.019124999999999948,
+      "mc_gain_se": 0.0034397206721862076,
+      "z": {
+        "kl": -0.27210113226828364,
+        "win_a": 1.5695100479093127,
+        "claim_proxy": 0.033220886312493876,
+        "claim_oracle": 0.033220886312493876,
+        "decisions": -1.0350653386507327
+      }
+    },
+    {
+      "cell": "oracle",
+      "kind": "kl_mc",
+      "beta": 100.0,
+      "games": 20000,
+      "exact_kl": 1.0186934982948095,
+      "mc_kl": 1.0159553397011167,
+      "mc_kl_se": 0.006565236075434036,
+      "exact_gain": 0.027802377939224243,
+      "mc_gain": 0.02927500000000005,
+      "mc_gain_se": 0.0034305046475492265,
+      "z": {
+        "kl": -0.41706932732220586,
+        "win_a": 0.4292727199270399,
+        "claim_proxy": -0.4926453049665713,
+        "claim_oracle": -0.4926453049665713,
+        "decisions": -0.5299530811330657
+      }
+    },
+    {
+      "cell": "oracle",
+      "kind": "kl_mc",
+      "beta": 300.0,
+      "games": 20000,
+      "exact_kl": 3.150115271930906,
+      "mc_kl": 3.1329169621417448,
+      "mc_kl_se": 0.016967387916676763,
+      "exact_gain": 0.040079087018966675,
+      "mc_gain": 0.037825,
+      "mc_gain_se": 0.0034372487839419087,
+      "z": {
+        "kl": -1.0136097479245647,
+        "win_a": -0.6557823307690993,
+        "claim_proxy": -1.6510996750887008,
+        "claim_oracle": -1.6510996750887008,
+        "decisions": -1.5201006974057822
+      }
+    },
+    {
+      "cell": "oracle",
+      "kind": "kl_mc",
+      "beta": 1000.0,
+      "games": 20000,
+      "exact_kl": 5.898909366529511,
+      "mc_kl": 5.879438640944812,
+      "mc_kl_se": 0.028670603927812583,
+      "exact_gain": 0.04569554328918457,
+      "mc_gain": 0.04454999999999998,
+      "mc_gain_se": 0.0034287538104440557,
+      "z": {
+        "kl": -0.6791180832368536,
+        "win_a": -0.334099020377387,
+        "claim_proxy": -0.911158090617309,
+        "claim_oracle": -0.911158090617309,
+        "decisions": -1.4612917032942108
+      }
+    },
+    {
+      "cell": "oracle",
+      "kind": "kl_mc",
+      "beta": 10000.0,
+      "games": 20000,
+      "exact_kl": 8.002405007825546,
+      "mc_kl": 8.007267248912983,
+      "mc_kl_se": 0.03761850632487899,
+      "exact_gain": 0.046836644411087036,
+      "mc_gain": 0.052324999999999955,
+      "mc_gain_se": 0.00342188766392312,
+      "z": {
+        "kl": 0.12925130640345567,
+        "win_a": 1.6038970673340687,
+        "claim_proxy": 0.1544484710379468,
+        "claim_oracle": 0.1544484710379468,
+        "decisions": -0.06656119223041713
+      }
+    }
+  ],
+  "extra_monte_carlo": [
+    {
+      "cell": "1k_large",
+      "runs": [
+        {
+          "games": 1000000,
+          "beta": 0.0,
+          "win_a": 0.5006145,
+          "win_a_se": 0.00048587612460930665,
+          "kl": -4.669527897072259e-18,
+          "kl_se": 2.0517179652089503e-19,
+          "decisions": 7.126645,
+          "decisions_se": 0.0018092372197460224,
+          "claim_oracle": -1.562204621396333e-17,
+          "claim_oracle_se": 1.2839926886798754e-19,
+          "claim_proxy": -1.5424717043359993e-17,
+          "claim_proxy_se": 1.288898662415535e-19,
+          "seconds": 77.7900824546814,
+          "exact_gain": 0.0,
+          "exact_kl": 0.0,
+          "seed": 2029,
+          "z_gain": 1.2647256551123647,
+          "z_kl": 0.0
+        },
+        {
+          "games": 1000000,
+          "beta": 100.0,
+          "win_a": 0.51868,
+          "win_a_se": 0.0004862348136695829,
+          "kl": 2.3798464015082126,
+          "kl_se": 0.00206260993084481,
+          "decisions": 7.25556,
+          "decisions_se": 0.0018623755139183275,
+          "claim_oracle": 0.018858344545659166,
+          "claim_oracle_se": 2.77298714347063e-05,
+          "claim_proxy": 0.06563402154547755,
+          "claim_proxy_se": 5.982231815268243e-05,
+          "seconds": 77.52187156677246,
+          "exact_gain": 0.018897786736488342,
+          "exact_kl": 2.3802506348212584,
+          "seed": 2029,
+          "z_gain": -0.44790444938462937,
+          "z_kl": -0.19598146358205304
+        },
+        {
+          "games": 1000000,
+          "beta": 10000.0,
+          "win_a": 0.515437,
+          "win_a_se": 0.00048687774243739675,
+          "kl": 10.171877930251735,
+          "kl_se": 0.006369101510172243,
+          "decisions": 7.448997,
+          "decisions_se": 0.00194625396130502,
+          "claim_oracle": 0.015302163100018052,
+          "claim_oracle_se": 3.754618230038367e-05,
+          "claim_proxy": 0.09302118271981852,
+          "claim_proxy_se": 6.697711237506819e-05,
+          "seconds": 77.60774254798889,
+          "exact_gain": 0.015318110585212708,
+          "exact_kl": 10.175595285999107,
+          "seed": 2029,
+          "z_gain": 0.2441874097430392,
+          "z_kl": -0.5836546554382922
+        }
+      ],
+      "rebuild_backward_seconds": 142.62401175498962
+    }
+  ],
+  "exactness": {
+    "max_abs_forward_minus_backward": 1.030910523613926e-07,
+    "max_abs_pdl_minus_backward": 1.0406745538926732e-07
+  }
+}

@@ -1,0 +1,64 @@
+# Research milestone R1: exact overoptimization of a learned value model.
+# Read by scripts/research/overopt_checks.py and scripts/research/overopt_curves.py.
+# Plan: docs/plans/fellowship_research_directions.md (sections 4 to 7); notes:
+# docs/notes/overopt.md. Everything is exact for the fitted game MDP (data/mdp), not real
+# football. Synthetic games come from the solved MDP's simulator; no play-by-play is
+# loaded, so no season (2024, 2025 or 2026) is touched.
+
+seed: 20261122
+
+# Who makes the decisions after a play (timeouts, the try after a touchdown), in the
+# synthetic games, in the exact evaluator and in every Monte Carlo check: the simulator's
+# coach rules (mdp_game.Solution, post="coach"). The pilot used the model's own choices.
+post: coach
+
+# Optimization pressure of the tilted policy pi_beta(a | s) ~ coach(a | s) exp(beta Q(s, a)).
+betas: [10, 30, 100, 300, 1000, 10000]
+
+# Ties between actions in argmax diagnostics and the best response (policy_eval.greedy):
+# "uniform" spreads the mass over every action within `atol` of the best; "exclude" drops
+# states with a tie from the diagnostics.
+ties: {rule: uniform, atol: 0.0}
+
+work_dir: data/research/overopt   # synthetic games and proxy models (gitignored)
+
+# Synthetic coach-vs-coach games: every pre-snap state, labelled with the final result
+# for the team with the ball. Seeds 101, 116 and 999 are the pilot's.
+games:
+  val:    {n: 4000,  seed: 999}
+  g1k_a:  {n: 1000,  seed: 101}
+  g1k_b:  {n: 1000,  seed: 102}
+  g1k_c:  {n: 1000,  seed: 103}
+  g16k_a: {n: 16000, seed: 116}
+
+# LightGBM win-probability proxies (cross-entropy on 0 / 0.5 / 1 labels), the pilot's
+# settings. Without bagging or feature subsampling LightGBM is deterministic, so
+# random_state changes nothing; the seed of a proxy is the seed of its games.
+proxy_sizes:
+  small: {num_leaves: 8, n_estimators: 100, learning_rate: 0.1, min_child_samples: 50}
+  large: {num_leaves: 64, n_estimators: 150, learning_rate: 0.1, min_child_samples: 5}
+proxy_random_state: 7
+proxy_threads: 4
+threads: 3          # pairs stepped in parallel within a tick, and forward passes at once
+
+# Cells of the Day 5 curves. "oracle" is the exact coach value (no proxy error).
+cells:
+  oracle:      {proxy: oracle}
+  16k_large:   {proxy: large, games: g16k_a}
+  16k_small:   {proxy: small, games: g16k_a}
+  1k_small:    {proxy: small, games: g1k_a}
+  1k_large:    {proxy: large, games: g1k_a}
+  1k_small_b:  {proxy: small, games: g1k_b}
+  1k_large_b:  {proxy: large, games: g1k_b}
+  1k_small_c:  {proxy: small, games: g1k_c}
+  1k_large_c:  {proxy: large, games: g1k_c}
+
+checks:
+  # Day 2: exact coach-vs-coach values against Monte Carlo from the simulator.
+  post_mc: {n_states: 24, games_per_state: 62500, seed: 20261123, recheck_states: 6}
+  # Day 3: the grid predictor against Booster.predict on every tick.
+  grid: {cell: 1k_large}
+  # Day 4: exact sequence KL against Monte Carlo KL at two pilot cells.
+  kl_mc: {cells: [oracle, 1k_large], games: 20000, seed: 2027}
+  # Day 5: one large Monte Carlo check of the exact win probability.
+  large_mc: {cells: [1k_large], betas: [100, 10000], games: 200000, seed: 2028}

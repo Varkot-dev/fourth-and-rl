@@ -1,0 +1,15 @@
+{
+ "name": "1k_large",
+ "data": "d1k.npz",
+ "size": "large",
+ "params": {
+  "num_leaves": 64,
+  "n_estimators": 150,
+  "learning_rate": 0.1,
+  "min_child_samples": 5
+ },
+ "rows": 140151,
+ "fit_s": 0.9,
+ "train_logloss": 0.4877442030319746,
+ "val_logloss": 0.5152740134142356
+}
